@@ -29,64 +29,27 @@
 
  Author(s): Jay Jay Billings (jayjaybillings <at> gmail <dot> com)
  -----------------------------------------------------------------------------*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <INIPropertyParser.h>
 #include <StringCaster.h>
 #include <mfem.hpp>
+#include <TimeEvolutionOperator.h>
+#include <IFESpaceFactory.h>
+#include <H1FESpaceFactory.h>
+#include <MeshContainer.h>
+#include <DirichletBoundaryCondition.h>
 
 using namespace std;
 using namespace mfem;
 using namespace fire;
+using namespace Kelvin;
 
-/** A time-dependent operator for the right-hand side of the ODE. The DG weak
- form of du/dt = -v.grad(u) is M du/dt = K u + b, where M and K are the mass
- and advection matrices, and b describes the flow on the boundary. This can
- be written as a general ODE, du/dt = M^{-1} (K u + b), and this class is
- used to evaluate the right-hand side. */
-class TimeEvolutionOperator: public TimeDependentOperator {
-private:
-	SparseMatrix &M, &K;
-	const Vector &b;
-	DSmoother M_prec;
-	CGSolver M_solver;
-
-	mutable Vector z;
-
-public:
-	TimeEvolutionOperator(SparseMatrix &_M, SparseMatrix &_K, const Vector &_b);
-
-	virtual void Mult(const Vector &x, Vector &y) const;
-
-	virtual ~TimeEvolutionOperator() {
-	}
-};
-
-// Implementation of the time evolution operator
-TimeEvolutionOperator::TimeEvolutionOperator(SparseMatrix &_M, SparseMatrix &_K,
-		const Vector &_b) :
-		TimeDependentOperator(_M.Size()), M(_M), K(_K), b(_b), z(_M.Size()) {
-	M_solver.SetPreconditioner(M_prec);
-	M_solver.SetOperator(M);
-
-	M_solver.iterative_mode = false;
-	M_solver.SetRelTol(1e-9);
-	M_solver.SetAbsTol(0.0);
-	M_solver.SetMaxIter(100);
-	M_solver.SetPrintLevel(0);
-}
-
-void TimeEvolutionOperator::Mult(const Vector &x, Vector &y) const {
-	// y = M^{-1} (K x + b)
-	K.Mult(x, z);
-	z += b;
-	M_solver.Mult(z, y);
-}
+INIPropertyParser propertyParser;
 
 /**
  * This is the initial condition function that returns the value of u0 at the
- * position x. Righ now this is just a simple function for testing and should
+ * position x. Right now this is just a simple function for testing and should
  * be reconfigured as needed.
  * @param x the position vector where the temperature should be initially
  * configured
@@ -112,27 +75,29 @@ int main(int argc, char * argv[]) {
 	args.AddOption(&input_file, "-i", "--input", "Input file to use.");
 
 	// Load the input file
-	INIPropertyParser propertyParser = build<INIPropertyParser, const string &>(
+	propertyParser = build<INIPropertyParser, const string &>(
 			string(input_file));
 
-	// Load the mesh - first get the mesh name from the properties
-	auto meshProps = propertyParser.getPropertyBlock("mesh");
-	auto meshFilename = meshProps.at("file");
-	int order = StringCaster<int>::cast(meshProps.at("order"));
-	Mesh *mesh = new Mesh(meshFilename.c_str());
-	int dim = mesh->Dimension();
+	H1FESpaceFactory spaceFactory;
+	MeshContainer meshContainer(propertyParser.getPropertyBlock("mesh"),
+			spaceFactory);
+	auto & mesh = meshContainer.getMesh();
+	auto & feSpace = meshContainer.getSpace();
 
-	// Helpful diagnostic information.
-	cout << "Loaded mesh " << meshFilename << ". Mesh dimension = " << dim
-			<< " with " << mesh->GetNE() << " elements." << endl;
+	// Create data collection for solution output in the VisIt format
+	DataCollection *dc =  new VisItDataCollection(meshContainer.name(), &mesh);
 
-	// Create the time integrator - Ideally get this from input. Just RK6 for
-	// now.
-	ODESolver *odeSolver = new RK6Solver;
+	// Get the furnace parameters
+	auto furnaceProps = propertyParser.getPropertyBlock("furnace");
+	double elementTemp = StringCaster<double>::cast(
+			furnaceProps.at("elementTemperature"));
+	int elementSide = StringCaster<double>::cast(
+			furnaceProps.at("elementSide"));
 
-	// Define the finite element space
-	H1_FECollection feCollection(order, dim);
-	FiniteElementSpace feSpace(mesh, &feCollection);
+	// Create the furnace element boundary condition
+	DirichletBoundaryCondition dbc(meshContainer,elementSide,elementTemp);
+
+    // Create the thermal solver
 
 	// Define the bilinear form for heat transfer
 	BilinearForm massMatrix(&feSpace), stiffnessMatrix(&feSpace);
@@ -167,63 +132,41 @@ int main(int argc, char * argv[]) {
 	GridFunction temp(&feSpace);
 	temp.ProjectCoefficient(temp0);
 
-	// Get the furnace parameters
-	auto furnaceProps = propertyParser.getPropertyBlock("furnace");
-	double elementTemp = StringCaster<double>::cast(
-			furnaceProps.at("elementTemperature"));
-	int elementSide = StringCaster<double>::cast(
-			furnaceProps.at("elementSide"));
+	// Project the dirichlet boundary values
+	temp.ProjectBdrCoefficient(dbc.getCoefficient(),dbc.getBoundaryAttributes());
 
-	// Apply essential (Dirichlet) boundary conditions. In this case, the
-	// boundary condition with attribute 99 is the top of the system.
-	// FIXME! - will do something more general later.
-	//
-	// How does this work? Boundary attributes should be numbered sequentially
-	// from side 1 such that bdr_attributes.Max() returns the maximum boundary
-	// attribute value, which may well be equal to the size and to the number
-	// of sides. For simplicity, boundary attributes can be set to zero and
-	// then only those that have essential constraints can be reset to a
-	// non-zero value, with one being most commonly used in the MFEM examples.
-	// Below, side 6 in the mesh has essential boundary conditions imposed,
-	// which puts it at index 5 in the array and that value is thus set to 1.
-	// In the case where multiple sides had essential boundary conditions, each
-	// side would have a non-zero value set in the array and all other values
-	// would be zero, (see MFEM example 17 for an example of this case).
-	Array<int> dirichletBoundaries(mesh->bdr_attributes.Max()), essBoundsTrueDoF;
-	dirichletBoundaries = 0;
-	dirichletBoundaries[elementSide-1] = 1;
-	feSpace.GetEssentialTrueDofs(dirichletBoundaries,essBoundsTrueDoF);
-
-	// Set the furnace element temperature as a Dirichlet/essential boundary
-	// condition
-	ConstantCoefficient boundaryTemp(elementTemp);
-	temp.ProjectBdrCoefficient(boundaryTemp,dirichletBoundaries);
-
-	// Form the linear system and remove essential degrees of freedom.
-	SparseMatrix A;
-	Vector B,X;
-	stiffnessMatrix.FormLinearSystem(essBoundsTrueDoF,temp,forcingVector,A,X,B);
-
-	// Finalize the bilinear form matrices.
-	massMatrix.Finalize();
-	stiffnessMatrix.Finalize(skip_zeros);
-
+	// Setup initial properties for the data collection before the solve.
+	// Note: Make this a private function in the solver.
 	int precision = 8;
-	// Create data collection for solution output in the VisIt format
-	DataCollection *dc = NULL;
-	dc = new VisItDataCollection("Example9", mesh);
 	dc->SetPrecision(precision);
 	dc->RegisterField("solution", &temp);
 	dc->SetCycle(0);
 	dc->SetTime(0.0);
 	dc->Save();
 
+	// End thermal solver creation
+
+	// Solve the thermal system
+
+	// Form the linear system and remove essential degrees of freedom.
+	SparseMatrix A;
+	Vector B,X;
+	stiffnessMatrix.FormLinearSystem(dbc.getElements(),temp,forcingVector,A,X,B);
+
+	// Finalize the bilinear form matrices.
+	massMatrix.Finalize();
+	stiffnessMatrix.Finalize(skip_zeros);
+
+	// REcover FEM solution?
+
+	// End solve the thermal system
+
 	// Save the mesh and output the initial conditions
-	auto meshName = meshProps.at("name");
+	auto meshName = meshContainer.name();
 	string meshOutputName = meshName + ".mesh";
     ofstream omesh(meshOutputName.c_str());
 	omesh.precision(precision);
-	mesh->Print(omesh);
+	mesh.Print(omesh);
 	ofstream osol("thermal_initial.gf");
 	osol.precision(precision);
 	temp.Save(osol);
@@ -232,6 +175,10 @@ int main(int argc, char * argv[]) {
 	// from the bilinear forms. Set initial time & initialize.
 	TimeEvolutionOperator temperatureOverTime(massMatrix.SpMat(),
 			stiffnessMatrix.SpMat(), forcingVector);
+
+	// Create the time integrator - Ideally get this from input. Just RK6 for
+	// now.
+	ODESolver *odeSolver = new RK6Solver;
 
 	// Do the time integration. Get solver properties first.
 	auto solverProps = propertyParser.getPropertyBlock("solver");

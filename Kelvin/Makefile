@@ -34,13 +34,13 @@
 FIREDIR = /home/bkj/fire/install
 MFEMDIR = /home/bkj/programs/mfem-dev-20171119/build
 
-CXXFLAGS = -I$(MFEMDIR) -I$(FIREDIR)/include -O2 -g -Wall -fmessage-length=0
+CXXFLAGS = -I. -I$(MFEMDIR) -I$(FIREDIR)/include -O2 -g -Wall -fmessage-length=0
 
-OBJS = Kelvin.o
+OBJS = DirichletBoundaryCondition.o MeshContainer.o H1FESpaceFactory.o TimeEvolutionOperator.o Kelvin.o 
 
 LIBS = -L$(MFEMDIR) -lmfem
 
-TARGET =	kelvin
+TARGET =	Kelvin
 
 $(TARGET):	$(OBJS)
 	$(CXX) -o $(TARGET) $(OBJS) $(LIBS)
