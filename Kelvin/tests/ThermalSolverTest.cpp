@@ -5,7 +5,7 @@
  *      Author: bkj
  */
 
-#include "ThermalSolver.h"
+#include "../ThermalOperator.h"
 
 namespace Kelvin {
 

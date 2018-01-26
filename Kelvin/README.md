@@ -4,7 +4,7 @@ HOWTO Work with Furnace
 Prerequisites
 ==
 
-Furnace requires ORNL's Fire utility library which you can download as source from https://github.com/jayjaybillings/fire. Furnace also requires the Modified Finite Element Method (MFEM) library, which you can download and build from http://mfem.org.
+Kelvin requires ORNL's Fire utility library which you can download as source from https://github.com/jayjaybillings/fire. Kelvin also requires the Modified Finite Element Method (MFEM) library, which you can download and build from http://mfem.org.
 
 Fire
 ===
@@ -23,12 +23,14 @@ $ make
 Input
 ==
 
-Furnace uses a simple INI file format for input which consists of blocks, keys and values. See input.ini for a working example of the format.
+Kelvin uses a simple INI file format for input which consists of blocks, keys and values. See input.ini for a working example of the format.
 
 Boundary Conditions
 ===
 
 Dirichlet/Essential Boundary Conditions are specified using the conventions of MFEM. Meshes should number all boundary elements sequentially by side such that all boundary elements on side 1 are on number 1, 2 for those on side 2, etc.
+
+By default the thermal boundary condition on each side is set using the surfaceTemperature element of the [thermal] block. Heat fluxes can be specified on a side-by-side basis. Initial temperature values for all interior nodes is set using the initialTemperature element.
 
 Meshes
 ===
@@ -41,4 +43,4 @@ file= # The name of the file in the local file system
 order= # The order of the finite elements in the file 
 ```
 
-Furnace supports any meshes supported by MFEM. Note that when a NETGEN neutral format mesh is used it is necessary to add the word "NETGEN" as the first line in the mesh file if it is not already available.
+Kelvin supports any meshes supported by MFEM. Note that when a NETGEN neutral format mesh is used it is necessary to add the word "NETGEN" as the first line in the mesh file if it is not already available.
