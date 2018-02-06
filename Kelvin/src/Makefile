@@ -34,7 +34,7 @@
 FIREDIR = /home/bkj/fire/install
 MFEMDIR = /home/bkj/programs/mfem-dev-20171119/build
 
-CXXFLAGS = -I. -I$(MFEMDIR) -I$(FIREDIR)/include -g -Wall -fmessage-length=0
+CXXFLAGS = -O0 -I. -I$(MFEMDIR) -I$(FIREDIR)/include -g -Wall -fmessage-length=0
 
 OBJS = TimeIntegrator.o ThermalOperator.o DirichletBoundaryCondition.o MeshContainer.o H1FESpaceFactory.o Kelvin.o 
 

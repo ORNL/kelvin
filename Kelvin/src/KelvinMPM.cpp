@@ -15,3 +15,6 @@
 			cout << point(0) << " " << point(1) << " " << point(2) << endl;
 		}
 	}
+
+// Find a ?
+

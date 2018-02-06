@@ -31,6 +31,7 @@
  -----------------------------------------------------------------------------*/
 #include <stdio.h>
 #include <stdlib.h>
+#include <memory>
 #include <INIPropertyParser.h>
 #include <StringCaster.h>
 #include <mfem.hpp>
@@ -46,7 +47,54 @@ using namespace mfem;
 using namespace fire;
 using namespace Kelvin;
 
-INIPropertyParser propertyParser;
+/**
+ * Run the thermal solve.
+ * @param meshContainer the container holding the mesh and FE space
+ * @param parser the property parser for thermal and solver properties
+ * @param dc the data collection to store output data
+ */
+void solve(MeshContainer & meshContainer,
+		INIPropertyParser & parser,
+		DataCollection & dc) {
+	// Get the heat transfer coefficient for the material. Assumed to be
+	// constant and provided as a property at the moment.
+	auto & thermalProps = parser.getPropertyBlock("thermal");
+
+    // Create the thermal solver
+	ThermalOperator thermalOperator(meshContainer,thermalProps,dc);
+
+	// Do the time integration. Get solver properties first.
+	auto & solverProps = parser.getPropertyBlock("solver");
+	TimeIntegrator integrator(thermalOperator,solverProps,dc);
+	integrator.integrate();
+}
+
+/**
+ * This operation configures a data container to store simulation output. By
+ * default it configures a VisItDataCollection and stores output in the VisIt
+ * native format.
+ * @param meshContainer the mesh container that holds the FE space and mesh.
+ * @return the data collection
+ */
+DataCollection setupDataCollection(MeshContainer & meshContainer) {
+	// Create data collection for solution output in the VisIt format
+	VisItDataCollection dc(meshContainer.name().c_str(),
+			&meshContainer.getMesh());
+	return dc;
+}
+
+/**
+ * This operation loads the mesh and finite element space into a mesh
+ * container.
+ * @param parser the property parser
+ * @return the mesh container
+ */
+MeshContainer loadMesh(INIPropertyParser & parser) {
+	H1FESpaceFactory spaceFactory;
+	MeshContainer meshContainer(parser.getPropertyBlock("mesh"),
+			spaceFactory);
+	return meshContainer;
+}
 
 /**
  * Main program
@@ -64,60 +112,18 @@ int main(int argc, char * argv[]) {
 	args.AddOption(&input_file, "-i", "--input", "Input file to use.");
 
 	// Load the input file
+	INIPropertyParser propertyParser;
 	propertyParser = build<INIPropertyParser, const string &>(
 			string(input_file));
 
-	H1FESpaceFactory spaceFactory;
-	MeshContainer meshContainer(propertyParser.getPropertyBlock("mesh"),
-			spaceFactory);
-	auto & mesh = meshContainer.getMesh();
+	// Load the mesh
+	auto meshContainer = loadMesh(propertyParser);
 
-	// Create data collection for solution output in the VisIt format
-	VisItDataCollection dc(meshContainer.name().c_str(), &mesh);
+	// Load the data container
+	auto dc = setupDataCollection(meshContainer);
 
-	// Get the heat transfer coefficient for the material. Assumed to be
-	// constant and provided as a property at the moment.
-	auto & thermalProps = propertyParser.getPropertyBlock("thermal");
-
-//	// Get the furnace parameters
-//	auto & furnaceProps = propertyParser.getPropertyBlock("furnace");
-//	double elementTemp = StringCaster<double>::cast(
-//			furnaceProps.at("bottomTemperature"));
-//	int elementSide = StringCaster<double>::cast(
-//			furnaceProps.at("bottomSide"));
-//	// Create the furnace element boundary condition
-//	meshContainer.setDirichletBoundaryCondition(elementSide,elementTemp);
-
-    // Create the thermal solver
-	ThermalOperator thermalOperator(meshContainer,thermalProps,dc);
-
-	// Get the temperature, which will currently reflect the initial
-	// conditions.
-	auto & temp = thermalOperator.solution();
-	// Save the mesh and output the initial conditions
-	int precision = 8;
-	auto meshName = meshContainer.name();
-	string meshOutputName = meshName + ".mesh";
-    ofstream omesh(meshOutputName.c_str());
-	omesh.precision(precision);
-	mesh.Print(omesh);
-	ofstream osol("thermal_initial.gf");
-	osol.precision(precision);
-	temp.Save(osol);
-
-	// Do the time integration. Get solver properties first.
-	auto & solverProps = propertyParser.getPropertyBlock("solver");
-	TimeIntegrator integrator(thermalOperator,solverProps,dc);
-	integrator.integrate();
-
-	// Print a vtk file of the mesh
-	ofstream vtkStream("mesh.vtk");
-	mesh.PrintVTK(vtkStream,0,1);
-
-	// Save the final result to a serialized grid function file.
-    ofstream final_osol("thermal_final.gf");
-    final_osol.precision(precision);
-    temp.Save(final_osol);
+	// Do the thermal solve
+	solve(meshContainer,propertyParser,dc);
 
 	return EXIT_SUCCESS;
 }

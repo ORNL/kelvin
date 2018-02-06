@@ -71,6 +71,11 @@ public:
 	}
 };
 
+/**
+ * This class represents the main operator for the thermal field. It is
+ * time-dependent MFEM operator that otherwise behaves as all MFEM
+ * TimeDependentOperator subclasses.
+ */
 class ThermalOperator: public mfem::TimeDependentOperator {
 private:
 

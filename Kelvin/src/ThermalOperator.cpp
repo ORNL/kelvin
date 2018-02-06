@@ -43,14 +43,14 @@ ThermalOperator::ThermalOperator(MeshContainer & _meshContainer,
 		DataCollection & _dataColl) :
 		TimeDependentOperator(_meshContainer.getSpace().GetTrueVSize(), 0.0),
 				meshContainer(_meshContainer),
-				feSpace(meshContainer.getSpace()),
-		dataColl(_dataColl), forcingVector(&feSpace),
-		temperature(&feSpace), zero(0.0), mPreconditioner(), mSolver(),
-		tempSparseMat(), tempPreconditioner(), tempSolver(),
+				feSpace(_meshContainer.getSpace()),
+		dataColl(_dataColl), forcingVector(&_meshContainer.getSpace()),
+		temperature(&_meshContainer.getSpace()), zero(0.0), mPreconditioner(),
+		mSolver(), tempSparseMat(), tempPreconditioner(), tempSolver(),
 		z(forcingVector.Size()), skip_zeros(0), currentDt(0.0),
 		alpha(0.0), density(0.0), specificHeat(0.0), conductivity(0.0),
 		initialSurfaceTemperature(0.0), initialInteriorTemperature(0.0),
-		conductionCoeff(meshContainer.dimension(),temperature),
+		conductionCoeff(_meshContainer.dimension(),temperature),
 		sparseMassMatrix(), K(), b(), x() {
 
 	// Set the thermal properties
