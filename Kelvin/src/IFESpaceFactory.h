@@ -44,6 +44,17 @@ namespace Kelvin {
  */
 class IFESpaceFactory {
 public:
+
+	/**
+	 * Constructor
+	 */
+	IFESpaceFactory() {};
+
+	/**
+	 * Destructor
+	 */
+	virtual ~IFESpaceFactory() {};
+
 	/**
 	 * This operation creates a finite element collection with the given order
 	 * and dimensionality. The exact type of the finite element collection

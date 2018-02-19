@@ -47,7 +47,7 @@ H1FESpaceFactory::~H1FESpaceFactory() {
 FiniteElementCollection & H1FESpaceFactory::getCollection(int order,
 		int dim) {
 	if (!feCollectionPtr) {
-		feCollectionPtr = make_unique<H1_FECollection>(order,dim);
+		feCollectionPtr = make_shared<H1_FECollection>(order,dim);
 	}
 	return *feCollectionPtr;
 }
@@ -55,7 +55,7 @@ FiniteElementCollection & H1FESpaceFactory::getCollection(int order,
 FiniteElementSpace & H1FESpaceFactory::getFESpace(Mesh & mesh,
 		FiniteElementCollection & collection) {
 	if (!feSpacePtr) {
-		feSpacePtr = make_unique<FiniteElementSpace>(&mesh,&collection);
+		feSpacePtr = make_shared<FiniteElementSpace>(&mesh,&collection);
 	}
 	return *feSpacePtr;
 }

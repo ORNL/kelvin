@@ -33,6 +33,7 @@
 #define H1FESPACEFACTORY_H_
 
 #include <mfem.hpp>
+#include <memory>
 #include <IFESpaceFactory.h>
 
 namespace Kelvin {
@@ -44,8 +45,8 @@ namespace Kelvin {
  */
 class H1FESpaceFactory : public IFESpaceFactory {
 private:
-	std::unique_ptr<mfem::H1_FECollection> feCollectionPtr;
-	std::unique_ptr<mfem::FiniteElementSpace> feSpacePtr;
+	std::shared_ptr<mfem::H1_FECollection> feCollectionPtr;
+	std::shared_ptr<mfem::FiniteElementSpace> feSpacePtr;
 public:
 	H1FESpaceFactory();
 	virtual ~H1FESpaceFactory();

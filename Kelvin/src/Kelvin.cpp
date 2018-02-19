@@ -84,13 +84,23 @@ DataCollection setupDataCollection(MeshContainer & meshContainer) {
 }
 
 /**
+ * This operation creates the space factory.
+ * @return the space factory
+ */
+H1FESpaceFactory createSpaceFactory() {
+	H1FESpaceFactory spaceFactory;
+	return spaceFactory;
+}
+
+/**
  * This operation loads the mesh and finite element space into a mesh
  * container.
  * @param parser the property parser
+ * @param spaceFactory the space factory that the mesh container should use
  * @return the mesh container
  */
-MeshContainer loadMesh(INIPropertyParser & parser) {
-	H1FESpaceFactory spaceFactory;
+MeshContainer loadMesh(INIPropertyParser & parser,
+		IFESpaceFactory & spaceFactory) {
 	MeshContainer meshContainer(parser.getPropertyBlock("mesh"),
 			spaceFactory);
 	return meshContainer;
@@ -116,8 +126,10 @@ int main(int argc, char * argv[]) {
 	propertyParser = build<INIPropertyParser, const string &>(
 			string(input_file));
 
+	// Create the space factory
+	H1FESpaceFactory spaceFactory = createSpaceFactory();
 	// Load the mesh
-	auto meshContainer = loadMesh(propertyParser);
+	auto meshContainer = loadMesh(propertyParser, spaceFactory);
 
 	// Load the data container
 	auto dc = setupDataCollection(meshContainer);

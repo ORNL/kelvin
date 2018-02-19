@@ -41,15 +41,13 @@ namespace Kelvin {
 ThermalOperator::ThermalOperator(MeshContainer & _meshContainer,
 		const std::map<std::string, std::string> & thermalProps,
 		DataCollection & _dataColl) :
-		TimeDependentOperator(_meshContainer.getSpace().GetTrueVSize(), 0.0),
-				meshContainer(_meshContainer),
-				feSpace(_meshContainer.getSpace()),
+		TimeDependentOperator(_meshContainer.getSpace().GetTrueVSize()),
+		meshContainer(_meshContainer),
+		feSpace(_meshContainer.getSpace()),
 		dataColl(_dataColl), forcingVector(&_meshContainer.getSpace()),
 		temperature(&_meshContainer.getSpace()), zero(0.0), mPreconditioner(),
 		mSolver(), tempSparseMat(), tempPreconditioner(), tempSolver(),
-		z(forcingVector.Size()), skip_zeros(0), currentDt(0.0),
-		alpha(0.0), density(0.0), specificHeat(0.0), conductivity(0.0),
-		initialSurfaceTemperature(0.0), initialInteriorTemperature(0.0),
+		z(forcingVector.Size()),
 		conductionCoeff(_meshContainer.dimension(),temperature),
 		sparseMassMatrix(), K(), b(), x() {
 
