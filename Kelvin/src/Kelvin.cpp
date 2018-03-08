@@ -47,64 +47,48 @@ using namespace mfem;
 using namespace fire;
 using namespace Kelvin;
 
-/**
- * Run the thermal solve.
- * @param meshContainer the container holding the mesh and FE space
- * @param parser the property parser for thermal and solver properties
- * @param dc the data collection to store output data
- */
-void solve(MeshContainer & meshContainer,
-		INIPropertyParser & parser,
-		DataCollection & dc) {
-	// Get the heat transfer coefficient for the material. Assumed to be
-	// constant and provided as a property at the moment.
-	auto & thermalProps = parser.getPropertyBlock("thermal");
+class MFEMManager {
 
-    // Create the thermal solver
-	ThermalOperator thermalOperator(meshContainer,thermalProps,dc);
+	fire::INIPropertyParser propertyParser;
 
-	// Do the time integration. Get solver properties first.
-	auto & solverProps = parser.getPropertyBlock("solver");
-	TimeIntegrator integrator(thermalOperator,solverProps,dc);
-	integrator.integrate();
-}
+	std::unique_ptr<MeshContainer> meshContainer;
 
-/**
- * This operation configures a data container to store simulation output. By
- * default it configures a VisItDataCollection and stores output in the VisIt
- * native format.
- * @param meshContainer the mesh container that holds the FE space and mesh.
- * @return the data collection
- */
-DataCollection setupDataCollection(MeshContainer & meshContainer) {
-	// Create data collection for solution output in the VisIt format
-	VisItDataCollection dc(meshContainer.name().c_str(),
-			&meshContainer.getMesh());
-	return dc;
-}
-
-/**
- * This operation creates the space factory.
- * @return the space factory
- */
-H1FESpaceFactory createSpaceFactory() {
 	H1FESpaceFactory spaceFactory;
-	return spaceFactory;
-}
 
-/**
- * This operation loads the mesh and finite element space into a mesh
- * container.
- * @param parser the property parser
- * @param spaceFactory the space factory that the mesh container should use
- * @return the mesh container
- */
-MeshContainer loadMesh(INIPropertyParser & parser,
-		IFESpaceFactory & spaceFactory) {
-	MeshContainer meshContainer(parser.getPropertyBlock("mesh"),
-			spaceFactory);
-	return meshContainer;
-}
+	std::unique_ptr<mfem::DataCollection> dc;
+
+public:
+
+	MFEMManager(INIPropertyParser & parser, int argc, char * argv[]) :
+		propertyParser(parser) {
+
+		meshContainer = make_unique<MeshContainer>(
+				propertyParser.getPropertyBlock("mesh"),spaceFactory);
+
+		// Load the data container
+		dc = make_unique<VisItDataCollection>(meshContainer->name().c_str(),
+				&meshContainer->getMesh());
+
+	}
+
+	/**
+	 * Run the thermal solve.
+	 */
+	void solve() {
+		// Get the heat transfer coefficient for the material. Assumed to be
+		// constant and provided as a property at the moment.
+		auto & thermalProps = propertyParser.getPropertyBlock("thermal");
+
+	    // Create the thermal solver
+		ThermalOperator thermalOperator(*meshContainer,thermalProps,*dc);
+
+		// Do the time integration. Get solver properties first.
+		auto & solverProps = propertyParser.getPropertyBlock("solver");
+		TimeIntegrator integrator(thermalOperator,solverProps,*dc);
+		integrator.integrate();
+	}
+
+};
 
 /**
  * Main program
@@ -118,24 +102,18 @@ int main(int argc, char * argv[]) {
 	const char *input_file = "input.ini";
 
 	// Create the default command line arguments
-	OptionsParser args(argc, argv);
+	mfem::OptionsParser args(argc, argv);
 	args.AddOption(&input_file, "-i", "--input", "Input file to use.");
 
 	// Load the input file
-	INIPropertyParser propertyParser;
-	propertyParser = build<INIPropertyParser, const string &>(
+	auto propertyParser = build<INIPropertyParser, const string &>(
 			string(input_file));
 
-	// Create the space factory
-	H1FESpaceFactory spaceFactory = createSpaceFactory();
-	// Load the mesh
-	auto meshContainer = loadMesh(propertyParser, spaceFactory);
-
-	// Load the data container
-	auto dc = setupDataCollection(meshContainer);
+	// Create the MFEM problem manager
+	MFEMManager manager(propertyParser,argc,argv);
 
 	// Do the thermal solve
-	solve(meshContainer,propertyParser,dc);
+	manager.solve();
 
 	return EXIT_SUCCESS;
 }
