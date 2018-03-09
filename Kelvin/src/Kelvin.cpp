@@ -92,8 +92,20 @@ public:
 
 class MFEMSolver {
 public:
-	void solve() {
+	void solve(MFEMData & data) {
+		// Get the heat transfer coefficient for the material. Assumed to be
+		// constant and provided as a property at the moment.
+		auto & thermalProps = data.properties().getPropertyBlock("thermal");
 
+	    // Create the thermal solver
+		ThermalOperator thermalOperator(data.meshContainer(),thermalProps,
+				data.collection());
+
+		// Do the time integration. Get solver properties first.
+		auto & solverProps = data.properties().getPropertyBlock("solver");
+		TimeIntegrator integrator(thermalOperator,solverProps,
+				data.collection());
+		integrator.integrate();
 	}
 };
 
@@ -122,19 +134,8 @@ public:
 	 * Run the thermal solve.
 	 */
 	void solve() {
-		// Get the heat transfer coefficient for the material. Assumed to be
-		// constant and provided as a property at the moment.
-		auto & thermalProps = data.properties().getPropertyBlock("thermal");
-
-	    // Create the thermal solver
-		ThermalOperator thermalOperator(data.meshContainer(),thermalProps,
-				data.collection());
-
-		// Do the time integration. Get solver properties first.
-		auto & solverProps = data.properties().getPropertyBlock("solver");
-		TimeIntegrator integrator(thermalOperator,solverProps,
-				data.collection());
-		integrator.integrate();
+		// Delegate the solve
+		solver.solve(data);
 	}
 
 };
