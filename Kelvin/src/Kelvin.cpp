@@ -47,11 +47,10 @@ using namespace mfem;
 using namespace fire;
 using namespace Kelvin;
 
-class MFEMManager {
-
+class MFEMData {
 	fire::INIPropertyParser propertyParser;
 
-	std::unique_ptr<MeshContainer> meshContainer;
+	std::unique_ptr<MeshContainer> mc;
 
 	H1FESpaceFactory spaceFactory;
 
@@ -59,15 +58,63 @@ class MFEMManager {
 
 public:
 
-	MFEMManager(INIPropertyParser & parser, int argc, char * argv[]) :
-		propertyParser(parser) {
+	MFEMData() {
 
-		meshContainer = make_unique<MeshContainer>(
+	}
+
+	void load(const std::string & inputFile) {
+		// Load the input file
+		propertyParser = build<INIPropertyParser, const string &>(
+				inputFile);
+
+		// Load the mesh
+		mc = make_unique<MeshContainer>(
 				propertyParser.getPropertyBlock("mesh"),spaceFactory);
 
 		// Load the data container
-		dc = make_unique<VisItDataCollection>(meshContainer->name().c_str(),
-				&meshContainer->getMesh());
+		dc = make_unique<VisItDataCollection>(mc->name().c_str(),
+				&mc->getMesh());
+	}
+
+	fire::INIPropertyParser & properties() {
+		return propertyParser;
+	}
+
+	MeshContainer & meshContainer() {
+		return *mc;
+	}
+
+	mfem::DataCollection & collection() {
+		return *dc;
+	}
+
+};
+
+class MFEMSolver {
+public:
+	void solve() {
+
+	}
+};
+
+class MFEMManager {
+
+	MFEMData data;
+	MFEMSolver solver;
+
+
+
+public:
+
+	MFEMManager(const string & inputFile, const int argc, char * argv[]) {
+
+		// Create the default command line arguments
+		mfem::OptionsParser args(argc, argv);
+		const char * inputFilePtr = inputFile.c_str();
+		args.AddOption(&inputFilePtr, "-i", "--input", "Input file to use.");
+
+		// Load the data -- FIXME! - This should pull the actual value from args.
+		data.load(inputFile);
 
 	}
 
@@ -77,14 +124,16 @@ public:
 	void solve() {
 		// Get the heat transfer coefficient for the material. Assumed to be
 		// constant and provided as a property at the moment.
-		auto & thermalProps = propertyParser.getPropertyBlock("thermal");
+		auto & thermalProps = data.properties().getPropertyBlock("thermal");
 
 	    // Create the thermal solver
-		ThermalOperator thermalOperator(*meshContainer,thermalProps,*dc);
+		ThermalOperator thermalOperator(data.meshContainer(),thermalProps,
+				data.collection());
 
 		// Do the time integration. Get solver properties first.
-		auto & solverProps = propertyParser.getPropertyBlock("solver");
-		TimeIntegrator integrator(thermalOperator,solverProps,*dc);
+		auto & solverProps = data.properties().getPropertyBlock("solver");
+		TimeIntegrator integrator(thermalOperator,solverProps,
+				data.collection());
 		integrator.integrate();
 	}
 
@@ -99,18 +148,10 @@ public:
 int main(int argc, char * argv[]) {
 
 	// Input file name - default is input.ini in the present directory.
-	const char *input_file = "input.ini";
-
-	// Create the default command line arguments
-	mfem::OptionsParser args(argc, argv);
-	args.AddOption(&input_file, "-i", "--input", "Input file to use.");
-
-	// Load the input file
-	auto propertyParser = build<INIPropertyParser, const string &>(
-			string(input_file));
+	string inputFile("input.ini");
 
 	// Create the MFEM problem manager
-	MFEMManager manager(propertyParser,argc,argv);
+	MFEMManager manager(inputFile,argc,argv);
 
 	// Do the thermal solve
 	manager.solve();
