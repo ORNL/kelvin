@@ -29,31 +29,39 @@
 
  Author(s): Jay Jay Billings (jayjaybillings <at> gmail <dot> com)
  -----------------------------------------------------------------------------*/
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
 #include <MFEMManager.h>
+#include <mfem.hpp>
 
+using namespace mfem;
+using namespace fire;
 using namespace std;
-using namespace Kelvin;
 
-/**
- * Main program
- * @param argc the number of input arguments
- * @param argv the input arguments array of argc elements
- * @return EXIT_SUCCESS if successful, otherwise another value.
- */
-int main(int argc, char * argv[]) {
+namespace Kelvin {
 
-	// Input file name - default is input.ini in the present directory.
-	string inputFile("input.ini");
+MFEMManager::MFEMManager() {
+	// TODO Auto-generated constructor stub
 
-	// Create the MFEM problem manager
-	MFEMManager manager;
-	manager.setup(inputFile,argc,argv);
-
-	// Do the thermal solve
-	manager.solve();
-
-	return EXIT_SUCCESS;
 }
+
+MFEMManager::~MFEMManager() {
+	// TODO Auto-generated destructor stub
+}
+
+void MFEMManager::setup(const string & inputFile, const int argc, char * argv[]) {
+
+	// Create the default command line arguments
+	mfem::OptionsParser args(argc, argv);
+	const char * inputFilePtr = inputFile.c_str();
+	args.AddOption(&inputFilePtr, "-i", "--input", "Input file to use.");
+
+	// Load the data -- FIXME! - This should pull the actual value from args.
+	data.load(inputFile);
+
+}
+
+void MFEMManager::solve() {
+	// Delegate the solve
+	solver.solve(data);
+}
+
+} /* namespace Kelvin */

@@ -29,31 +29,54 @@
 
  Author(s): Jay Jay Billings (jayjaybillings <at> gmail <dot> com)
  -----------------------------------------------------------------------------*/
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include <MFEMManager.h>
+#ifndef SRC_MFEMMANAGER_H_
+#define SRC_MFEMMANAGER_H_
 
-using namespace std;
-using namespace Kelvin;
+#include <MFEMData.h>
+#include <MFEMSolver.h>
+
+namespace Kelvin {
 
 /**
- * Main program
- * @param argc the number of input arguments
- * @param argv the input arguments array of argc elements
- * @return EXIT_SUCCESS if successful, otherwise another value.
+ * This class is a simple manager that provides functions to initialize and
+ * solve problems using MFEM.
  */
-int main(int argc, char * argv[]) {
+class MFEMManager {
 
-	// Input file name - default is input.ini in the present directory.
-	string inputFile("input.ini");
+	/**
+	 * The data used in the problem solved by MFEM.
+	 */
+	MFEMData data;
 
-	// Create the MFEM problem manager
-	MFEMManager manager;
-	manager.setup(inputFile,argc,argv);
+	/**
+	 * The solver used with MFEM to compute the solution.
+	 */
+	MFEMSolver solver;
 
-	// Do the thermal solve
-	manager.solve();
+public:
 
-	return EXIT_SUCCESS;
-}
+	/**
+	 * Constructor
+	 */
+	MFEMManager();
+
+	/**
+	 * Destructor
+	 */
+	virtual ~MFEMManager();
+
+	/**
+	 * This operation sets up the MFEM problem in the manager by configuring
+	 * input options and data.
+	 */
+	void setup(const std::string & inputFile, const int argc, char * argv[]);
+
+	/**
+	 * Run the solve. This will delegate to the pre-configured solver.
+	 */
+	void solve();
+};
+
+} /* namespace Kelvin */
+
+#endif /* SRC_MFEMMANAGER_H_ */

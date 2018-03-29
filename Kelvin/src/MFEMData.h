@@ -29,31 +29,85 @@
 
  Author(s): Jay Jay Billings (jayjaybillings <at> gmail <dot> com)
  -----------------------------------------------------------------------------*/
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include <MFEMManager.h>
+#ifndef SRC_MFEMDATA_H_
+#define SRC_MFEMDATA_H_
 
-using namespace std;
-using namespace Kelvin;
+#include <INIPropertyParser.h>
+#include <mfem.hpp>
+#include <memory>
+#include <IFESpaceFactory.h>
+#include <H1FESpaceFactory.h>
+#include <MeshContainer.h>
+
+namespace Kelvin {
 
 /**
- * Main program
- * @param argc the number of input arguments
- * @param argv the input arguments array of argc elements
- * @return EXIT_SUCCESS if successful, otherwise another value.
+ * This is a simple data holder that collects all of the data used by MFEM and
+ * the problem under consideration.
  */
-int main(int argc, char * argv[]) {
+class MFEMData {
 
-	// Input file name - default is input.ini in the present directory.
-	string inputFile("input.ini");
+	/**
+	 * Parser for INI properties.
+	 */
+	fire::INIPropertyParser propertyParser;
 
-	// Create the MFEM problem manager
-	MFEMManager manager;
-	manager.setup(inputFile,argc,argv);
+	/**
+	 * The mesh container that holds the mesh and finite element space.
+	 */
+	std::unique_ptr<MeshContainer> mc;
 
-	// Do the thermal solve
-	manager.solve();
+	/**
+	 * The space factory that generates the finite element space.
+	 */
+	H1FESpaceFactory spaceFactory;
 
-	return EXIT_SUCCESS;
-}
+	/**
+	 * The data collection that holds the final output.
+	 */
+	std::unique_ptr<mfem::DataCollection> dc;
+
+public:
+
+	/**
+	 * Constructor
+	 */
+	MFEMData();
+
+	/**
+	 * Destructor
+	 */
+	virtual ~MFEMData();
+
+	/**
+	 * This operation loads the data based on the input file and its contents.
+	 * @param inputFile the input file that points to other data and provides
+	 * initil values.
+	 */
+	void load(const std::string & inputFile);
+
+	/**
+	 * This operation returns a reference to the INI property parser to load
+	 * properties.
+	 * @return the INI property parser
+	 */
+	fire::INIPropertyParser & properties();
+
+	/**
+	 * This operation returns the mesh container loaded in load().
+	 * @return the mesh container
+	 */
+	MeshContainer & meshContainer();
+
+	/**
+	 * This operation returns the output data collection associated with this
+	 * data set.
+	 * @return the data collection
+	 */
+	mfem::DataCollection & collection();
+
+};
+
+} /* namespace Kelvin */
+
+#endif /* SRC_MFEMDATA_H_ */

@@ -29,31 +29,45 @@
 
  Author(s): Jay Jay Billings (jayjaybillings <at> gmail <dot> com)
  -----------------------------------------------------------------------------*/
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include <MFEMManager.h>
+#ifndef SRC_MFEMSOLVER_H_
+#define SRC_MFEMSOLVER_H_
 
-using namespace std;
-using namespace Kelvin;
+#include <MFEMData.h>
+#include <INIPropertyParser.h>
+#include <mfem.hpp>
+#include <memory>
+#include <IFESpaceFactory.h>
+#include <H1FESpaceFactory.h>
+#include <MeshContainer.h>
+#include <ThermalOperator.h>
+#include <TimeIntegrator.h>
 
 /**
- * Main program
- * @param argc the number of input arguments
- * @param argv the input arguments array of argc elements
- * @return EXIT_SUCCESS if successful, otherwise another value.
+ * This class is a simple solver delegate for MFEM problems. In this case, it
+ * is a simple thermal solver delegate.
  */
-int main(int argc, char * argv[]) {
+namespace Kelvin {
 
-	// Input file name - default is input.ini in the present directory.
-	string inputFile("input.ini");
+class MFEMSolver {
+public:
 
-	// Create the MFEM problem manager
-	MFEMManager manager;
-	manager.setup(inputFile,argc,argv);
+	/**
+	 * Constructor
+	 */
+	MFEMSolver();
 
-	// Do the thermal solve
-	manager.solve();
+	/**
+	 * Destructor
+	 */
+	virtual ~MFEMSolver();
 
-	return EXIT_SUCCESS;
-}
+	/**
+	 * This operation performs the solve.
+	 * @param data all the input and output data structures for the problem
+	 */
+	void solve(MFEMData & data);
+};
+
+} /* namespace Kelvin */
+
+#endif /* SRC_MFEMSOLVER_H_ */

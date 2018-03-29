@@ -31,12 +31,14 @@
 # Author(s): Jay Jay Billings (jayjaybillings <at> gmail <dot> com)
 #-------------------------------------------------------------------------------
 
-FIREDIR = /home/bkj/fire/install
+FIREDIR = /home/bkj/fire/refactor/parsers-install
 MFEMDIR = /home/bkj/programs/mfem-dev-20171119/debug-build
 
-CXXFLAGS = -O2 -I. -I$(MFEMDIR) -I$(FIREDIR)/include -g -Wall -fmessage-length=0
+CXXFLAGS = -I. -I$(MFEMDIR) -I$(FIREDIR)/include -g -Wall -fmessage-length=0
 
-OBJS = TimeIntegrator.o ThermalOperator.o DirichletBoundaryCondition.o MeshContainer.o H1FESpaceFactory.o Kelvin.o 
+OBJS = TimeIntegrator.o ThermalOperator.o DirichletBoundaryCondition.o \
+	MeshContainer.o H1FESpaceFactory.o MFEMData.o MFEMSolver.o MFEMManager.o \
+	Kelvin.o
 
 LIBS = -L$(MFEMDIR) -lmfem
 

@@ -29,31 +29,47 @@
 
  Author(s): Jay Jay Billings (jayjaybillings <at> gmail <dot> com)
  -----------------------------------------------------------------------------*/
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include <MFEMManager.h>
+#include <MFEMData.h>
 
+using namespace mfem;
+using namespace fire;
 using namespace std;
-using namespace Kelvin;
 
-/**
- * Main program
- * @param argc the number of input arguments
- * @param argv the input arguments array of argc elements
- * @return EXIT_SUCCESS if successful, otherwise another value.
- */
-int main(int argc, char * argv[]) {
+namespace Kelvin {
 
-	// Input file name - default is input.ini in the present directory.
-	string inputFile("input.ini");
+MFEMData::MFEMData() {
+	// TODO Auto-generated constructor stub
 
-	// Create the MFEM problem manager
-	MFEMManager manager;
-	manager.setup(inputFile,argc,argv);
-
-	// Do the thermal solve
-	manager.solve();
-
-	return EXIT_SUCCESS;
 }
+
+MFEMData::~MFEMData() {
+	// TODO Auto-generated destructor stub
+}
+
+void MFEMData::load(const std::string & inputFile) {
+	// Load the input file
+	propertyParser.setSource(inputFile);
+    propertyParser.parse();
+
+	// Load the mesh
+	mc = make_unique<MeshContainer>(
+			propertyParser.getPropertyBlock("mesh"),spaceFactory);
+
+	// Load the data container
+	dc = make_unique<VisItDataCollection>(mc->name().c_str(),
+			&mc->getMesh());
+}
+
+fire::INIPropertyParser & MFEMData::properties() {
+	return propertyParser;
+}
+
+MeshContainer & MFEMData::meshContainer() {
+	return *mc;
+}
+
+mfem::DataCollection & MFEMData::collection() {
+	return *dc;
+}
+
+} /* namespace Kelvin */
