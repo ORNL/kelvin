@@ -33,7 +33,6 @@
 #define SRC_MFEMSOLVER_H_
 
 #include <MFEMData.h>
-#include <INIPropertyParser.h>
 #include <mfem.hpp>
 #include <memory>
 #include <IFESpaceFactory.h>
