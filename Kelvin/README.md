@@ -14,10 +14,25 @@ Fire can be built with all standard options. The "make install" step in Fire's b
 Build
 ==
 
-Modify the Makefile to point to the proper MFEM and Fire directories. Then simply type "make" at the prompt:
+Kelvin uses CMake to compiles and build the source code into a library and executables. The entire project can be configured and build with a few easy steps, starting from the source directory:
 
 ```bash
+$ mkdir build/
+$ cd build/
+$ cmake ../ -DPARSERS_DIR=$PARSERS_ROOT_DIR -DMFEM_DIR=$MFEM_ROOT_DIR
 $ make
+```
+
+Where $PARSERS_ROOT_DIR and $MFEM_ROOT_DIR are the locations of the Parsers and MFEM installation directories. Both directories are the installation directories, not the build or source directories. The following is an example for a user name bob:
+
+```bash
+$ cmake ../ -DPARSERS_DIR=/home/bob/parsers-install -DMFEM_DIR=/home/bob/mfem-install
+```
+
+For developers who are working with Eclipse, CMake will auto-generate the Eclipse project files with the following configuration options and setup a debug build with the following configuration:
+
+```bash
+$ cmake ../ -DCMAKE_BUILD_TYPE=Debug -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_ECLIPSE_VERSION=4.5 -DPARSERS_DIR=/home/bob/parsers-install -DMFEM_DIR=/home/bob/mfem-install 
 ```
 
 Input

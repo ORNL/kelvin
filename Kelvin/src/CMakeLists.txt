@@ -33,7 +33,7 @@
 #----------------------------------------------------------------------------*/
 
 #Set the package name
-SET(PACKAGE_NAME "Kelvin")
+SET(PACKAGE_NAME "KELVIN")
 #Set the description
 SET(PACKAGE_DESCRIPTION "Kelvin Library")
 #Set the library name
@@ -48,8 +48,14 @@ if (PARSERS_DIR AND MFEM_DIR)
    #Be nice
    message(STATUS "Parsers and MFEM root directories set. Attempting to link.")
    
-   #Link to mfem
-   find_package(MFEM CONFIG HINTS MFEM_DIR)
+   #Link to mfem. Note that the value of MFEM_DIR will be overwritten by 
+   #find_package!
+   find_package(MFEM CONFIG HINTS ${MFEM_DIR}/lib/cmake/mfem)
+
+   # Add the variables to the global property list
+   set(${PACKAGE_NAME}_LIBRARY_DIRS ${MFEM_LIBRARY_DIR} CACHE INTERNAL "${PACKAGE_NAME}_LIBRARY_DIRS")
+   set(${PACKAGE_NAME}_LIBRARIES ${MFEM_LIBRARY_DIR}/lib${MFEM_LIBRARIES}.a ${LIBRARY_NAME} CACHE INTERNAL "${PACKAGE_NAME}_LIBRARIES")
+   set(${PACKAGE_NAME}_INCLUDE_DIRS ${PARSERS_DIR}/include/ ${MFEM_INCLUDE_DIRS} CACHE INTERNAL "${PACKAGE_NAME}_INCLUDE_DIRS")
 
    #Collect all header filenames in this project 
    #and glob them in HEADERS
@@ -61,11 +67,9 @@ if (PARSERS_DIR AND MFEM_DIR)
    #Add the source code to the library
    add_library(${LIBRARY_NAME} STATIC ${SRC})
    #Link to parsers
+   find_library(MFEM_LIBRARY NAMES libmfem.a mfem HINTS ${MFEM_LIBRARY_DIR})
+   target_link_libraries(${LIBRARY_NAME} ${MFEM_LIBRARY})
    target_include_directories(${LIBRARY_NAME} PUBLIC ${PARSERS_DIR}/include/ ${MFEM_INCLUDE_DIRS})
-   
-   #Add the executable for straight Kelvin
-   add_executable(${PROJECT_NAME}-exec Kelvin.cpp)
-   target_link_libraries(${PROJECT_NAME}-exec ${LIBRARY_NAME} ${MFEM_LIBRARIES})
     
    #Get the test files
    file(GLOB test_files tests/*Test.cpp)
