@@ -2,7 +2,7 @@
 # Copyright  2016-, UT-Battelle LLC
 # All rights reserved.
 #
-# Author Contact: Jay Jay Billings, jayjaybillings <at> gmail <dot> com
+# Author Contact: Jay Jay Billings, billingsjj <at> ornl <dot> gov
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
