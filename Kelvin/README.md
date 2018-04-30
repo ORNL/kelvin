@@ -1,10 +1,10 @@
-HOWTO Work with Furnace
+HOWTO Work with Kelvin
 =
 
 Prerequisites
 ==
 
-Kelvin requires ORNL's Fire utility library which you can download as source from https://github.com/jayjaybillings/fire. Kelvin also requires the Modified Finite Element Method (MFEM) library, which you can download and build from http://mfem.org.
+Kelvin requires ORNL's Parsers utility library which you can download as source from https://github.com/jayjaybillings/parsers. Kelvin also requires the Modified Finite Element Method (MFEM) library, which you can download and build from http://mfem.org.
 
 Fire
 ===
@@ -33,6 +33,32 @@ For developers who are working with Eclipse, CMake will auto-generate the Eclips
 
 ```bash
 $ cmake ../ -DCMAKE_BUILD_TYPE=Debug -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_ECLIPSE_VERSION=4.5 -DPARSERS_DIR=/home/bob/parsers-install -DMFEM_DIR=/home/bob/mfem-install 
+```
+
+Build flags, such as -Wall, can be set by prepending the CXX_FLAGS variable to 
+the cmake command as such
+
+```bash
+CXX_FLAGS='-Wall' cmake ../fire -DCMAKE_BUILD_TYPE=Debug -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_ECLIPSE_VERSION=4.5
+```
+
+Optimization flags should be handled by setting -DCMAKE_BUILD_TYPE=Release 
+instead of Debug. Likewise, an optimized build with debug information can be 
+acheived by setting -DCMAKE_BUILD_TYPE=RelWithDebugInfo.
+
+Testing
+===
+
+Unit tests can be executed after the build by executing
+
+```bash
+$ make test
+```
+
+Individual tests can be executed in the directories in which they were built. Debug text can be printed by modifying the command line:
+
+```bash
+$ BOOST_TEST_LOG_LEVEL=all ./test-to-run
 ```
 
 Input

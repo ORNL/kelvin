@@ -37,14 +37,9 @@ using namespace std;
 
 namespace Kelvin {
 
-MFEMData::MFEMData() {
-	// TODO Auto-generated constructor stub
+MFEMData::MFEMData() {}
 
-}
-
-MFEMData::~MFEMData() {
-	// TODO Auto-generated destructor stub
-}
+MFEMData::~MFEMData() {}
 
 void MFEMData::load(const std::string & inputFile) {
 	// Load the input file

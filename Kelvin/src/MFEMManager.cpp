@@ -38,14 +38,9 @@ using namespace std;
 
 namespace Kelvin {
 
-MFEMManager::MFEMManager() {
-	// TODO Auto-generated constructor stub
+MFEMManager::MFEMManager() {}
 
-}
-
-MFEMManager::~MFEMManager() {
-	// TODO Auto-generated destructor stub
-}
+MFEMManager::~MFEMManager() {}
 
 void MFEMManager::setup(const string & inputFile, const int argc, char * argv[]) {
 

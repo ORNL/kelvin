@@ -73,14 +73,17 @@ if (PARSERS_DIR AND MFEM_DIR)
     
    #Get the test files
    file(GLOB test_files tests/*Test.cpp)
-   #Add the tests
    
-      #FIXME! ADD INCLUDE DIRECTORIES then pass to test
-   
+   #Add the tests   
    set(all_includes_dirs ${CMAKE_CURRENT_SOURCE_DIR} ${PARSERS_DIR}/include ${MFEM_INCLUDE_DIRS})
- #  add_tests("${test_files}" "${all_includes_dirs}" "${MFEM_LIBRARIES}")   
+   message(STATUS "dirs = ${all_includes_dirs}")
+   add_tests("${test_files}" "${all_includes_dirs}" "${${PACKAGE_NAME}_LIBRARIES}")
+   # Copy the mesh file for the tests - 2Squares.mesh from the examples.
+   configure_file(${CMAKE_SOURCE_DIR}/data/2Squares/2Squares.mesh 2Squares.mesh COPYONLY)
+   # Copy the parameter file for the tests - input.ini from the same.
+   configure_file(${CMAKE_SOURCE_DIR}/data/2Squares/input.ini 2SquaresInput.ini COPYONLY)
 
-   #Install the Fire header files   
+   #Install the Kelvin header files   
    install(FILES ${HEADERS} DESTINATION include)
 
 else ()
