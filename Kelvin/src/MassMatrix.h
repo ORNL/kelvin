@@ -15,7 +15,10 @@ namespace Kelvin {
  * computational grid. A mass matrix element m_{ij} represents the mass shared
  * between nodes i and j.
  *
- * The mass can be retrieved as elements m_{ij} or as a
+ * The mass can be retrieved as matrix elements m_{ij} or as a list of diagonal
+ * entries on mass-lumped diagonalized matrix, m_{D,ij}. For descriptions of
+ * both see Sulsky's 1994 paper "A particle method for history-dependent
+ * materials."
  */
 class MassMatrix {
 public:

@@ -30,15 +30,17 @@
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Parsers
+#define BOOST_TEST_MODULE Kelvin
 
 #include <boost/test/included/unit_test.hpp>
 #include <MeshContainer.h>
 #include <mfem.hpp>
 #include <vector>
+#include <limits>
 #include <INIPropertyParser.h>
 #include <IFESpaceFactory.h>
 #include <H1FESpaceFactory.h>
+#include <memory>
 
 using namespace std;
 using namespace mfem;
@@ -48,6 +50,28 @@ using namespace fire;
 // Test file names
 static std::string meshFileName = "2Squares.mesh";
 static std::string inputFile = "2SquaresInput.ini";
+
+/* This simple mesh looks like the following:
+ *
+ * d ---- e ---- f
+ * |	  |		 |
+ * |	  |		 |
+ * a ---- b ---- c
+ *
+ * with nodal coordinates in real space
+ * a = 0,0
+ * b = 1,0
+ * c = 2,0
+ * d = 0,1
+ * e = 1,1
+ * f = 2,1
+ *
+ * The following test points are used in the tests below and
+ * the value of the shape function for each node is checked.
+ * g = 1/2,1/2
+ * h = 3/2,1/2
+ *
+ */
 
 /**
  * This operation checks the basic construction of the mesh container.
@@ -97,7 +121,65 @@ BOOST_AUTO_TEST_CASE(checkMesh) {
     BOOST_REQUIRE_EQUAL(2,mesh.Dimension());
     BOOST_REQUIRE_EQUAL(1,mesh.GetElementTransformation(0)->Order());
 
+    // Check the surrounding ids for a point in the second element
+    std::vector<double> point = {1.5,0.5};
+    auto nodeIds = mc.getSurroundingNodeIds(point);
+    // There should be four nodes
+    BOOST_REQUIRE_EQUAL(4,nodeIds.size());
+    // And the ids should match those of the second element
+    BOOST_REQUIRE_EQUAL(1,nodeIds[0]);
+    BOOST_REQUIRE_EQUAL(2,nodeIds[1]);
+    BOOST_REQUIRE_EQUAL(5,nodeIds[2]);
+    BOOST_REQUIRE_EQUAL(4,nodeIds[3]);
+
+    // Get and check the quadrature points of the elements.
+    cout << "----- Checking quadrature points -----" << endl;
+    auto points = mc.getQuadraturePoints();
+    // There should be two points for this mesh - one quadrature point per
+    // element.
+    BOOST_REQUIRE_EQUAL(2,points.size());
+    // Check the first point
+    auto & firstPoint = points[0];
+    BOOST_REQUIRE_CLOSE(0.5,firstPoint.coords[0],1.0e-15);
+    BOOST_REQUIRE_CLOSE(0.5,firstPoint.coords[1],1.0e-15);
+    // Should be zero, but the only good way to check it is to make sure that
+    // it is very small since mfem returns ~6.9e-310.
+    BOOST_REQUIRE(firstPoint.coords[2] < std::numeric_limits<double>::min());
+    // Check the second point
+    auto & secondPoint = points[1];
+    BOOST_REQUIRE_CLOSE(1.5,secondPoint.coords[0],1.0e-15);
+    BOOST_REQUIRE_CLOSE(0.5,secondPoint.coords[1],1.0e-15);
+    BOOST_REQUIRE(secondPoint.coords[2] < std::numeric_limits<double>::min());
+
+    cout << "--------------------------------------" << endl;
+
+//    	std::cout << "Element " << i << ":"<< std::endl;
+//    			std::cout << "Local | Global" << endl;
+//    			std::cout << intPoint.x << " " << intPoint.y << " " << intPoint.z << " | ";
+//    			std::cout << vPoint(0) << " " << vPoint(1) << " " << vPoint(2) << std::endl;
+
+   cout << "End checkMesh" << endl;
+
 	return;
+
+}
+
+/**
+ * This operation checks the mesh container to make sure that it can properly
+ * pull the quadrature points off the mesh.
+ */
+BOOST_AUTO_TEST_CASE(checkQuadraturePoints) {
+
+	// Create the space factory
+	H1FESpaceFactory spaceFactory;
+
+	// Load the input file
+	INIPropertyParser propertyParser;
+	propertyParser.setSource(inputFile);
+    propertyParser.parse();
+
+	// Load the mesh
+    MeshContainer mc(propertyParser.getPropertyBlock("mesh"),spaceFactory);
 
 }
 
@@ -117,28 +199,6 @@ BOOST_AUTO_TEST_CASE(checkShape) {
 
 	// Load the mesh
     MeshContainer mc(propertyParser.getPropertyBlock("mesh"),spaceFactory);
-
-    /* This simple mesh looks like the following:
-     *
-     * d ---- e ---- f
-     * |	  |		 |
-     * |	  |		 |
-     * a ---- b ---- c
-     *
-     * with nodal coordinates in real space
-     * a = 0,0
-     * b = 1,0
-     * c = 2,0
-     * d = 0,1
-     * e = 1,1
-     * f = 2,1
-     *
-     * The following test points are used in the tests below and
-     * the value of the shape function for each node is checked.
-     * g = 1/2,1/2
-     * h = 3/2,1/2
-     *
-     */
 
     // This mesh has two elements, so grab the transformations for both from the
     // mesh.
@@ -179,23 +239,49 @@ BOOST_AUTO_TEST_CASE(checkShape) {
     // Find the points in the mesh
     mesh.FindPoints(points,elementIds,intPoints);
 
-    // Print for debuggin
-    points.Print();
+    // Print for debugging
     auto & intPt1 = intPoints[0];
     auto & intPt2 = intPoints[1];
+    BOOST_TEST_MESSAGE("----- Test Points -----");
+    points.Print();
     BOOST_TEST_MESSAGE("intPt1 in e1 = (" << intPt1.x << ", " << intPt1.y << ")");
     BOOST_TEST_MESSAGE("intPt2 in e2 = (" << intPt2.x << ", " << intPt2.y << ")");
+    BOOST_TEST_MESSAGE("-----------------------");
 
     // Calculate the shape on the finite element
-    mfem::Vector shape(e1->GetDof());
-    e1->CalcShape(intPt1,shape);
-    shape.Print();
-    e2->CalcShape(intPt2,shape);
-    shape.Print();
+    mfem::Vector shape1(e1->GetDof());
+    e1->CalcShape(intPt1,shape1);
+    BOOST_TEST_MESSAGE("----- Reference Shape Values -----");
+    shape1.Print();
+    mfem::Vector shape2(e2->GetDof());
+    e2->CalcShape(intPt2,shape2);
+    shape2.Print();
+    BOOST_TEST_MESSAGE("----------------------------------");
 
-    // So what do I want the API to look like?
+    /**
+     * Now get the shapes through the MeshContainer API and compare them.
+     */
 
-    // I should drive down from the MassMatrix class.
+    // Create a vector for each point
+    vector<double> pt1Vec = {points(0,0),points(1,0)};
+    vector<double> pt2Vec = {points(0,1),points(1,1)};
+    // Get the shapes through the mesh container API
+    auto pt1Shape = mc.getNodalShapes(pt1Vec);
+    auto pt2Shape = mc.getNodalShapes(pt2Vec);
+
+    // Check the shapes - first, they should be the same size as each other
+    BOOST_REQUIRE_EQUAL(pt1Shape.size(),pt2Shape.size());
+    // They should be the same size as MFEM's vectors.
+    BOOST_REQUIRE_EQUAL(pt1Shape.size(),shape1.Size());
+    BOOST_REQUIRE_EQUAL(pt2Shape.size(),shape2.Size());
+    // The values should match. e1...
+    for (int i = 0; i < pt1Shape.size(); i++) {
+    	BOOST_REQUIRE_CLOSE(pt1Shape[i],shape1[i],1.0e-15);
+    }
+    // e2
+    for (int i = 0; i < pt2Shape.size(); i++) {
+       	BOOST_REQUIRE_CLOSE(pt2Shape[i],shape2[i],1.0e-15);
+    }
 
 	return;
 

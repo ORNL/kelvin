@@ -1,5 +1,5 @@
 /**----------------------------------------------------------------------------
- Copyright (c) 2015-, UT-Battelle, LLC
+ Copyright (c) 2017-, UT-Battelle, LLC
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -81,9 +81,111 @@ void MeshContainer::setDirichletBoundaryCondition(int meshSide, double value) {
 	dbConditions.emplace_back(mesh,space,meshSide,value);
 }
 
-std::vector<DirichletBoundaryCondition> & MeshContainer::getDirichletBoundaryConditions() {
+std::vector<DirichletBoundaryCondition> &
+MeshContainer::getDirichletBoundaryConditions() {
 	return dbConditions;
 }
 
+inline mfem::DenseMatrix MeshContainer::convertPointToMatrix(const std::vector<double> & point) {
+
+	// Pack the point
+	mfem::DenseMatrix pointMatrix(point.size(),1);
+	for (int i = 0; i < point.size(); i++) {
+		pointMatrix(i,0) = point[i];
+	}
+
+	return pointMatrix;
+}
+
+std::vector<int> MeshContainer::getSurroundingNodeIds(
+		const std::vector<double> & point) {
+	std::vector<int> ids;
+
+	// Find the element that contains the point
+	mfem::Array<int> elementId(1);
+	mfem::Array<mfem::IntegrationPoint> intPoint(1);
+	auto pointMatrix = convertPointToMatrix(point);
+    mesh.FindPoints(pointMatrix,elementId,intPoint);
+
+    // Only proceed if an element containing the point was found
+    if (elementId[0] > -1) {
+    	// Get the element
+        auto * element = mesh.GetElement(elementId[0]);
+    	// Get the vertex ids
+        auto numVertices = element->GetNVertices();
+        auto * vertexIds = element->GetVertices();
+    	// Repack the ids
+        for (int i = 0; i < numVertices; i++) {
+        	ids.push_back(vertexIds[i]);
+        }
+    }
+
+	return ids;
+}
+
+std::vector<double> MeshContainer::getNodalShapes(const std::vector<double> & point) {
+	std::vector<double> shapes;
+
+	// Find the element that contains the point
+	mfem::Array<int> elementId(1);
+	mfem::Array<mfem::IntegrationPoint> intPoint(1);
+	auto pointMatrix = convertPointToMatrix(point);
+    mesh.FindPoints(pointMatrix,elementId,intPoint);
+
+	// Only proceed if the element was found.
+    if (elementId[0] > -1) {
+
+    	// Get the element transform, type and the finite element itself.
+    	auto * elemTransform = mesh.GetElementTransformation(0);
+    	auto type = elemTransform->GetGeometryType();
+    	auto * feCollection = space.FEColl();
+    	auto * fElement= feCollection->FiniteElementForGeometry(type);
+
+    	// Compute the shape
+    	int numShapes = fElement->GetDof();
+    	mfem::Vector shape(numShapes);
+    	fElement->CalcShape(intPoint[0],shape);
+
+    	// Repack the shapes to return them
+    	for (int i = 0; i < numShapes; i++) {
+    		shapes.push_back(shape[i]);
+    	}
+    }
+
+	return shapes;
+}
+
+std::vector<Point> MeshContainer::getQuadraturePoints() {
+	std::vector<Point> points;
+
+	// Get the number of elements and pull the quadrature points for each.
+	int numElements = space.GetNE();
+	for (int i = 0; i < numElements; i++) {
+		// Get the element
+		auto * element = space.GetFE(i);
+		// Get the coordinate transformation for local->global
+		auto * transform = space.GetElementTransformation(i);
+		Vector vPoint;
+		// Get the quadrature rue
+		auto & intRule = IntRules.Get(element->GetGeomType(),_order);
+		// Loop over all the quadrature points in the element, transform them,
+		// and put them into the list.
+		int numIntPoints = intRule.GetNPoints();
+		for (int j = 0; j < numIntPoints; j++) {
+			// Get the quadrature point
+			auto & intPoint = intRule.IntPoint(j);
+			// Transform it to global coordinates
+			transform->Transform(intPoint,vPoint);
+			// Load the point
+			Point point;
+			point.coords[0] = vPoint(0);
+			point.coords[1] = vPoint(1);
+			point.coords[2] = vPoint(2);
+			points.push_back(point);
+		}
+	}
+
+	return points;
+}
 
 } /* namespace Kelvin */

@@ -29,34 +29,23 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#include "MassMatrix.h"
+#include <Point.h>
 
 namespace Kelvin {
 
-MassMatrix::MassMatrix() {
-	// TODO Auto-generated constructor stub
-
+Point::Point(int dim) {
+	nDim = dim;
+	coords = std::make_unique<double[]>(nDim);
 }
 
-MassMatrix::~MassMatrix() {
-	// TODO Auto-generated destructor stub
+Point::Point(const Point & otherPoint) : Point(otherPoint.nDim) {
+	for (int i = 0; i < nDim; i++) {
+		coords[i] = otherPoint.coords[i];
+	}
 }
 
-/**
- * 1) Get the list of element-particle pairs
- * 2) For each particle, compute contribution to the mass matrix for each element in which it appears
- * 3) Add the contribution into the correct entry in an ordered buffer (or sparse map if needed)
- *
- * Computing the weighted shapes of each particle should be done on the MeshContainer class. Insertion
- * into the ordered buffer should happen in the mass matrix class.
- *
- * ParticleShape {
- *      x_p
- *      node_ids
- *      shapes
- * }
- *
- */
-
+int Point::dimension() {
+	return nDim;
+}
 
 } /* namespace Kelvin */

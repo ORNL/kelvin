@@ -1,5 +1,5 @@
 /**----------------------------------------------------------------------------
- Copyright (c) 2018-, UT-Battelle, LLC
+ Copyright (c) 2015-, UT-Battelle, LLC
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -29,34 +29,31 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#include "MassMatrix.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
+#include <MFEMManager.h>
 
-namespace Kelvin {
-
-MassMatrix::MassMatrix() {
-	// TODO Auto-generated constructor stub
-
-}
-
-MassMatrix::~MassMatrix() {
-	// TODO Auto-generated destructor stub
-}
+using namespace std;
+using namespace Kelvin;
 
 /**
- * 1) Get the list of element-particle pairs
- * 2) For each particle, compute contribution to the mass matrix for each element in which it appears
- * 3) Add the contribution into the correct entry in an ordered buffer (or sparse map if needed)
- *
- * Computing the weighted shapes of each particle should be done on the MeshContainer class. Insertion
- * into the ordered buffer should happen in the mass matrix class.
- *
- * ParticleShape {
- *      x_p
- *      node_ids
- *      shapes
- * }
- *
+ * Main program
+ * @param argc the number of input arguments
+ * @param argv the input arguments array of argc elements
+ * @return EXIT_SUCCESS if successful, otherwise another value.
  */
+int main(int argc, char * argv[]) {
 
+	// Input file name - default is input.ini in the present directory.
+	string inputFile("input.ini");
 
-} /* namespace Kelvin */
+	// Create the MFEM problem manager
+	MFEMManager manager;
+	manager.setup(inputFile,argc,argv);
+
+	// Do the thermal solve
+	manager.solve();
+
+	return EXIT_SUCCESS;
+}

@@ -29,34 +29,60 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#include "MassMatrix.h"
+#ifndef SRC_POINT_H_
+#define SRC_POINT_H_
+
+#include <memory>
 
 namespace Kelvin {
 
-MassMatrix::MassMatrix() {
-	// TODO Auto-generated constructor stub
-
-}
-
-MassMatrix::~MassMatrix() {
-	// TODO Auto-generated destructor stub
-}
-
 /**
- * 1) Get the list of element-particle pairs
- * 2) For each particle, compute contribution to the mass matrix for each element in which it appears
- * 3) Add the contribution into the correct entry in an ordered buffer (or sparse map if needed)
+ * This class represent a basic point. Its dimension is set on creation, with
+ * a default value of n=3.
  *
- * Computing the weighted shapes of each particle should be done on the MeshContainer class. Insertion
- * into the ordered buffer should happen in the mass matrix class.
+ * This is a basic data class, so access to some member variables is
+ * unrestricted.
  *
- * ParticleShape {
- *      x_p
- *      node_ids
- *      shapes
- * }
- *
+ * Points allocate their space on construction, so they should only be created
+ * when they are needed.
  */
+class Point {
+private:
 
+	/**
+	 * The number of dimensions of the point.
+	 */
+	int nDim;
+
+public:
+
+	/**
+	 * The coordinates that describe the position of the point.
+	 */
+	std::unique_ptr<double[]> coords;
+
+	/**
+	 * Constructor
+	 */
+	Point(int dim = 3);
+
+	/**
+	 * Copy constructor
+	 */
+	Point(const Point & otherPoint);
+
+	/**
+	 * Destructor
+	 */
+	virtual ~Point() {};
+
+	/**
+	 * This operation returns the dimension of the point, (i.e. - 1, 2 or 3D).
+	 * @return the dimension
+	 */
+	int dimension();
+};
 
 } /* namespace Kelvin */
+
+#endif /* SRC_POINT_H_ */

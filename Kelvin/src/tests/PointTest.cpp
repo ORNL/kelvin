@@ -1,5 +1,5 @@
 /**----------------------------------------------------------------------------
- Copyright (c) 2018-, UT-Battelle, LLC
+ Copyright  2018-, UT-Battelle, LLC
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -29,34 +29,39 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#include "MassMatrix.h"
+#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MODULE Kelvin
 
-namespace Kelvin {
+#include <boost/test/included/unit_test.hpp>
+#include <Point.h>
 
-MassMatrix::MassMatrix() {
-	// TODO Auto-generated constructor stub
-
-}
-
-MassMatrix::~MassMatrix() {
-	// TODO Auto-generated destructor stub
-}
+using namespace std;
+using namespace Kelvin;
 
 /**
- * 1) Get the list of element-particle pairs
- * 2) For each particle, compute contribution to the mass matrix for each element in which it appears
- * 3) Add the contribution into the correct entry in an ordered buffer (or sparse map if needed)
- *
- * Computing the weighted shapes of each particle should be done on the MeshContainer class. Insertion
- * into the ordered buffer should happen in the mass matrix class.
- *
- * ParticleShape {
- *      x_p
- *      node_ids
- *      shapes
- * }
- *
+ * This operation insures that the point can be constructed and read correctly.
  */
+BOOST_AUTO_TEST_CASE(checkConstruction) {
+
+	// Check the basic size of the point
+	Point point;
+	BOOST_REQUIRE_EQUAL(3,point.dimension());
+	Point twoDPoint(2);
+	BOOST_REQUIRE_EQUAL(2,twoDPoint.dimension());
+
+	// Try loading the points to make sure they don't fail
+	for (int i = 0; i < 3; i++) {
+		point.coords[i] = (double) i;
+		BOOST_REQUIRE_CLOSE((double) i,point.coords[i],1.0e-15);
+	}
+
+	// Check copy construction
+	Point point2(twoDPoint);
+	BOOST_REQUIRE_EQUAL(twoDPoint.dimension(),point2.dimension());
+	BOOST_REQUIRE_CLOSE(twoDPoint.coords[0],point2.coords[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(twoDPoint.coords[1],point2.coords[1],1.0e-15);
+
+	return;
+}
 
 
-} /* namespace Kelvin */

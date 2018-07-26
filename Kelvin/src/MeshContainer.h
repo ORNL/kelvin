@@ -1,5 +1,5 @@
 /**----------------------------------------------------------------------------
- Copyright (c) 2015-, UT-Battelle, LLC
+ Copyright (c) 2018-, UT-Battelle, LLC
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -37,6 +37,7 @@
 #include <mfem.hpp>
 #include <string>
 #include <vector>
+#include <Point.h>
 
 namespace Kelvin {
 
@@ -95,6 +96,11 @@ private:
 	 * The Dirichlet (essential) boundary conditions defined on the mesh.
 	 */
 	std::vector<DirichletBoundaryCondition> dbConditions;
+
+	/**
+	 * This operation converts a vector representation of a point to a dense MFEM matrix.
+	 */
+	inline mfem::DenseMatrix convertPointToMatrix(const std::vector<double> & point);
 
 public:
 
@@ -159,6 +165,36 @@ public:
 	 * @return the boundary conditions
 	 */
 	std::vector<DirichletBoundaryCondition> & getDirichletBoundaryConditions();
+
+	/**
+	 * This operation finds the ids of the nodes of the element that
+	 * immediately surrounds a point. It assumes that each point is a member of
+	 * at most a single element.
+	 * @param point a vector containing the coordinates of the point to locate.
+	 * Only the first N dimensions are considered for an N dimensional mesh.
+	 * @return a vector of the node ids for the nodes surrounding the
+	 * point. If the point is not found in the mesh, the vector will be empty.
+	 */
+	std::vector<int> getSurroundingNodeIds(const std::vector<double> & point);
+
+	/**
+	 * This operation returns the values of the nodal shape functions for the
+	 * element that contains the point. The number and ordering of the shapes
+	 * should match those of getSurroundingNodeIds(). Note that this operation
+	 * does not return the total shape within an element, but instead returns
+	 * the shape for each nodal basis function separately.
+	 * @param point a vector containing the coordinates of the point to locate.
+	 * @return the nodal shapes at each node in the element that contains the
+	 * point. If the point is not found in the mesh, the vector will be empty.
+	 */
+	std::vector<double> getNodalShapes(const std::vector<double> & point);
+
+	/**
+	 * This operation returns the quadrature points in the mesh.
+	 * @return the quadrature points
+	 */
+	std::vector<Point> getQuadraturePoints();
+
 };
 
 } /* namespace Kelvin */
