@@ -49,10 +49,18 @@ void MFEMManager::setup(const string & inputFile, const int argc, char * argv[])
 	const char * inputFilePtr = inputFile.c_str();
 	args.AddOption(&inputFilePtr, "-i", "--input", "Input file to use.");
 
+	// Parse the arguments and do a cursory check.
+	args.Parse();
+	if (!args.Good()) {
+		args.PrintUsage(cout);
+		throw "Invalid input arguments!";
+	}
+
 	// Load the data -- FIXME! - This should pull the actual value from args.
 	// Use args.Parse()?
-	data.load(inputFile);
+	data.load(string(inputFilePtr));
 
+	return;
 }
 
 void MFEMManager::solve() {
