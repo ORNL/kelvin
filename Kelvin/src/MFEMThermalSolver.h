@@ -29,37 +29,45 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#include <MFEMSolver.h>
+#ifndef SRC_MFEMTHERMALSOLVER_H_
+#define SRC_MFEMTHERMALSOLVER_H_
 
-using namespace mfem;
-using namespace fire;
-using namespace std;
+#include <MFEMData.h>
+#include <mfem.hpp>
+#include <memory>
+#include <Solver.h>
+#include <IFESpaceFactory.h>
+#include <H1FESpaceFactory.h>
+#include <MeshContainer.h>
+#include <ThermalOperator.h>
+#include <TimeIntegrator.h>
 
+/**
+ * This class is a simple solver delegate for MFEM problems. In this case, it
+ * is a simple thermal solver delegate.
+ */
 namespace Kelvin {
 
-MFEMSolver::MFEMSolver() {
-	// TODO Auto-generated constructor stub
+class MFEMThermalSolver : public Solver {
+public:
 
-}
+	/**
+	 * Constructor
+	 */
+	MFEMThermalSolver();
 
-MFEMSolver::~MFEMSolver() {
-	// TODO Auto-generated destructor stub
-}
+	/**
+	 * Destructor
+	 */
+	virtual ~MFEMThermalSolver();
 
-void MFEMSolver::solve(MFEMData & data) {
-	// Get the heat transfer coefficient for the material. Assumed to be
-	// constant and provided as a property at the moment.
-	auto & thermalProps = data.properties().getPropertyBlock("thermal");
-
-    // Create the thermal solver
-	ThermalOperator thermalOperator(data.meshContainer(),thermalProps,
-			data.collection());
-
-	// Do the time integration. Get solver properties first.
-	auto & solverProps = data.properties().getPropertyBlock("solver");
-	TimeIntegrator integrator(thermalOperator,solverProps,
-			data.collection());
-	integrator.integrate();
-}
+	/**
+	 * This operation performs the solve.
+	 * @param data all the input and output data structures for the problem
+	 */
+	void solve(MFEMData & data);
+};
 
 } /* namespace Kelvin */
+
+#endif /* SRC_MFEMTHERMALSOLVER_H_ */

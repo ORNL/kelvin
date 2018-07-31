@@ -1,5 +1,5 @@
 /**----------------------------------------------------------------------------
- Copyright (c) 2018-, UT-Battelle, LLC
+ Copyright (c) 2015-, UT-Battelle, LLC
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -29,54 +29,37 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#ifndef SRC_MFEMMANAGER_H_
-#define SRC_MFEMMANAGER_H_
-
-#include <MFEMData.h>
 #include <MFEMThermalSolver.h>
+
+using namespace mfem;
+using namespace fire;
+using namespace std;
 
 namespace Kelvin {
 
-/**
- * This class is a simple manager that provides functions to initialize and
- * solve problems using MFEM.
- */
-class MFEMManager {
+MFEMThermalSolver::MFEMThermalSolver() {
+	// TODO Auto-generated constructor stub
 
-	/**
-	 * The data used in the problem solved by MFEM.
-	 */
-	MFEMData data;
+}
 
-	/**
-	 * The solver used with MFEM to compute the solution.
-	 */
-	MFEMThermalSolver solver;
+MFEMThermalSolver::~MFEMThermalSolver() {
+	// TODO Auto-generated destructor stub
+}
 
-public:
+void MFEMThermalSolver::solve(MFEMData & data) {
+	// Get the heat transfer coefficient for the material. Assumed to be
+	// constant and provided as a property at the moment.
+	auto & thermalProps = data.properties().getPropertyBlock("thermal");
 
-	/**
-	 * Constructor
-	 */
-	MFEMManager();
+    // Create the thermal solver
+	ThermalOperator thermalOperator(data.meshContainer(),thermalProps,
+			data.collection());
 
-	/**
-	 * Destructor
-	 */
-	virtual ~MFEMManager();
-
-	/**
-	 * This operation sets up the MFEM problem in the manager by configuring
-	 * input options and data.
-	 */
-	void setup(const std::string & inputFile, const int argc, char * argv[]);
-
-	/**
-	 * Run the solve. This will delegate to the pre-configured solver.
-	 */
-	void solve();
-};
+	// Do the time integration. Get solver properties first.
+	auto & solverProps = data.properties().getPropertyBlock("solver");
+	TimeIntegrator integrator(thermalOperator,solverProps,
+			data.collection());
+	integrator.integrate();
+}
 
 } /* namespace Kelvin */
-
-#endif /* SRC_MFEMMANAGER_H_ */

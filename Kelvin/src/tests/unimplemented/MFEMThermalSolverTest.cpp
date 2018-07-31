@@ -30,7 +30,7 @@
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Parsers
+#define BOOST_TEST_MODULE Kelvin
 
 #include <boost/test/included/unit_test.hpp>
 #include <MeshContainer.h>
@@ -45,6 +45,8 @@ using namespace mfem;
  */
 BOOST_AUTO_TEST_CASE(checkConstruction) {
 
+
+	BOOST_FAIL("Not yet implemented.");
 
 	return;
 }

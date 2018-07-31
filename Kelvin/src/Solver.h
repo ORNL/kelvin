@@ -29,44 +29,31 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#ifndef SRC_MFEMSOLVER_H_
-#define SRC_MFEMSOLVER_H_
+#ifndef SRC_SOLVER_H_
+#define SRC_SOLVER_H_
 
 #include <MFEMData.h>
-#include <mfem.hpp>
-#include <memory>
-#include <IFESpaceFactory.h>
-#include <H1FESpaceFactory.h>
-#include <MeshContainer.h>
-#include <ThermalOperator.h>
-#include <TimeIntegrator.h>
 
 /**
- * This class is a simple solver delegate for MFEM problems. In this case, it
- * is a simple thermal solver delegate.
+ * This is a basic interface for solvers.
  */
 namespace Kelvin {
 
-class MFEMSolver {
+class Solver {
 public:
-
-	/**
-	 * Constructor
-	 */
-	MFEMSolver();
 
 	/**
 	 * Destructor
 	 */
-	virtual ~MFEMSolver();
+	virtual ~Solver() {};
 
 	/**
 	 * This operation performs the solve.
 	 * @param data all the input and output data structures for the problem
 	 */
-	void solve(MFEMData & data);
+	virtual void solve(MFEMData & data) = 0;
 };
 
 } /* namespace Kelvin */
 
-#endif /* SRC_MFEMSOLVER_H_ */
+#endif /* SRC_SOLVER_H_ */
