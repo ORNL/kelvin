@@ -33,7 +33,7 @@
 #----------------------------------------------------------------------------*/
 
 #Set the package name
-SET(PACKAGE_NAME "KELVIN")
+SET(PACKAGE_NAME "Kelvin")
 #Set the description
 SET(PACKAGE_DESCRIPTION "Kelvin Library")
 #Set the library name
@@ -57,16 +57,16 @@ if (PARSERS_DIR AND MFEM_DIR)
    set(${PACKAGE_NAME}_LIBRARIES ${MFEM_LIBRARY_DIR}/lib${MFEM_LIBRARIES}.a ${LIBRARY_NAME} CACHE INTERNAL "${PACKAGE_NAME}_LIBRARIES")
    set(${PACKAGE_NAME}_INCLUDE_DIRS ${PARSERS_DIR}/include/ ${MFEM_INCLUDE_DIRS} CACHE INTERNAL "${PACKAGE_NAME}_INCLUDE_DIRS")
 
-   #Collect all header filenames in this project 
+   # Collect all header filenames in this project 
    #and glob them in HEADERS
    file(GLOB HEADERS *.h)
 
-   #Grab all of the source files
+   # Grab all of the source files
    file(GLOB SRC *.cpp)
 
-   #Add the source code to the library
+   # Add the source code to the library
    add_library(${LIBRARY_NAME} STATIC ${SRC})
-   #Link to parsers
+   # Link to parsers
    find_library(MFEM_LIBRARY NAMES libmfem.a mfem HINTS ${MFEM_LIBRARY_DIR})
    target_link_libraries(${LIBRARY_NAME} ${MFEM_LIBRARY})
    target_include_directories(${LIBRARY_NAME} PUBLIC ${PARSERS_DIR}/include/ ${MFEM_INCLUDE_DIRS})
@@ -74,7 +74,7 @@ if (PARSERS_DIR AND MFEM_DIR)
    #Get the test files
    file(GLOB test_files tests/*Test.cpp)
    
-   #Add the tests   
+   # Add the tests   
    set(all_includes_dirs ${CMAKE_CURRENT_SOURCE_DIR} ${PARSERS_DIR}/include ${MFEM_INCLUDE_DIRS})
    message(STATUS "dirs = ${all_includes_dirs}")
    add_tests("${test_files}" "${all_includes_dirs}" "${${PACKAGE_NAME}_LIBRARIES}")
@@ -83,8 +83,11 @@ if (PARSERS_DIR AND MFEM_DIR)
    # Copy the parameter file for the tests - input.ini from the same.
    configure_file(${CMAKE_SOURCE_DIR}/data/2Squares/input.ini 2SquaresInput.ini COPYONLY)
 
-   #Install the Kelvin header files   
+   # Install the Kelvin header files   
    install(FILES ${HEADERS} DESTINATION include)
+   
+   # Build the particle mesh generator
+   add_subdirectory(pmgen)
 
 else ()
 

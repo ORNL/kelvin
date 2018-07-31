@@ -53,6 +53,15 @@ MeshContainer::MeshContainer(
 
 }
 
+MeshContainer::MeshContainer(const char * meshFile, const int & order,
+		IFESpaceFactory & spaceFactory) :
+		meshFilename(meshFile), mesh(meshFile), _order(order),
+		dim(mesh.Dimension()), _name("mesh"),
+		feCollection(spaceFactory.getCollection(_order,dim)),
+		space(spaceFactory.getFESpace(mesh,feCollection)) {
+
+}
+
 Mesh & MeshContainer::getMesh() {
 	return mesh;
 }
@@ -177,10 +186,10 @@ std::vector<Point> MeshContainer::getQuadraturePoints() {
 			// Transform it to global coordinates
 			transform->Transform(intPoint,vPoint);
 			// Load the point
-			Point point;
-			point.coords[0] = vPoint(0);
-			point.coords[1] = vPoint(1);
-			point.coords[2] = vPoint(2);
+			Point point(dim);
+			for (int j = 0; j < dim; j++) {
+				point.coords[j] = vPoint(j);
+			}
 			points.push_back(point);
 		}
 	}

@@ -114,6 +114,16 @@ public:
 			IFESpaceFactory & spaceFactory);
 
 	/**
+	 * Alternative constructor for use with different argument parsing schemes.
+	 * @param meshFile the mesh file name
+	 * @param order the finite element polynomial order
+	 * @param spaceFactory a factory that creates a particular type of finite
+	 * element collection and space for this mesh.
+	 */
+	MeshContainer(const char * meshFile, const int & order,
+			IFESpaceFactory & spaceFactory);
+
+	/**
 	 * This operation returns the MFEM mesh object.
 	 * @return mesh the mesh
 	 */

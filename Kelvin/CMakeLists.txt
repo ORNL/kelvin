@@ -80,13 +80,18 @@ include_directories("${CMAKE_SOURCE_DIR}/src")
 # Add the main source directories
 add_subdirectory(src)
 
-#Add the executable for the original code
+# Add the executable for the original code
 add_executable(KelvinTH Kelvin.cpp)
-target_link_libraries(KelvinTH ${KELVIN_LIBRARIES})
-target_include_directories(KelvinTH PUBLIC ${KELVIN_INCLUDE_DIRS})
+target_link_libraries(KelvinTH ${Kelvin_LIBRARIES})
+target_include_directories(KelvinTH PUBLIC ${Kelvin_INCLUDE_DIRS})
 
 #Add the executable for the MPM code
 #add_executable(KelvinMPM KelvinMPM.cpp)
 #target_link_libraries(KelvinMPM ${KELVIN_LIBRARIES})
 #target_include_directories(KelvinMPM PUBLIC ${KELVIN_INCLUDE_DIRS})
-    
+
+# Install the executable
+#install(TARGETS myExe mySharedLib myStaticLib
+#        RUNTIME DESTINATION bin
+#        LIBRARY DESTINATION lib
+#        ARCHIVE DESTINATION lib/static) 

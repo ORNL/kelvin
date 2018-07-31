@@ -140,16 +140,14 @@ BOOST_AUTO_TEST_CASE(checkMesh) {
     BOOST_REQUIRE_EQUAL(2,points.size());
     // Check the first point
     auto & firstPoint = points[0];
+    BOOST_REQUIRE_EQUAL(2,firstPoint.dimension());
     BOOST_REQUIRE_CLOSE(0.5,firstPoint.coords[0],1.0e-15);
     BOOST_REQUIRE_CLOSE(0.5,firstPoint.coords[1],1.0e-15);
-    // Should be zero, but the only good way to check it is to make sure that
-    // it is very small since mfem returns ~6.9e-310.
-    BOOST_REQUIRE(firstPoint.coords[2] < std::numeric_limits<double>::min());
     // Check the second point
     auto & secondPoint = points[1];
+    BOOST_REQUIRE_EQUAL(2,secondPoint.dimension());
     BOOST_REQUIRE_CLOSE(1.5,secondPoint.coords[0],1.0e-15);
     BOOST_REQUIRE_CLOSE(0.5,secondPoint.coords[1],1.0e-15);
-    BOOST_REQUIRE(secondPoint.coords[2] < std::numeric_limits<double>::min());
 
     cout << "--------------------------------------" << endl;
 

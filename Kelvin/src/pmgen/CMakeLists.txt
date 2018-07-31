@@ -32,20 +32,13 @@
 # Author(s): Jay Jay Billings
 #----------------------------------------------------------------------------*/
 
-# Set a name for this project.
-PROJECT ( Kelvin C CXX )
+# Set the package name
+SET(PACKAGE_NAME "PMGen")
+# Set the description
+SET(PACKAGE_DESCRIPTION "Particle Mesh Generator")
 
-#Log that this project will be built
-MESSAGE(STATUS "----- Configuring Main Kelvin Build -----")
-
-# Set the minimum required version of cmake for this project.
-cmake_minimum_required(VERSION 2.8)
-# Configure some default options
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
-set(CMAKE_DISABLE_SOURCE_CHANGES ON)
-set(CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 14)
-message(STATUS "C++ version ${CXX_STANDARD} configured.")
+# Log that this project will be built
+MESSAGE(STATUS "----- Detected and building ${PACKAGE_NAME} -----")
 
 # Add the Modules directory to pick up extra *.cmake files.
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
@@ -53,40 +46,14 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 # Include the testing framework
 include(tests)
 
-# Setup flag overrides if Kelvin is building on its own. This works by 
-# determining if a parent is available and allowing flag overrides if not.
-get_directory_property(hasParent PARENT_DIRECTORY)
-if(NOT hasParent STREQUAL "")
-  message(STATUS "Parent directory is ${hasParent}")
-  list( APPEND CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} $ENV{CXX_FLAGS}")
-  message(STATUS "Parent detected. Disabling Kelvin flag overrides.")
-else()
-  message(STATUS "No parent directory found. Stand-alone build assumed. Build flag overrides enabled.")
-endif()
-
-# Setup Doxygen
-find_package(Doxygen)
-if(DOXYGEN_FOUND)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.cmake ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
-  add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} COMMENT "Generating API documentation with Doxygen" 
-    VERBATIM)
-endif(DOXYGEN_FOUND)
-
 # Include directories for the main modules. Note that include 
 # directories must come before add subdirectory!
 include_directories("${CMAKE_SOURCE_DIR}/src")
 
-# Add the main source directories
-add_subdirectory(src)
+# Add the executable
+add_executable(PMGen PMGen.cpp)
+target_link_libraries(PMGen ${Kelvin_LIBRARIES})
+target_include_directories(PMGen PUBLIC ${Kelvin_INCLUDE_DIRS})
 
-#Add the executable for the original code
-add_executable(KelvinTH Kelvin.cpp)
-target_link_libraries(KelvinTH ${KELVIN_LIBRARIES})
-target_include_directories(KelvinTH PUBLIC ${KELVIN_INCLUDE_DIRS})
-
-#Add the executable for the MPM code
-#add_executable(KelvinMPM KelvinMPM.cpp)
-#target_link_libraries(KelvinMPM ${KELVIN_LIBRARIES})
-#target_include_directories(KelvinMPM PUBLIC ${KELVIN_INCLUDE_DIRS})
-    
+# Install the executable
+install(TARGETS PMGen RUNTIME DESTINATION bin)

@@ -50,6 +50,7 @@ void MFEMManager::setup(const string & inputFile, const int argc, char * argv[])
 	args.AddOption(&inputFilePtr, "-i", "--input", "Input file to use.");
 
 	// Load the data -- FIXME! - This should pull the actual value from args.
+	// Use args.Parse()?
 	data.load(inputFile);
 
 }
