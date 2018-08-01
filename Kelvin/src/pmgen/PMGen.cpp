@@ -68,9 +68,11 @@ vector<Kelvin::Point> getPoints(MeshContainer & meshContainer) {
  * @param sideLengths the side lengths of the boxes by dimension
  * @return the mesh
  */
-inline Mesh * createQuadMesh(const double * numBoxes, const double * sideLengths) {
-	return new Mesh(numBoxes[0], numBoxes[1], Element::Type::QUADRILATERAL,
-			1, sideLengths[0], sideLengths[1]);
+inline Mesh * createQuadMesh(const double * numBoxes,
+		const double * sideLengths) {
+	return new Mesh(numBoxes[0], numBoxes[1],
+			Element::Type::QUADRILATERAL, 1, sideLengths[0],
+			sideLengths[1]);
 }
 
 /**
@@ -79,9 +81,48 @@ inline Mesh * createQuadMesh(const double * numBoxes, const double * sideLengths
  * @param sideLengths the side lengths of the boxes by dimension
  * @return the mesh
  */
-inline Mesh * createHexMesh(const double * numBoxes, const double * sideLengths) {
-	return new Mesh(numBoxes[0], numBoxes[1], numBoxes[2], Element::Type::HEXAHEDRON,
-			1, sideLengths[0], sideLengths[1], sideLengths[2]);
+inline Mesh * createHexMesh(const double * numBoxes,
+		const double * sideLengths) {
+	return new Mesh(numBoxes[0], numBoxes[1], numBoxes[2],
+			Element::Type::HEXAHEDRON, 1, sideLengths[0],
+			sideLengths[1],	sideLengths[2]);
+}
+
+/**
+ * This operation checks the bounding box and modifies it to address various
+ * constraints, such as squaring a rectangular bounding box to optimize
+ * particle placement with respect to grid lines.
+ * @param min the minimum boundaries
+ * @param max the maximum boundaries
+ */
+void checkBoundingBox(const int & dim, Vector & min, Vector & max) {
+
+	int maxIndex = 0;
+	double length[dim], maxLength = 0.0;
+
+	// Compute the initial side lengths. Also find the maximum side length and
+	// its index. Do a linear search since there are at most 3 entries.
+	for (int i = 0; i < dim; i++) {
+		length[i] = max(i) - min(i);
+		if (length[i] > maxLength) {
+			maxLength = length[i];
+			maxIndex = i;
+		}
+	}
+
+	// Square the box boundaries by shifting each maximum value by its
+	// difference from the absolute max. Now the box will have equal side
+	// lengths.
+	for (int i = 0; i < dim; i++) {
+		if (i != maxIndex) {
+	       max(i) += length[maxIndex] - length[i];
+		}
+	}
+
+	// FIXME! - This will square the bounding box, but it will have unequal
+	// padding on one side.
+
+	return;
 }
 
 /**
@@ -124,6 +165,8 @@ void createReferenceMesh(MeshContainer & meshContainer,
 	// Retrieve the bounds of the source mesh
 	Vector min, max;
 	mesh.GetBoundingBox(min, max);
+	// Check the bounding box and do things like make it square/cubical, etc.
+	checkBoundingBox(dim, min, max);
 	double refMeshSideLengths[dim], refMeshCenter[dim], numBoxes[dim];
 	// Compute the side lengths of the source bounding box. Store these
 	// coordinates as the new center of the reference mesh. Double the original
