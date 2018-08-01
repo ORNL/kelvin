@@ -1,5 +1,5 @@
 /**----------------------------------------------------------------------------
- Copyright (c) 2018-, UT-Battelle, LLC
+ Copyright  2018-, UT-Battelle, LLC
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -29,79 +29,51 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#ifndef SRC_MFEMMANAGER_H_
-#define SRC_MFEMMANAGER_H_
+#ifndef SRC_MFEMMPMDATA_H_
+#define SRC_MFEMMPMDATA_H_
 
-#include <iostream>
-#include <mfem.hpp>
+#include <MFEMData.h>
+#include <vector>
 
 namespace Kelvin {
 
 /**
- * This class is a simple manager that provides functions to initialize and
- * solve problems using MFEM.
+ * This subclass of MFEMData adds support for particle data for the Material
+ * Point Method.
+ *
+ * This classes adds a method to retrieve a list of particles. The particles
+ * are read from a file that is passed in as input in a block of the simulation
+ * input file. The format of the file must be csv with x,y,z coordinates.
  */
-template <class S, class D>
-class MFEMManager {
+class MFEMMPMData: public MFEMData {
+private:
 
 	/**
-	 * The data used in the problem solved by MFEM. Should be a subclass of
-	 * MFEMData.
+	 * This vector contains the point particles read from input and associated
+	 * with the mesh stored in the mesh container of this Data instance.
 	 */
-	D data;
-
-	/**
-	 * The solver used with MFEM to compute the solution. Should be a subclass
-	 * of Solver.
-	 */
-	S solver;
+	std::vector<Point> _particles;
 
 public:
-
 	/**
 	 * Constructor
 	 */
-	MFEMManager() {};
+	MFEMMPMData();
 
 	/**
 	 * Destructor
 	 */
-	virtual ~MFEMManager() {};
+	virtual ~MFEMMPMData();
 
 	/**
-	 * This operation sets up the MFEM problem in the manager by configuring
-	 * input options and data.
+	 * This operation returns a set of points that represent Lagrangian
+	 * material points.
+	 * @return Point the set of Lagrangian Material Points.
 	 */
-	void setup(const std::string & inputFile, const int argc, char * argv[]) {
-
-		// Create the default command line arguments
-		mfem::OptionsParser args(argc, argv);
-		const char * inputFilePtr = inputFile.c_str();
-		args.AddOption(&inputFilePtr, "-i", "--input", "Input file to use.");
-
-		// Parse the arguments and do a cursory check.
-		args.Parse();
-		if (!args.Good()) {
-			args.PrintUsage(std::cout);
-			throw "Invalid input arguments!";
-		}
-
-		// Load the data
-		data.load(std::string(inputFilePtr));
-
-		return;
-	}
-
-	/**
-	 * Run the solve. This will delegate to the pre-configured solver.
-	 */
-	void solve() {
-		// Delegate the solve
-		solver.solve(data);
-	}
+	std::vector<Point> & particles();
 
 };
 
 } /* namespace Kelvin */
 
-#endif /* SRC_MFEMMANAGER_H_ */
+#endif /* SRC_MFEMMPMDATA_H_ */

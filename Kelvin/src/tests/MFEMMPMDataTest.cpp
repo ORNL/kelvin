@@ -30,21 +30,46 @@
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE Parsers
+#define BOOST_TEST_MODULE kelvin
 
 #include <boost/test/included/unit_test.hpp>
-#include <MeshContainer.h>
-#include <mfem.hpp>
-#include <vector>
+#include <MFEMMPMData.h>
 
 using namespace std;
-using namespace mfem;
+using namespace Kelvin;
+
+// Test file names
+static std::string inputFile = "2SquaresInput.ini";
 
 /**
- * This operation checks the basic construction of the mesh container.
+ * This operation insures that the data can be constructed correctly. In this
+ * case, since this is a subclass, all it does is insure that the particles
+ * vector is constructed.
  */
 BOOST_AUTO_TEST_CASE(checkConstruction) {
 
+	MFEMMPMData data;
+	BOOST_REQUIRE_EQUAL(0,data.particles().size());
 
 	return;
 }
+
+BOOST_AUTO_TEST_CASE(checkLoad) {
+
+	MFEMMPMData data;
+	// Make sure the data is not marked as loaded yet
+	BOOST_REQUIRE(!data.isLoaded());
+
+	// Load the input data
+	data.load(inputFile);
+
+	// Check that the particles were loaded
+	BOOST_REQUIRE(data.isLoaded());
+	BOOST_REQUIRE_EQUAL(2,data.particles().size());
+
+	// Check positions of the two particles
+
+	return;
+}
+
+

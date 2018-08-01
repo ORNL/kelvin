@@ -1,5 +1,5 @@
 /**----------------------------------------------------------------------------
- Copyright (c) 2018-, UT-Battelle, LLC
+ Copyright  2018-, UT-Battelle, LLC
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -29,79 +29,22 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#ifndef SRC_MFEMMANAGER_H_
-#define SRC_MFEMMANAGER_H_
-
-#include <iostream>
-#include <mfem.hpp>
+#include <MFEMMPMData.h>
 
 namespace Kelvin {
 
-/**
- * This class is a simple manager that provides functions to initialize and
- * solve problems using MFEM.
- */
-template <class S, class D>
-class MFEMManager {
+MFEMMPMData::MFEMMPMData() {
+	// TODO Auto-generated constructor stub
 
-	/**
-	 * The data used in the problem solved by MFEM. Should be a subclass of
-	 * MFEMData.
-	 */
-	D data;
+}
 
-	/**
-	 * The solver used with MFEM to compute the solution. Should be a subclass
-	 * of Solver.
-	 */
-	S solver;
+MFEMMPMData::~MFEMMPMData() {
+	// TODO Auto-generated destructor stub
+}
 
-public:
+std::vector<Point> & MFEMMPMData::particles() {
+	return _particles;
+}
 
-	/**
-	 * Constructor
-	 */
-	MFEMManager() {};
-
-	/**
-	 * Destructor
-	 */
-	virtual ~MFEMManager() {};
-
-	/**
-	 * This operation sets up the MFEM problem in the manager by configuring
-	 * input options and data.
-	 */
-	void setup(const std::string & inputFile, const int argc, char * argv[]) {
-
-		// Create the default command line arguments
-		mfem::OptionsParser args(argc, argv);
-		const char * inputFilePtr = inputFile.c_str();
-		args.AddOption(&inputFilePtr, "-i", "--input", "Input file to use.");
-
-		// Parse the arguments and do a cursory check.
-		args.Parse();
-		if (!args.Good()) {
-			args.PrintUsage(std::cout);
-			throw "Invalid input arguments!";
-		}
-
-		// Load the data
-		data.load(std::string(inputFilePtr));
-
-		return;
-	}
-
-	/**
-	 * Run the solve. This will delegate to the pre-configured solver.
-	 */
-	void solve() {
-		// Delegate the solve
-		solver.solve(data);
-	}
-
-};
 
 } /* namespace Kelvin */
-
-#endif /* SRC_MFEMMANAGER_H_ */

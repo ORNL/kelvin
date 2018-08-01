@@ -37,34 +37,47 @@ using namespace std;
 
 namespace Kelvin {
 
-MFEMData::MFEMData() {}
+MFEMData::MFEMData() {
+}
 
-MFEMData::~MFEMData() {}
+MFEMData::~MFEMData() {
+}
 
 void MFEMData::load(const std::string & inputFile) {
 	// Load the input file
 	propertyParser.setSource(inputFile);
-    propertyParser.parse();
+	propertyParser.parse();
 
 	// Load the mesh
-	mc = make_unique<MeshContainer>(
-			propertyParser.getPropertyBlock("mesh"),spaceFactory);
+	mc = make_unique<MeshContainer>(propertyParser.getPropertyBlock("mesh"),
+			spaceFactory);
 
 	// Load the data container
-	dc = make_unique<VisItDataCollection>(mc->name().c_str(),
-			&mc->getMesh());
+	dc = make_unique<VisItDataCollection>(mc->name().c_str(), &mc->getMesh());
+
+	loaded = true;
 }
 
 fire::INIPropertyParser & MFEMData::properties() {
+	if (!loaded)
+		throw "Data not loaded!";
 	return propertyParser;
 }
 
 MeshContainer & MFEMData::meshContainer() {
+	if (!loaded)
+		throw "Data not loaded!";
 	return *mc;
 }
 
 mfem::DataCollection & MFEMData::collection() {
+	if (!loaded)
+		throw "Data not loaded!";
 	return *dc;
+}
+
+bool MFEMData::isLoaded() {
+	return loaded;
 }
 
 } /* namespace Kelvin */

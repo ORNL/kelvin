@@ -44,6 +44,12 @@ namespace Kelvin {
 /**
  * This is a simple data holder that collects all of the data used by MFEM and
  * the problem under consideration.
+ *
+ * Note that this class' operations to retrieve the mesh container and data
+ * collection should not be called until those data are loaded. This class will
+ * throw an exception if they are to avoid a memory violation where the
+ * unallocated data would be returned. (This is actually a very interesting bug
+ * since the members are stored in unique pointers but returned as references!)
  */
 class MFEMData {
 
@@ -66,6 +72,11 @@ class MFEMData {
 	 * The data collection that holds the final output.
 	 */
 	std::unique_ptr<mfem::DataCollection> dc;
+
+	/**
+	 * True if the load() operation has been called, false if not.
+	 */
+	bool loaded = false;
 
 public:
 
@@ -105,6 +116,11 @@ public:
 	 * @return the data collection
 	 */
 	mfem::DataCollection & collection();
+
+	/**
+	 * True if the load() operation has been called, false if not.
+	 */
+	bool isLoaded();
 
 };
 

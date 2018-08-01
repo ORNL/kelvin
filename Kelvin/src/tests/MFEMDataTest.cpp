@@ -1,5 +1,5 @@
 /**----------------------------------------------------------------------------
- Copyright (c) 2018-, UT-Battelle, LLC
+ Copyright  2018-, UT-Battelle, LLC
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -29,79 +29,41 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#ifndef SRC_MFEMMANAGER_H_
-#define SRC_MFEMMANAGER_H_
+#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MODULE kelvin
 
-#include <iostream>
+#include <boost/test/included/unit_test.hpp>
+#include <MFEMData.h>
 #include <mfem.hpp>
+#include <vector>
 
-namespace Kelvin {
+using namespace std;
+using namespace mfem;
+using namespace Kelvin;
+
+// Test file names
+static std::string inputFile = "2SquaresInput.ini";
 
 /**
- * This class is a simple manager that provides functions to initialize and
- * solve problems using MFEM.
+ * This operation checks the basic construction of the mesh container.
  */
-template <class S, class D>
-class MFEMManager {
+BOOST_AUTO_TEST_CASE(checkConstructionAndLoading) {
 
-	/**
-	 * The data used in the problem solved by MFEM. Should be a subclass of
-	 * MFEMData.
-	 */
-	D data;
+    // Load the input into the data
+	MFEMData data;
+	// Make sure the data is not marked as loaded yet
+	BOOST_REQUIRE(!data.isLoaded());
 
-	/**
-	 * The solver used with MFEM to compute the solution. Should be a subclass
-	 * of Solver.
-	 */
-	S solver;
+	// Load the mesh
+	data.load(inputFile);
 
-public:
+	// Check that the mesh was loaded
+	BOOST_REQUIRE(data.isLoaded());
+	BOOST_REQUIRE_EQUAL(2,data.meshContainer().dimension());
 
-	/**
-	 * Constructor
-	 */
-	MFEMManager() {};
+	// It doesn't really make sense to check the properties and the data
+	// collection since the properties were read to load the mesh and the data
+	// collection is presently empty.
 
-	/**
-	 * Destructor
-	 */
-	virtual ~MFEMManager() {};
-
-	/**
-	 * This operation sets up the MFEM problem in the manager by configuring
-	 * input options and data.
-	 */
-	void setup(const std::string & inputFile, const int argc, char * argv[]) {
-
-		// Create the default command line arguments
-		mfem::OptionsParser args(argc, argv);
-		const char * inputFilePtr = inputFile.c_str();
-		args.AddOption(&inputFilePtr, "-i", "--input", "Input file to use.");
-
-		// Parse the arguments and do a cursory check.
-		args.Parse();
-		if (!args.Good()) {
-			args.PrintUsage(std::cout);
-			throw "Invalid input arguments!";
-		}
-
-		// Load the data
-		data.load(std::string(inputFilePtr));
-
-		return;
-	}
-
-	/**
-	 * Run the solve. This will delegate to the pre-configured solver.
-	 */
-	void solve() {
-		// Delegate the solve
-		solver.solve(data);
-	}
-
-};
-
-} /* namespace Kelvin */
-
-#endif /* SRC_MFEMMANAGER_H_ */
+	return;
+}
