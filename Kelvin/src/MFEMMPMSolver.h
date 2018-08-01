@@ -1,5 +1,5 @@
 /**----------------------------------------------------------------------------
- Copyright (c) 2015-, UT-Battelle, LLC
+ Copyright (c) 2018-, UT-Battelle, LLC
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -29,43 +29,33 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#include <MFEMManager.h>
-#include <mfem.hpp>
+#ifndef SRC_MFEMMPMSOLVER_H_
+#define SRC_MFEMMPMSOLVER_H_
 
-using namespace mfem;
-using namespace fire;
-using namespace std;
+#include <Solver.h>
 
 namespace Kelvin {
 
-MFEMManager::MFEMManager() {}
+/**
+ * This is a simple delegate for the Material Point Method solver in Kelvin.
+ */
+class MFEMMPMSolver: public Solver {
+public:
 
-MFEMManager::~MFEMManager() {}
+	/**
+	 * Constructor
+	 */
+	MFEMMPMSolver();
 
-void MFEMManager::setup(const string & inputFile, const int argc, char * argv[]) {
+	/**
+	 * Destructor
+	 */
+	virtual ~MFEMMPMSolver();
 
-	// Create the default command line arguments
-	mfem::OptionsParser args(argc, argv);
-	const char * inputFilePtr = inputFile.c_str();
-	args.AddOption(&inputFilePtr, "-i", "--input", "Input file to use.");
+	void solve(MFEMData & data);
 
-	// Parse the arguments and do a cursory check.
-	args.Parse();
-	if (!args.Good()) {
-		args.PrintUsage(cout);
-		throw "Invalid input arguments!";
-	}
-
-	// Load the data -- FIXME! - This should pull the actual value from args.
-	// Use args.Parse()?
-	data.load(string(inputFilePtr));
-
-	return;
-}
-
-void MFEMManager::solve() {
-	// Delegate the solve
-	solver.solve(data);
-}
+};
 
 } /* namespace Kelvin */
+
+#endif /* SRC_MFEMMPMSOLVER_H_ */

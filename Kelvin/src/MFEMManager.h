@@ -33,7 +33,7 @@
 #define SRC_MFEMMANAGER_H_
 
 #include <MFEMData.h>
-#include <MFEMThermalSolver.h>
+#include <Solver.h>
 
 namespace Kelvin {
 
@@ -41,6 +41,7 @@ namespace Kelvin {
  * This class is a simple manager that provides functions to initialize and
  * solve problems using MFEM.
  */
+template <typename S>
 class MFEMManager {
 
 	/**
@@ -51,30 +52,53 @@ class MFEMManager {
 	/**
 	 * The solver used with MFEM to compute the solution.
 	 */
-	MFEMThermalSolver solver;
+	S solver;
 
 public:
 
 	/**
 	 * Constructor
 	 */
-	MFEMManager();
+	MFEMManager() {};
 
 	/**
 	 * Destructor
 	 */
-	virtual ~MFEMManager();
+	virtual ~MFEMManager() {};
 
 	/**
 	 * This operation sets up the MFEM problem in the manager by configuring
 	 * input options and data.
 	 */
-	void setup(const std::string & inputFile, const int argc, char * argv[]);
+	void setup(const std::string & inputFile, const int argc, char * argv[]) {
+
+		// Create the default command line arguments
+		mfem::OptionsParser args(argc, argv);
+		const char * inputFilePtr = inputFile.c_str();
+		args.AddOption(&inputFilePtr, "-i", "--input", "Input file to use.");
+
+		// Parse the arguments and do a cursory check.
+		args.Parse();
+		if (!args.Good()) {
+			args.PrintUsage(std::cout);
+			throw "Invalid input arguments!";
+		}
+
+		// Load the data -- FIXME! - This should pull the actual value from args.
+		// Use args.Parse()?
+		data.load(std::string(inputFilePtr));
+
+		return;
+	}
 
 	/**
 	 * Run the solve. This will delegate to the pre-configured solver.
 	 */
-	void solve();
+	void solve() {
+		// Delegate the solve
+		solver.solve(data);
+	}
+
 };
 
 } /* namespace Kelvin */

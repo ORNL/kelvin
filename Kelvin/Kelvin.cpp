@@ -33,6 +33,8 @@
 #include <stdlib.h>
 #include <string>
 #include <MFEMManager.h>
+#include <MFEMThermalSolver.h>
+#include <MFEMMPMSolver.h>
 
 using namespace std;
 using namespace Kelvin;
@@ -49,7 +51,8 @@ int main(int argc, char * argv[]) {
 	string inputFile("input.ini");
 
 	// Create the MFEM problem manager
-	MFEMManager manager;
+//	MFEMManager<MFEMThermalSolver> manager;
+	MFEMManager<MFEMMPMSolver> manager;
 	manager.setup(inputFile,argc,argv);
 
 	// Do the thermal solve

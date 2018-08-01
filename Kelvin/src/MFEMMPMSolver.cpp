@@ -1,5 +1,5 @@
 /**----------------------------------------------------------------------------
- Copyright  2018-, UT-Battelle, LLC
+ Copyright (c) 2018-, UT-Battelle, LLC
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -29,65 +29,25 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE kelvin
-
-#include <boost/test/included/unit_test.hpp>
-#include <MeshContainer.h>
-#include <mfem.hpp>
-#include <vector>
-#include <INIPropertyParser.h>
-#include <IFESpaceFactory.h>
-#include <H1FESpaceFactory.h>
+#include <MFEMMPMSolver.h>
 
 using namespace std;
 using namespace mfem;
-using namespace Kelvin;
-using namespace fire;
 
-// Test file names
-static std::string meshFileName = "2Squares.mesh";
-static std::string inputFile = "2SquaresInput.ini";
+namespace Kelvin {
 
-/**
- *
- */
-BOOST_AUTO_TEST_CASE(checkConstruction) {
-
-
-	return;
-}
-
-/**
- */
-BOOST_AUTO_TEST_CASE(checkMesh) {
-
-	// Create the space factory
-	H1FESpaceFactory spaceFactory;
-
-	// Load the input file
-	INIPropertyParser propertyParser;
-	propertyParser.setSource(inputFile);
-    propertyParser.parse();
-
-	// Load the mesh
-    MeshContainer mc(propertyParser.getPropertyBlock("mesh"),spaceFactory);
-
-    // Check some mesh properties
-    auto & mesh = mc.getMesh();
-    BOOST_REQUIRE_EQUAL(2,mesh.Dimension());
-    BOOST_REQUIRE_EQUAL(1,mesh.GetElementTransformation(0)->Order());
-
-	return;
+MFEMMPMSolver::MFEMMPMSolver() {
+	// TODO Auto-generated constructor stub
 
 }
 
-/**
- */
-BOOST_AUTO_TEST_CASE(checkShape) {
+MFEMMPMSolver::~MFEMMPMSolver() {
+	// TODO Auto-generated destructor stub
+}
 
-
-
-	return;
+void MFEMMPMSolver::solve(MFEMData & data) {
 
 }
+
+
+} /* namespace Kelvin */
