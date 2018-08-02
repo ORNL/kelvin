@@ -53,6 +53,8 @@ namespace Kelvin {
  */
 class MFEMData {
 
+protected:
+
 	/**
 	 * Parser for INI properties.
 	 */
@@ -95,7 +97,7 @@ public:
 	 * @param inputFile the input file that points to other data and provides
 	 * initil values.
 	 */
-	void load(const std::string & inputFile);
+	virtual void load(const std::string & inputFile);
 
 	/**
 	 * This operation returns a reference to the INI property parser to load

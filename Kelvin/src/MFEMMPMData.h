@@ -72,6 +72,8 @@ public:
 	 */
 	std::vector<Point> & particles();
 
+	virtual void load(const std::string & inputFile);
+
 };
 
 } /* namespace Kelvin */

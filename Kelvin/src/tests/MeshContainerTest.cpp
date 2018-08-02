@@ -49,7 +49,7 @@ using namespace fire;
 
 // Test file names
 static std::string meshFileName = "2Squares.mesh";
-static std::string inputFile = "2SquaresInput.ini";
+static std::string inputFile = "2SquaresInput-smallerMesh.ini";
 
 /* This simple mesh looks like the following:
  *
