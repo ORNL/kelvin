@@ -78,10 +78,16 @@ if (PARSERS_DIR AND MFEM_DIR)
    set(all_includes_dirs ${CMAKE_CURRENT_SOURCE_DIR} ${PARSERS_DIR}/include ${MFEM_INCLUDE_DIRS})
    message(STATUS "dirs = ${all_includes_dirs}")
    add_tests("${test_files}" "${all_includes_dirs}" "${${PACKAGE_NAME}_LIBRARIES}")
-   # Copy the mesh file for the tests - 2Squares.mesh from the examples.
+   # Copy the mesh file for the tests - 2Squares-background.vtk from the examples.
+   configure_file(${CMAKE_SOURCE_DIR}/data/2Squares/2Squares-background.vtk 2Squares-background.vtk COPYONLY)
+   # Copy the mesh file for the tests - 2Squares.vtk from the examples.
    configure_file(${CMAKE_SOURCE_DIR}/data/2Squares/2Squares.mesh 2Squares.mesh COPYONLY)
+   # Copy the particle file for the tests - 2Squares-particles.csv from the same.
+   configure_file(${CMAKE_SOURCE_DIR}/data/2Squares/2Squares-particles.csv 2Squares-particles.csv COPYONLY)
    # Copy the parameter file for the tests - input.ini from the same.
    configure_file(${CMAKE_SOURCE_DIR}/data/2Squares/input.ini 2SquaresInput.ini COPYONLY)
+   # Copy the parameter file for the tests - input.ini from the same.
+   configure_file(${CMAKE_SOURCE_DIR}/data/2Squares/input-smallerMesh.ini 2SquaresInput-smallerMesh.ini COPYONLY)
 
    # Install the Kelvin header files   
    install(FILES ${HEADERS} DESTINATION include)
@@ -92,7 +98,6 @@ if (PARSERS_DIR AND MFEM_DIR)
 else ()
 
    #Complain
-   message(STATUS "Parsers and/or MFEM not found. Please set their \
-install directories.")
+   message(STATUS "Parsers and/or MFEM not found. Please set their install directories.")
 
 endif (PARSERS_DIR AND MFEM_DIR)

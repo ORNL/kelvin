@@ -30,6 +30,13 @@
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
 #include <MFEMMPMData.h>
+#include <memory>
+#include <vector>
+#include <DelimitedTextParser.h>
+#include <iostream>
+
+using namespace std;
+using namespace fire;
 
 namespace Kelvin {
 
@@ -42,7 +49,40 @@ MFEMMPMData::~MFEMMPMData() {
 	// TODO Auto-generated destructor stub
 }
 
+void MFEMMPMData::load(const std::string & inputFile) {
+
+	// Load the rest of the input data - mesh, etc. - first and then pull the
+	// particle data
+	MFEMData::load(inputFile);
+
+	// Get the particles file
+	auto & block = propertyParser.getPropertyBlock("particles");
+	auto & particlesFile = block.at("file");
+	// Load the particles
+	DelimitedTextParser<vector<vector<double>>,double> parser(",","#");
+	parser.setSource(particlesFile);
+	parser.parse();
+	shared_ptr<vector<vector<double>>> data = parser.getData();
+
+	cout << "Loaded " << data->size() << " particles from "
+			<< particlesFile << endl;
+
+	// Convert to points and pack the particles vector
+	for (int i = 0; i < data->size(); i++) {
+		auto & rawCoords = data->at(i);
+		int numCoords = rawCoords.size();
+		Point point(rawCoords.size());
+		for (int j = 0; j < numCoords; j++) {
+			point.coords[j] = rawCoords[j];
+		}
+		_particles.push_back(point);
+	}
+
+	return;
+}
+
 std::vector<Point> & MFEMMPMData::particles() {
+	if (!loaded) throw "Data not loaded!";
 	return _particles;
 }
 

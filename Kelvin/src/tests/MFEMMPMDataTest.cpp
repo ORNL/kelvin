@@ -42,19 +42,11 @@ using namespace Kelvin;
 static std::string inputFile = "2SquaresInput.ini";
 
 /**
- * This operation insures that the data can be constructed correctly. In this
- * case, since this is a subclass, all it does is insure that the particles
- * vector is constructed.
+ * This operation insures that the data can be constructed and loaded
+ * correctly. In this case, since this is a subclass, all it does is insure
+ * that the particles vector is constructed.
  */
-BOOST_AUTO_TEST_CASE(checkConstruction) {
-
-	MFEMMPMData data;
-	BOOST_REQUIRE_EQUAL(0,data.particles().size());
-
-	return;
-}
-
-BOOST_AUTO_TEST_CASE(checkLoad) {
+BOOST_AUTO_TEST_CASE(checkConstructionAndLoad) {
 
 	MFEMMPMData data;
 	// Make sure the data is not marked as loaded yet
@@ -65,9 +57,14 @@ BOOST_AUTO_TEST_CASE(checkLoad) {
 
 	// Check that the particles were loaded
 	BOOST_REQUIRE(data.isLoaded());
-	BOOST_REQUIRE_EQUAL(2,data.particles().size());
+	auto & particles = data.particles();
+	BOOST_REQUIRE_EQUAL(2,particles.size());
 
 	// Check positions of the two particles
+	BOOST_REQUIRE_CLOSE(1.5,particles[0].coords[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(1.5,particles[0].coords[1],1.0e-15);
+	BOOST_REQUIRE_CLOSE(2.5,particles[1].coords[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(1.5,particles[1].coords[1],1.0e-15);
 
 	return;
 }
