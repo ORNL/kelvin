@@ -254,10 +254,16 @@ void writeParticles(vector<Kelvin::Point> points, const char * particleFilename,
 
 	// Write the particle coordinates
 	auto size = points.size();
+	// Assume the points are all the same dimension
+	int dim = points[0].dimension();
 	for (int i = 0; i < size; i++) {
-		int dim = points[i].dimension();
-		for (int j = 0; j < dim; j++) {
-			particleFile << points[i].coords[j] << ", ";
+		// No need for a loop over coords[j] since dim = 2 or dim = 3 and
+		// branch prediction should handle any performance drop.
+		if (dim == 2) {
+		   particleFile << points[i].coords[0] << ", " << points[i].coords[1];
+		} else if (dim == 3){
+		   particleFile << points[i].coords[0] << ", " << points[i].coords[1]
+					    << ", " << points[i].coords[2];
 		}
 		particleFile << endl;
 	}
