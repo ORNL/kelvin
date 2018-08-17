@@ -42,21 +42,17 @@ MassMatrix::~MassMatrix() {
 	// TODO Auto-generated destructor stub
 }
 
-/**
- * 1) Get the list of element-particle pairs
- * 2) For each particle, compute contribution to the mass matrix for each element in which it appears
- * 3) Add the contribution into the correct entry in an ordered buffer (or sparse map if needed)
- *
- * Computing the weighted shapes of each particle should be done on the MeshContainer class. Insertion
- * into the ordered buffer should happen in the mass matrix class.
- *
- * ParticleShape {
- *      x_p
- *      node_ids
- *      shapes
- * }
- *
- */
+void MassMatrix::setParticles(const std::vector<Point> & particles) {
 
+}
+
+void MassMatrix::assemble(const mfem::SparseMatrix & shapeMatrix,
+		const std::set<int> & nodeSet) {
+
+}
+
+double MassMatrix::operator()(int i, int j) {
+	return 0.0;
+}
 
 } /* namespace Kelvin */

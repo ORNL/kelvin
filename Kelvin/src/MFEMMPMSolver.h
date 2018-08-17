@@ -32,14 +32,18 @@
 #ifndef SRC_MFEMMPMSOLVER_H_
 #define SRC_MFEMMPMSOLVER_H_
 
+#include <MFEMMPMData.h>
 #include <Solver.h>
 
 namespace Kelvin {
 
 /**
  * This is a simple delegate for the Material Point Method solver in Kelvin.
+ * It follows the implementation of Sulsky et al. in her 1994 paper "A
+ * particle method for history-dependent materials" in Comput. Methods Appl.
+ * Mech. Engrg. 118 (1994) 179-196.
  */
-class MFEMMPMSolver: public Solver {
+class MFEMMPMSolver: public Solver<MFEMMPMData> {
 public:
 
 	/**
@@ -52,7 +56,7 @@ public:
 	 */
 	virtual ~MFEMMPMSolver();
 
-	void solve(MFEMData & data);
+	virtual void solve(MFEMMPMData & data);
 
 };
 

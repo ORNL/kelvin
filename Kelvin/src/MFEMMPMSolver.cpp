@@ -30,6 +30,7 @@
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
 #include <MFEMMPMSolver.h>
+#include <set>
 
 using namespace std;
 using namespace mfem;
@@ -45,7 +46,103 @@ MFEMMPMSolver::~MFEMMPMSolver() {
 	// TODO Auto-generated destructor stub
 }
 
-void MFEMMPMSolver::solve(MFEMData & data) {
+void MFEMMPMSolver::solve(MFEMMPMData & data) {
+
+	// Set of all nodes currently near particles
+	set<int> nodeSet;
+	set<int>::iterator outerIt;
+	set<int>::iterator innerIt;
+
+	// Compute initial mapping matrices
+	auto & meshCont = data.meshContainer();
+	auto & mesh = meshCont.getMesh();
+	int numElems = mesh.GetNE();
+	int numVerts = mesh.GetNV();
+	auto & particles = data.particles();
+	int numParticles = particles.size();
+	// The shape matrix is very sparse, so this computation exploits that by only
+	// adding shape values for nodes that exist for the given particle.
+	SparseMatrix shapeMatrix(numParticles,numVerts);
+	for (int i = 0; i < numParticles; i++) {
+		auto nodeIds = meshCont.getSurroundingNodeIds(particles[i].coords);
+		auto shape = meshCont.getNodalShapes(particles[i].coords);
+		for (int j = 0; j < shape.size(); j++) {
+			shapeMatrix.Add(i,nodeIds[j],shape[j]);
+			nodeSet.insert(nodeIds[j]);
+		}
+	}
+	shapeMatrix.Finalize();
+	shapeMatrix.SortColumnIndices();
+
+	shapeMatrix.Print();
+
+	cout << shapeMatrix.Size() << endl;
+
+	// Construct the mass matrix associated with the grid nodes
+	double particleMass = 1.0; // FIXME! Needs to be something real and from input.
+	Vector rowI;
+	Array<int> colsI;
+	// This is a sparse iteration over all nodes in which particles exist,
+	// instead of all nodes regardless of whether or not they have particles
+	// nearby. Taking advantage of the sparse matrix greatly increases the
+	// performance.
+	for (outerIt = nodeSet.begin(); outerIt != nodeSet.end(); outerIt++) {
+		for(innerIt = nodeSet.begin(); innerIt != nodeSet.end(); innerIt++) {
+			double m_ij = 0.0;
+			// Get the i-th and j-th rows of the shape matrix for the p-th
+			// particle. The i-th row is technically transposed in the dot
+			// product that follows.
+			for (int k = 0; k < numParticles; k++) {
+			    shapeMatrix.GetRow(k,colsI,rowI);
+			    int colI = colsI.Find(*outerIt);
+			    int colJ = colsI.Find(*innerIt);
+			    if (colI >= 0 && colJ >= 0) {
+			    	m_ij += particleMass*rowI[colI]*rowI[colJ];
+			    }
+			}
+			cout << "(" << *outerIt << ", " << *innerIt << ") " << m_ij << ", ";
+		}
+
+		cout << endl;
+	}
+
+	for (int i = 0; i < numParticles; i++) {
+		cout << i << " " << particles[i].coords[0] << " " << particles[i].coords[1] << endl;
+	}
+
+
+	// Get the diagonalized form of the mass matrix
+
+
+	// Compute the acceleration at the grid nodes
+
+	// Compute the velocity through explicit integration
+
+	// Compute grad(v) at the material points
+
+	// Use the velocity gradient to compute the strain rate at material points
+
+	// Compute/update the stress at material points using the constitutive
+	// equation
+
+	// Use mapping functions to compute the velocity and acceleration at the
+	// material points
+
+	// Compute updates to the material point positions and velocity using
+	// explicit integration
+
+	// Update mapping matrices
+
+	// Update gradients
+
+	// Update the consistent mass matrix on the grid
+
+	// Update the diagonal mass matrix
+
+	// Use conservation of momentum to solve for the new grid velocities
+
+	// Loop
+
 
 }
 

@@ -1,5 +1,5 @@
 /**----------------------------------------------------------------------------
- Copyright (c) 2015-, UT-Battelle, LLC
+ Copyright (c) 2018-, UT-Battelle, LLC
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@
 #include <MFEMManager.h>
 #include <MFEMThermalSolver.h>
 #include <MFEMMPMSolver.h>
-#include <MFEMData.h>
+#include <MFEMMPMData.h>
 
 using namespace std;
 using namespace Kelvin;
@@ -52,8 +52,8 @@ int main(int argc, char * argv[]) {
 	string inputFile("input.ini");
 
 	// Create the MFEM problem manager
-//	MFEMManager<MFEMThermalSolver> manager;
-	MFEMManager<MFEMMPMSolver,MFEMData> manager;
+//	MFEMManager<MFEMThermalSolver,MFEMMPMData> manager;
+	MFEMManager<MFEMMPMSolver,MFEMMPMData> manager;
 	manager.setup(inputFile,argc,argv);
 
 	// Do the thermal solve

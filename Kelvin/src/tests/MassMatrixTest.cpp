@@ -33,60 +33,20 @@
 #define BOOST_TEST_MODULE kelvin
 
 #include <boost/test/included/unit_test.hpp>
-#include <MeshContainer.h>
 #include <mfem.hpp>
 #include <vector>
-#include <INIPropertyParser.h>
-#include <IFESpaceFactory.h>
-#include <H1FESpaceFactory.h>
+#include <MassMatrix.h>
 
 using namespace std;
 using namespace mfem;
 using namespace Kelvin;
-using namespace fire;
-
-// Test file names
-static std::string meshFileName = "2Squares.mesh";
-static std::string inputFile = "2SquaresInput.ini";
 
 /**
- *
+ * This operation checks the basic functionality of the MassMatrix class.
  */
-BOOST_AUTO_TEST_CASE(checkConstruction) {
+BOOST_AUTO_TEST_CASE(checkMass) {
 
-
-	return;
-}
-
-/**
- */
-BOOST_AUTO_TEST_CASE(checkMesh) {
-
-	// Create the space factory
-	H1FESpaceFactory spaceFactory;
-
-	// Load the input file
-	INIPropertyParser propertyParser;
-	propertyParser.setSource(inputFile);
-    propertyParser.parse();
-
-	// Load the mesh
-    MeshContainer mc(propertyParser.getPropertyBlock("mesh"),spaceFactory);
-
-    // Check some mesh properties
-    auto & mesh = mc.getMesh();
-    BOOST_REQUIRE_EQUAL(2,mesh.Dimension());
-    BOOST_REQUIRE_EQUAL(1,mesh.GetElementTransformation(0)->Order());
-
-	return;
-
-}
-
-/**
- */
-BOOST_AUTO_TEST_CASE(checkShape) {
-
-
+	BOOST_FAIL("Not yet implemented.");
 
 	return;
 

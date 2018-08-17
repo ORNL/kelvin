@@ -49,7 +49,8 @@ MeshContainer::MeshContainer(
 
 	// Helpful diagnostic information.
 	cout << "Loaded mesh " << meshFilename << ". Mesh dimension = " << dim
-			<< " with " << mesh.GetNE() << " elements." << endl;
+			<< " with " << mesh.GetNE() << " elements and " << mesh.GetNV()
+			<< " vertices." << endl;
 
 }
 

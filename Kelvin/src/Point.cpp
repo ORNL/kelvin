@@ -33,9 +33,8 @@
 
 namespace Kelvin {
 
-Point::Point(int dim) {
+Point::Point(int dim) : nDim(dim), coords(dim) {
 	nDim = dim;
-	coords = std::make_unique<double[]>(nDim);
 }
 
 Point::Point(const Point & otherPoint) : Point(otherPoint.nDim) {

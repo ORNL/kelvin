@@ -1,5 +1,5 @@
 /**----------------------------------------------------------------------------
- Copyright (c) 2015-, UT-Battelle, LLC
+ Copyright (c) 2018-, UT-Battelle, LLC
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -34,11 +34,12 @@
 
 #include <MFEMData.h>
 
+namespace Kelvin {
+
 /**
  * This is a basic interface for solvers.
  */
-namespace Kelvin {
-
+template <class D>
 class Solver {
 public:
 
@@ -51,7 +52,7 @@ public:
 	 * This operation performs the solve.
 	 * @param data all the input and output data structures for the problem
 	 */
-	virtual void solve(MFEMData & data) = 0;
+	virtual void solve(D & data) = 0;
 };
 
 } /* namespace Kelvin */

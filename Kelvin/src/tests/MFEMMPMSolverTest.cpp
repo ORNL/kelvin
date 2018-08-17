@@ -38,10 +38,20 @@
 using namespace std;
 using namespace Kelvin;
 
+// Test file names
+static std::string inputFile = "2SquaresInput.ini";
+
 /**
  * This operation insures that the point can be constructed and read correctly.
  */
 BOOST_AUTO_TEST_CASE(checkConstruction) {
+
+	// Load the test data
+	MFEMMPMData data;
+	data.load(inputFile);
+
+	MFEMMPMSolver solver;
+	solver.solve(data);
 
 	BOOST_FAIL("Not yet implemented.");
 

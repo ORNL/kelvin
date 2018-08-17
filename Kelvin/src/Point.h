@@ -32,7 +32,7 @@
 #ifndef SRC_POINT_H_
 #define SRC_POINT_H_
 
-#include <memory>
+#include <vector>
 
 namespace Kelvin {
 
@@ -59,7 +59,7 @@ public:
 	/**
 	 * The coordinates that describe the position of the point.
 	 */
-	std::unique_ptr<double[]> coords;
+	std::vector<double> coords;
 
 	/**
 	 * Constructor
