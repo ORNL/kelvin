@@ -31,9 +31,14 @@
  -----------------------------------------------------------------------------*/
 #include "MassMatrix.h"
 
+using namespace mfem;
+using namespace std;
+
 namespace Kelvin {
 
-MassMatrix::MassMatrix() {
+MassMatrix::MassMatrix() :
+		nodes(nodesDummy),
+		particles(particlesDummy), shapes(NULL) {
 	// TODO Auto-generated constructor stub
 
 }
@@ -42,17 +47,64 @@ MassMatrix::~MassMatrix() {
 	// TODO Auto-generated destructor stub
 }
 
-void MassMatrix::setParticles(const std::vector<Point> & particles) {
-
+void MassMatrix::setParticles(std::vector<Point> & particlesList) {
+	particles = particlesList;
 }
 
-void MassMatrix::assemble(const mfem::SparseMatrix & shapeMatrix,
-		const std::set<int> & nodeSet) {
-
+void MassMatrix::assemble(mfem::SparseMatrix & shapeMatrix,
+		std::set<int> & nodeSet) {
+	shapes = &shapeMatrix;
+	nodes = nodeSet;
 }
 
 double MassMatrix::operator()(int i, int j) {
-	return 0.0;
+
+	// Mass element m_ij
+	double m_ij = 0.0;
+
+	// Construct the mass matrix associated with the grid nodes
+	double particleMass = 1.0; // FIXME! Needs to be something real and from input.
+
+	// FIXME! Set particle mass on Particle subclass of Point, next to coords.
+	Vector rowI;
+	Array<int> colsI;
+
+	// Get the i-th and j-th rows of the shape matrix for the p-th
+	// particle. The i-th row is technically transposed in the dot
+	// product that follows.
+	int numParticles = particles.size();
+	for (int k = 0; k < numParticles; k++) {
+		shapes->GetRow(k, colsI, rowI);
+		int colI = colsI.Find(i);
+		int colJ = colsI.Find(j);
+		if (colI >= 0 && colJ >= 0) {
+			m_ij += particleMass * rowI[colI] * rowI[colJ];
+		}
+	}
+
+	return m_ij;
+}
+
+std::vector<double> MassMatrix::lump() {
+
+	int i = 0; // Row counter
+	set<int>::iterator outerIt;
+	set<int>::iterator innerIt;
+	std::vector<double> diagonal(nodes.size());
+
+	// Loop over all the non-zero rows
+	for (outerIt = nodes.begin(); outerIt != nodes.end(); outerIt++) {
+		// Compute the row sum
+		double m_i = 0.0;
+		for(innerIt = nodes.begin(); innerIt != nodes.end(); innerIt++) {
+			m_i +=  (*this)(*outerIt,*innerIt);
+		}
+		// Add it to the list and increment the list counter
+		diagonal[i] = m_i;
+		i++;
+	}
+
+	return diagonal;
 }
 
 } /* namespace Kelvin */

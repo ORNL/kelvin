@@ -36,6 +36,7 @@
 #include <vector>
 #include <set>
 #include <Point.h>
+#include <functional>
 
 namespace Kelvin {
 
@@ -48,8 +49,55 @@ namespace Kelvin {
  * entries on mass-lumped diagonalized matrix, m_{D,ij}. For descriptions of
  * both see Sulsky's 1994 paper "A particle method for history-dependent
  * materials."
+ *
+ * This is a sparse structure over all massive nodes where particles exist,
+ * instead of all nodes regardless of whether or not they have particles
+ * nearby. Taking advantage of the sparse matrix greatly increases the
+ * performance.
+ *
  */
 class MassMatrix {
+
+private:
+
+	/**
+	 * A private dummy to get around injecting references in the constructor.
+	 */
+	std::set<int> nodesDummy;
+
+	/**
+	 * A private dummy to get around injecting references in the constructor.
+	 */
+	std::vector<Point> particlesDummy;
+
+	/**
+	 * A private dummy to get around injecting references in the constructor.
+	 */
+	mfem::SparseMatrix shapesDummy;
+
+protected:
+
+	/**
+	 * The list of nodes with particles near by, i.e. - "massive nodes."
+	 */
+	std::set<int> & nodes;
+
+	/**
+	 * The full set of particles that give rise to mass in the grid.
+	 */
+	std::vector<Point> & particles;
+
+	/**
+	 * The shape matrix that defines the relationship between nodes and
+	 * particles. That is, the map of particles to grid nodes/cells.
+	 *
+	 * This is stored as a pointer because of a bug in MFEM that adversely
+	 * affects storing it as a reference. This will be fully investigated
+	 * in the future, but for now the pointer is fine. Note that this class
+	 * does not free the pointer.
+	 */
+	mfem::SparseMatrix * shapes;
+
 public:
 
 	/**
@@ -64,9 +112,9 @@ public:
 
 	/**
 	 * This operation sets the reference particle list for the mass matrix
-	 * @param particles the particles in the system
+	 * @param particlesList the particles in the system
 	 */
-	void setParticles(const std::vector<Point> & particles);
+	void setParticles(std::vector<Point> & particleList);
 
 	/**
 	 * This operator assembles the mass matrix from a shape matrix and the list
@@ -74,11 +122,11 @@ public:
 	 * and uses a sparse form of the shape matrix.
 	 * @param shapeMatrix A sparse matrix that contains the shape at nodes in
 	 * the background mesh
-	 * @param nodeset the list of nodes in the background mesh that actually have
+	 * @param nodeSet the list of nodes in the background mesh that actually have
 	 * mass
 	 */
-	void assemble(const mfem::SparseMatrix & shapeMatrix,
-			const std::set<int> & nodeSet);
+	void assemble(mfem::SparseMatrix & shapeMatrix,
+			std::set<int> & nodeSet);
 
 	/**
 	 * This operator accesses the element in the matrix at the i-th row and the
@@ -88,12 +136,27 @@ public:
 	 * not stored. Elements that are outside the nodeset always have
 	 * m_ij = 0.0.
 	 *
+	 * This method will indiscriminately compute m_ij, even if i and j are not
+	 * in the node set, and does not exploit the sparse nature of the matrix.
+	 *
 	 * @param i row number
 	 * @param j column number
 	 * @return the mass element at row i and column j if it is non-zero,
-	 * otherwise 0.0;
+	 * otherwise 0.0 exactly;
 	 */
 	double operator()(int i, int j);
+
+	/**
+	 * This operation creates a diagonalized form of the mass matrix by summing
+	 * across the rows of the original mass matrix, which is called
+	 * "mass lumping."
+	 * @return the non-zero diagonal/lumped mass matrix entries, one for
+	 * entry in the massive node set. The result is moved using C++11 move
+	 * semantics. (It would be nice to have a by-input-reference version for
+	 * high performance concerns about repeated allocations, etc.)
+	 */
+	std::vector<double> lump();
+
 };
 
 } /* namespace Kelvin */

@@ -78,13 +78,19 @@ void MFEMMPMData::load(const std::string & inputFile) {
 		_particles.push_back(point);
 	}
 
+	// Configure the grid
+
 	return;
+}
+
+Grid & MFEMMPMData::grid() {
+	if (!loaded) throw "Data not loaded!";
+	return _grid;
 }
 
 std::vector<Point> & MFEMMPMData::particles() {
 	if (!loaded) throw "Data not loaded!";
 	return _particles;
 }
-
 
 } /* namespace Kelvin */

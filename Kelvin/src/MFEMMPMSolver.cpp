@@ -31,6 +31,7 @@
  -----------------------------------------------------------------------------*/
 #include <MFEMMPMSolver.h>
 #include <set>
+#include <MassMatrix.h>
 
 using namespace std;
 using namespace mfem;
@@ -80,41 +81,14 @@ void MFEMMPMSolver::solve(MFEMMPMData & data) {
 
 	// Construct the mass matrix associated with the grid nodes
 	double particleMass = 1.0; // FIXME! Needs to be something real and from input.
-	Vector rowI;
-	Array<int> colsI;
-	// This is a sparse iteration over all nodes in which particles exist,
-	// instead of all nodes regardless of whether or not they have particles
-	// nearby. Taking advantage of the sparse matrix greatly increases the
-	// performance.
-	for (outerIt = nodeSet.begin(); outerIt != nodeSet.end(); outerIt++) {
-		for(innerIt = nodeSet.begin(); innerIt != nodeSet.end(); innerIt++) {
-			double m_ij = 0.0;
-			// Get the i-th and j-th rows of the shape matrix for the p-th
-			// particle. The i-th row is technically transposed in the dot
-			// product that follows.
-			for (int k = 0; k < numParticles; k++) {
-			    shapeMatrix.GetRow(k,colsI,rowI);
-			    int colI = colsI.Find(*outerIt);
-			    int colJ = colsI.Find(*innerIt);
-			    if (colI >= 0 && colJ >= 0) {
-			    	m_ij += particleMass*rowI[colI]*rowI[colJ];
-			    }
-			}
-			cout << "(" << *outerIt << ", " << *innerIt << ") " << m_ij << ", ";
-		}
-
-		cout << endl;
-	}
-
-	for (int i = 0; i < numParticles; i++) {
-		cout << i << " " << particles[i].coords[0] << " " << particles[i].coords[1] << endl;
-	}
-
-
+	MassMatrix massMatrix;
+	massMatrix.setParticles(particles);
+	massMatrix.assemble(shapeMatrix,nodeSet);
 	// Get the diagonalized form of the mass matrix
-
+	auto diagonalMassMatrix = massMatrix.lump();
 
 	// Compute the acceleration at the grid nodes
+
 
 	// Compute the velocity through explicit integration
 

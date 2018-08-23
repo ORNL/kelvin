@@ -49,6 +49,13 @@ class MFEMMPMData: public MFEMData {
 private:
 
 	/**
+	 * This is the background Eulerian grid and it includes the raw mesh
+	 * (through the meshContainer), velocity, acceleration, mass, stress,
+	 * strain, gradients of these quantities, etc.
+	 */
+	Grid _grid;
+
+	/**
 	 * This vector contains the point particles read from input and associated
 	 * with the mesh stored in the mesh container of this Data instance.
 	 */
@@ -71,6 +78,13 @@ public:
 	 * @return Point the set of Lagrangian Material Points.
 	 */
 	std::vector<Point> & particles();
+
+	/**
+	 * This operation returns the computational grid that defines the Eulerian
+	 * components of the MPM method.
+	 * @return the grid
+	 */
+	Grid & grid();
 
 	virtual void load(const std::string & inputFile);
 
