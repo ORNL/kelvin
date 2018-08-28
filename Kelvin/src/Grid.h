@@ -119,7 +119,10 @@ public:
 	/// Update kinematics, fields, etc.
 	void update();
 
-	// Get the mass matrix
+	/**
+	 * Get the mass matrix associated with the grid.
+	 * @return the mass matrix
+	 */
 	const MassMatrix & massMatrix() const;
 
 	/**

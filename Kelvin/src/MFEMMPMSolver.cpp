@@ -82,8 +82,7 @@ void MFEMMPMSolver::solve(MFEMMPMData & data) {
 
 	// Construct the mass matrix associated with the grid nodes
 	double particleMass = 1.0; // FIXME! Needs to be something real and from input.
-	MassMatrix massMatrix;
-	massMatrix.setParticles(particles);
+	MassMatrix massMatrix(particles);
 	massMatrix.assemble(shapeMatrix,nodeSet);
 	// Get the diagonalized form of the mass matrix
 	auto diagonalMassMatrix = massMatrix.lump();

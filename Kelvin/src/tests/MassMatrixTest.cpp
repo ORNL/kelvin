@@ -111,8 +111,7 @@ BOOST_AUTO_TEST_CASE(checkMass) {
 	shapeMatrix.Print();
 
 	// Create the mass matrix
-	MassMatrix massMatrix;
-	massMatrix.setParticles(particles);
+	MassMatrix massMatrix(particles);
 	massMatrix.assemble(shapeMatrix,nodeSet);
 
 	// Construct the mass matrix associated with the grid nodes

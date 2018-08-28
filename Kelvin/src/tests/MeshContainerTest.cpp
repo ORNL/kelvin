@@ -118,19 +118,36 @@ BOOST_AUTO_TEST_CASE(checkMesh) {
 
     // Check some mesh properties
     auto & mesh = mc.getMesh();
-    BOOST_REQUIRE_EQUAL(2,mesh.Dimension());
+    int dim = mesh.Dimension();
+    BOOST_REQUIRE_EQUAL(2,dim);
     BOOST_REQUIRE_EQUAL(1,mesh.GetElementTransformation(0)->Order());
 
-    // Check the surrounding ids for a point in the second element
-    std::vector<double> point = {1.5,0.5};
-    auto nodeIds = mc.getSurroundingNodeIds(point);
-    // There should be four nodes
-    BOOST_REQUIRE_EQUAL(4,nodeIds.size());
-    // And the ids should match those of the second element
-    BOOST_REQUIRE_EQUAL(1,nodeIds[0]);
-    BOOST_REQUIRE_EQUAL(2,nodeIds[1]);
-    BOOST_REQUIRE_EQUAL(5,nodeIds[2]);
-    BOOST_REQUIRE_EQUAL(4,nodeIds[3]);
+    // Check the positions of the nodes - this only insures that the file was
+    // loaded correctly into the MFEM mesh.
+    // (0.0,0.0)
+    auto * coords = mesh.GetVertex(0);
+    BOOST_REQUIRE_CLOSE(0.0,coords[0],0.0);
+    BOOST_REQUIRE_CLOSE(0.0,coords[1],0.0);
+    // (1.0,0.0)
+    coords = mesh.GetVertex(1);
+    BOOST_REQUIRE_CLOSE(1.0,coords[0],1.0e-15);
+    BOOST_REQUIRE_CLOSE(0.0,coords[1],0.0);
+    // (2.0,0.0)
+    coords = mesh.GetVertex(2);
+    BOOST_REQUIRE_CLOSE(2.0,coords[0],1.0e-15);
+    BOOST_REQUIRE_CLOSE(0.0,coords[1],0.0);
+    // (0.0,1.0)
+    coords = mesh.GetVertex(3);
+    BOOST_REQUIRE_CLOSE(0.0,coords[0],0.0);
+    BOOST_REQUIRE_CLOSE(1.0,coords[1],1.0e-15);
+    // (1.0,1.0)
+    coords = mesh.GetVertex(4);
+    BOOST_REQUIRE_CLOSE(1.0,coords[0],1.0e-15);
+    BOOST_REQUIRE_CLOSE(1.0,coords[1],1.0e-15);
+    // (2.0,1.0)
+    coords = mesh.GetVertex(5);
+    BOOST_REQUIRE_CLOSE(2.0,coords[0],1.0e-15);
+    BOOST_REQUIRE_CLOSE(1.0,coords[1],1.0e-15);
 
     // Get and check the quadrature points of the elements.
     cout << "----- Checking quadrature points -----" << endl;
@@ -148,6 +165,17 @@ BOOST_AUTO_TEST_CASE(checkMesh) {
     BOOST_REQUIRE_EQUAL(2,secondPoint.dimension());
     BOOST_REQUIRE_CLOSE(1.5,secondPoint.coords[0],1.0e-15);
     BOOST_REQUIRE_CLOSE(0.5,secondPoint.coords[1],1.0e-15);
+
+    // Check the surrounding ids for a point in the second element
+    std::vector<double> point = {1.5,0.5};
+    auto nodeIds = mc.getSurroundingNodeIds(point);
+    // There should be four nodes
+    BOOST_REQUIRE_EQUAL(4,nodeIds.size());
+    // And the ids should match those of the second element
+    BOOST_REQUIRE_EQUAL(1,nodeIds[0]);
+    BOOST_REQUIRE_EQUAL(2,nodeIds[1]);
+    BOOST_REQUIRE_EQUAL(5,nodeIds[2]);
+    BOOST_REQUIRE_EQUAL(4,nodeIds[3]);
 
     cout << "--------------------------------------" << endl;
 

@@ -77,7 +77,7 @@ void Grid::assemble(const std::vector<Kelvin::Point> & particles) {
 	_shapeMatrix->Finalize();
 	_shapeMatrix->SortColumnIndices();
 
-	// Construct the mass matrixvassociated with the grid nodes
+	// Construct the mass matrix associated with the grid nodes
 	_massMatrix = make_unique<MassMatrix>(particles);
 	double particleMass = 1.0; // FIXME! Needs to be something real and from input.
 	_massMatrix->assemble(*_shapeMatrix,nodeSet);

@@ -36,9 +36,9 @@ using namespace std;
 
 namespace Kelvin {
 
-MassMatrix::MassMatrix() :
+MassMatrix::MassMatrix(const std::vector<Point> & particleList) :
 		nodes(nodesDummy),
-		particles(particlesDummy), shapes(NULL) {
+		particles(particleList), shapes(NULL) {
 	// TODO Auto-generated constructor stub
 
 }
@@ -53,7 +53,7 @@ void MassMatrix::assemble(mfem::SparseMatrix & shapeMatrix,
 	nodes = nodeSet;
 }
 
-double MassMatrix::operator()(int i, int j) {
+double MassMatrix::operator()(int i, int j) const {
 
 	// Mass element m_ij
 	double m_ij = 0.0;

@@ -73,14 +73,52 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
 
     // Check the nodal positions
     auto & pos = grid.pos();
-    cout << pos.size() << endl;
+    cout << "Num nodes = " << pos.size() << endl;
+    BOOST_REQUIRE_EQUAL(6,pos.size());
+    // (0.0,0.0) - Note that I am copying the value of the point here. That's
+    // OK for a small test, but don't do it in production code!
+    auto point = pos[0];
+    BOOST_REQUIRE_CLOSE(0.0,point.coords[0],0.0);
+    BOOST_REQUIRE_CLOSE(0.0,point.coords[1],0.0);
+    // (1.0,0.0)
+    point = pos[1];
+    BOOST_REQUIRE_CLOSE(1.0,point.coords[0],1.0e-15);
+    BOOST_REQUIRE_CLOSE(0.0,point.coords[1],0.0);
+    // (2.0,0.0)
+    point = pos[2];
+    BOOST_REQUIRE_CLOSE(2.0,point.coords[0],1.0e-15);
+    BOOST_REQUIRE_CLOSE(0.0,point.coords[1],0.0);
+    // (0.0,1.0)
+    point = pos[3];
+    BOOST_REQUIRE_CLOSE(0.0,point.coords[0],0.0);
+    BOOST_REQUIRE_CLOSE(1.0,point.coords[1],1.0e-15);
+    // (1.0,1.0)
+    point = pos[4];
+    BOOST_REQUIRE_CLOSE(1.0,point.coords[0],1.0e-15);
+    BOOST_REQUIRE_CLOSE(1.0,point.coords[1],1.0e-15);
+    // (2.0,1.0)
+    point = pos[5];
+    BOOST_REQUIRE_CLOSE(2.0,point.coords[0],1.0e-15);
+    BOOST_REQUIRE_CLOSE(1.0,point.coords[1],1.0e-15);
 
-    // FIXME! Tests!
-
-    // Check the mass matrix
+    // Check the mass matrix. A detailed check is warranted since the Grid
+    // creates it.
+    std::vector<double> refMasses = {0.0625, 0.0625, 0.0, 0.0625, 0.0625, 0.0,
+    		0.0625, 0.125, 0.0625, 0.0625, 0.125, 0.0625, 0.0, 0.0625, 0.0625,
+			0.0, 0.0625, 0.0625, 0.0625, 0.0625, 0.0, 0.0625, 0.0625, 0.0,
+			0.0625,	0.125, 0.0625, 0.0625, 0.125, 0.0625, 0.0, 0.0625, 0.0625,
+			0.0, 0.0625, 0.0625};
     auto & massMatrix = grid.massMatrix();
+    int k = 0;
+    for (int i = 0; i < 6; i++) {
+    	for (int j = 0; j < 6; j++) {
+    		auto mij = massMatrix(i,j);
+    		BOOST_REQUIRE_CLOSE(refMasses[k],mij,1.0e-15);
+    		k++;
+    	}
+    }
 
-    // FIXME! Tests!
+    // Not checking lumping - that is done in the mass matrix test.
 
     // Check the acceleration at the nodes
     auto & acc = grid.acc();

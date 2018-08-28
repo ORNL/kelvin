@@ -120,8 +120,9 @@ public:
 			std::set<int> & nodeSet);
 
 	/**
-	 * This operator accesses the element in the matrix at the i-th row and the
-	 * j-th column.
+	 * This operator computes the element in the matrix at the i-th row and the
+	 * j-th column. This represents the mass shared between the i-th and j-th
+	 * nodes in the system.
 	 *
 	 * Since this matrix is sparse, matrix elements are computed on the fly and
 	 * not stored. Elements that are outside the nodeset always have
@@ -135,7 +136,7 @@ public:
 	 * @return the mass element at row i and column j if it is non-zero,
 	 * otherwise 0.0 exactly;
 	 */
-	double operator()(int i, int j);
+	double operator()(int i, int j) const;
 
 	/**
 	 * This operation creates a diagonalized form of the mass matrix by summing
