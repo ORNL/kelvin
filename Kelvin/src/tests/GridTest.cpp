@@ -29,72 +29,71 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#include <MFEMMPMData.h>
-#include <memory>
+#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MODULE kelvin
+
+#include <boost/test/included/unit_test.hpp>
+#include <mfem.hpp>
 #include <vector>
-#include <DelimitedTextParser.h>
-#include <iostream>
+#include <Grid.h>
+#include <MeshContainer.h>
+#include <H1FESpaceFactory.h>
+#include <INIPropertyParser.h>
 
 using namespace std;
+using namespace mfem;
+using namespace Kelvin;
 using namespace fire;
 
-namespace Kelvin {
+// Test file names
+static std::string inputFile = "2SquaresInput-smallerMesh.ini";
 
-MFEMMPMData::MFEMMPMData() {
-	// TODO Auto-generated constructor stub
+/**
+ * This operation checks the basic functionality of the Grid class.
+ */
+BOOST_AUTO_TEST_CASE(checkGrid) {
 
-}
+	// Create the space factory
+	H1FESpaceFactory spaceFactory;
 
-MFEMMPMData::~MFEMMPMData() {
-	// TODO Auto-generated destructor stub
-}
+	// Load the input file
+	INIPropertyParser propertyParser;
+	propertyParser.setSource(inputFile);
+    propertyParser.parse();
 
-void MFEMMPMData::load(const std::string & inputFile) {
+	// Load the mesh
+    MeshContainer mc(propertyParser.getPropertyBlock("mesh"),spaceFactory);
 
-	// Load the rest of the input data - mesh, etc. - first and then pull the
-	// particle data
-	MFEMData::load(inputFile);
+    // Create the grid
+    Grid grid(mc);
+    // Just use the quadrature points as the particles
+    auto points = mc.getQuadraturePoints();
+    // Assemble it to create the arrays of nodes, shapes, masses, etc.
+    grid.assemble(points);
 
-	// Get the particles file
-	auto & block = propertyParser.getPropertyBlock("particles");
-	auto & particlesFile = block.at("file");
-	// Load the particles
-	DelimitedTextParser<vector<vector<double>>,double> parser(",","#");
-	parser.setSource(particlesFile);
-	parser.parse();
-	shared_ptr<vector<vector<double>>> data = parser.getData();
+    // Check the nodal positions
+    auto & pos = grid.pos();
+    cout << pos.size() << endl;
 
-	cout << "Loaded " << data->size() << " particles from "
-			<< particlesFile << endl;
+    // FIXME! Tests!
 
-	// Convert to points and pack the particles vector
-	for (int i = 0; i < data->size(); i++) {
-		auto & rawCoords = data->at(i);
-		int numCoords = rawCoords.size();
-		Point point(rawCoords.size());
-		for (int j = 0; j < numCoords; j++) {
-			point.coords[j] = rawCoords[j];
-		}
-		_particles.push_back(point);
-	}
+    // Check the mass matrix
+    auto & massMatrix = grid.massMatrix();
 
-	// Configure the data needed by the grid
-	_grid = make_unique<Grid>(*mc);
+    // FIXME! Tests!
 
-	// Assemble the shape and mass matrices
-	_grid->assemble(_particles);
+    // Check the acceleration at the nodes
+    auto & acc = grid.acc();
+
+    // FIXME! Tests!
+
+    // Check the velocity at the nodes
+    auto & vel = grid.vel();
+
+    // FIXME! Tests!
+
+    BOOST_FAIL("Not yet implemented.");
 
 	return;
-}
 
-Grid & MFEMMPMData::grid() {
-	if (!loaded) throw "Data not loaded!";
-	return *_grid;
 }
-
-std::vector<Point> & MFEMMPMData::particles() {
-	if (!loaded) throw "Data not loaded!";
-	return _particles;
-}
-
-} /* namespace Kelvin */

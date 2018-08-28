@@ -29,7 +29,7 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#include "MassMatrix.h"
+#include <MassMatrix.h>
 
 using namespace mfem;
 using namespace std;
@@ -45,10 +45,6 @@ MassMatrix::MassMatrix() :
 
 MassMatrix::~MassMatrix() {
 	// TODO Auto-generated destructor stub
-}
-
-void MassMatrix::setParticles(std::vector<Point> & particlesList) {
-	particles = particlesList;
 }
 
 void MassMatrix::assemble(mfem::SparseMatrix & shapeMatrix,

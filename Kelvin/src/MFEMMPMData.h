@@ -34,6 +34,8 @@
 
 #include <MFEMData.h>
 #include <vector>
+#include <memory>
+#include <Grid.h>
 
 namespace Kelvin {
 
@@ -53,7 +55,7 @@ private:
 	 * (through the meshContainer), velocity, acceleration, mass, stress,
 	 * strain, gradients of these quantities, etc.
 	 */
-	Grid _grid;
+	std::unique_ptr<Grid> _grid;
 
 	/**
 	 * This vector contains the point particles read from input and associated

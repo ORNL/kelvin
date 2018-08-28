@@ -29,72 +29,91 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#include <MFEMMPMData.h>
+#include <Grid.h>
 #include <memory>
-#include <vector>
-#include <DelimitedTextParser.h>
-#include <iostream>
 
+using namespace mfem;
 using namespace std;
-using namespace fire;
 
 namespace Kelvin {
 
-MFEMMPMData::MFEMMPMData() {
+Grid::Grid(MeshContainer & meshContainer) : _meshContainer(meshContainer){
 	// TODO Auto-generated constructor stub
 
 }
 
-MFEMMPMData::~MFEMMPMData() {
+Grid::~Grid() {
 	// TODO Auto-generated destructor stub
 }
 
-void MFEMMPMData::load(const std::string & inputFile) {
+void Grid::assemble(const std::vector<Kelvin::Point> & particles) {
 
-	// Load the rest of the input data - mesh, etc. - first and then pull the
-	// particle data
-	MFEMData::load(inputFile);
-
-	// Get the particles file
-	auto & block = propertyParser.getPropertyBlock("particles");
-	auto & particlesFile = block.at("file");
-	// Load the particles
-	DelimitedTextParser<vector<vector<double>>,double> parser(",","#");
-	parser.setSource(particlesFile);
-	parser.parse();
-	shared_ptr<vector<vector<double>>> data = parser.getData();
-
-	cout << "Loaded " << data->size() << " particles from "
-			<< particlesFile << endl;
-
-	// Convert to points and pack the particles vector
-	for (int i = 0; i < data->size(); i++) {
-		auto & rawCoords = data->at(i);
-		int numCoords = rawCoords.size();
-		Point point(rawCoords.size());
-		for (int j = 0; j < numCoords; j++) {
-			point.coords[j] = rawCoords[j];
+	// Get the nodal coordinates from he mesh
+	auto & mesh = _meshContainer.getMesh();
+	int numVerts = mesh.GetNV();
+	double * mcCoords;
+	int dim = _meshContainer.dimension();
+	for (int i = 0; i < numVerts; i++) {
+		mcCoords = mesh.GetVertex(i);
+		Point point;
+		for (int j = 0; j < dim; j++) {
+			point.coords[j] = mcCoords[j];
 		}
-		_particles.push_back(point);
+		_pos.push_back(point);
 	}
 
-	// Configure the data needed by the grid
-	_grid = make_unique<Grid>(*mc);
+	// The shape matrix is very sparse, so this computation exploits that by only
+	// adding shape values for nodes that exist for the given particle.
+	int numParticles = particles.size();
+	_shapeMatrix = make_unique<SparseMatrix>(numParticles,numVerts);
+	for (int i = 0; i < numParticles; i++) {
+		auto nodeIds = _meshContainer.getSurroundingNodeIds(particles[i].coords);
+		auto shape = _meshContainer.getNodalShapes(particles[i].coords);
+		for (int j = 0; j < shape.size(); j++) {
+			_shapeMatrix->Add(i,nodeIds[j],shape[j]);
+			nodeSet.insert(nodeIds[j]);
+		}
+	}
+	_shapeMatrix->Finalize();
+	_shapeMatrix->SortColumnIndices();
 
-	// Assemble the shape and mass matrices
-	_grid->assemble(_particles);
+	// Construct the mass matrixvassociated with the grid nodes
+	_massMatrix = make_unique<MassMatrix>(particles);
+	double particleMass = 1.0; // FIXME! Needs to be something real and from input.
+	_massMatrix->assemble(*_shapeMatrix,nodeSet);
 
 	return;
 }
 
-Grid & MFEMMPMData::grid() {
-	if (!loaded) throw "Data not loaded!";
-	return *_grid;
+void Grid::updateShapeMatrix() {
+
 }
 
-std::vector<Point> & MFEMMPMData::particles() {
-	if (!loaded) throw "Data not loaded!";
-	return _particles;
+void Grid::updateMassMatrix() {
+
+}
+
+void Grid::update() {
+
+	// Get the diagonalized form of the mass matrix
+	auto diagonalMassMatrix = _massMatrix->lump();
+
+}
+
+const MassMatrix & Grid::massMatrix() const {
+	return *_massMatrix;
+}
+
+const std::vector<Point> Grid::pos() const {
+	return _pos;
+}
+
+const std::vector<Point> Grid::vel() const {
+	return _vel;
+}
+
+const std::vector<Point> Grid::acc() const {
+	return _acc;
 }
 
 } /* namespace Kelvin */

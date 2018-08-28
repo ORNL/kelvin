@@ -68,11 +68,6 @@ private:
 	/**
 	 * A private dummy to get around injecting references in the constructor.
 	 */
-	std::vector<Point> particlesDummy;
-
-	/**
-	 * A private dummy to get around injecting references in the constructor.
-	 */
 	mfem::SparseMatrix shapesDummy;
 
 protected:
@@ -85,7 +80,7 @@ protected:
 	/**
 	 * The full set of particles that give rise to mass in the grid.
 	 */
-	std::vector<Point> & particles;
+	const std::vector<Point> & particles;
 
 	/**
 	 * The shape matrix that defines the relationship between nodes and
@@ -101,20 +96,16 @@ protected:
 public:
 
 	/**
-	 * Constructor
+	 * Constructor. The mass matrix must have a reference to the master list of
+	 * particles for the system.
+	 * @param particlesList the particles in the system
 	 */
-	MassMatrix();
+	MassMatrix(const std::vector<Point> & particleList);
 
 	/**
 	 * Destructor
 	 */
 	virtual ~MassMatrix();
-
-	/**
-	 * This operation sets the reference particle list for the mass matrix
-	 * @param particlesList the particles in the system
-	 */
-	void setParticles(std::vector<Point> & particleList);
 
 	/**
 	 * This operator assembles the mass matrix from a shape matrix and the list
