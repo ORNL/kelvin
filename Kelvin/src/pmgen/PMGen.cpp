@@ -212,7 +212,7 @@ void createReferenceMesh(MeshContainer & meshContainer,
 	int numPoints = points.size();
 	for (int i = 0; i < numPoints; i++) {
 		for (int j = 0; j < dim; j++) {
-			points[i].coords[j] += refMeshCenter[j];
+			points[i].pos[j] += refMeshCenter[j];
 		}
 	}
 
@@ -260,10 +260,10 @@ void writeParticles(vector<Kelvin::Point> points, const char * particleFilename,
 		// No need for a loop over coords[j] since dim = 2 or dim = 3 and
 		// branch prediction should handle any performance drop.
 		if (dim == 2) {
-		   particleFile << points[i].coords[0] << ", " << points[i].coords[1];
+		   particleFile << points[i].pos[0] << ", " << points[i].pos[1];
 		} else if (dim == 3){
-		   particleFile << points[i].coords[0] << ", " << points[i].coords[1]
-					    << ", " << points[i].coords[2];
+		   particleFile << points[i].pos[0] << ", " << points[i].pos[1]
+					    << ", " << points[i].pos[2];
 		}
 		particleFile << endl;
 	}

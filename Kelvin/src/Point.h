@@ -47,7 +47,7 @@ namespace Kelvin {
  * when they are needed.
  */
 class Point {
-private:
+protected:
 
 	/**
 	 * The number of dimensions of the point.
@@ -57,9 +57,19 @@ private:
 public:
 
 	/**
-	 * The coordinates that describe the position of the point.
+	 * The position vector of the point.
 	 */
-	std::vector<double> coords;
+	std::vector<double> pos;
+
+	/**
+	 * The velocity vector of the point.
+	 */
+	std::vector<double> vel;
+
+	/**
+	 * The acceleration vector of the point.
+	 */
+	std::vector<double> acc;
 
 	/**
 	 * Constructor
@@ -80,7 +90,7 @@ public:
 	 * This operation returns the dimension of the point, (i.e. - 1, 2 or 3D).
 	 * @return the dimension
 	 */
-	int dimension();
+	int dimension() const;
 };
 
 } /* namespace Kelvin */

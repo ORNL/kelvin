@@ -66,8 +66,8 @@ void MFEMMPMSolver::solve(MFEMMPMData & data) {
 	// adding shape values for nodes that exist for the given particle.
 	SparseMatrix shapeMatrix(numParticles,numVerts);
 	for (int i = 0; i < numParticles; i++) {
-		auto nodeIds = meshCont.getSurroundingNodeIds(particles[i].coords);
-		auto shape = meshCont.getNodalShapes(particles[i].coords);
+		auto nodeIds = meshCont.getSurroundingNodeIds(particles[i].pos);
+		auto shape = meshCont.getNodalShapes(particles[i].pos);
 		for (int j = 0; j < shape.size(); j++) {
 			shapeMatrix.Add(i,nodeIds[j],shape[j]);
 			nodeSet.insert(nodeIds[j]);

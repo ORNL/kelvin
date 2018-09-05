@@ -59,11 +59,11 @@ BOOST_AUTO_TEST_CASE(checkMass) {
 	int numParticles = 4;
 	vector<Kelvin::Point> particles(numParticles);
 	for (int i = 0; i < numParticles; i++) {
-		particles[i].coords[0] = 0.5 + ((double) i);
-		particles[i].coords[1] = 0.5 + ((double) i);
-		particles[i].coords[2] = 0.5 + ((double) i);
-		std::cout << particles[i].coords[0] << " " << particles[i].coords[1]
-				<< " " << particles[i].coords[2] << endl;
+		particles[i].pos[0] = 0.5 + ((double) i);
+		particles[i].pos[1] = 0.5 + ((double) i);
+		particles[i].pos[2] = 0.5 + ((double) i);
+		std::cout << particles[i].pos[0] << " " << particles[i].pos[1]
+				<< " " << particles[i].pos[2] << endl;
 	}
 
 	// Setup the shape matrix

@@ -33,38 +33,50 @@
 #define BOOST_TEST_MODULE kelvin
 
 #include <boost/test/included/unit_test.hpp>
-#include <MFEMMPMData.h>
+#include <MaterialPoint.h>
 
 using namespace std;
 using namespace Kelvin;
 
-// Test file names
-static std::string inputFile = "2SquaresInput.ini";
-
 /**
- * This operation insures that the data can be constructed and loaded
- * correctly. In this case, since this is a subclass, all it does is insure
- * that the particles vector is constructed.
+ * This operation insures that the point can be constructed and read correctly.
  */
-BOOST_AUTO_TEST_CASE(checkConstructionAndLoad) {
+BOOST_AUTO_TEST_CASE(checkConstruction) {
 
-	MFEMMPMData data;
-	// Make sure the data is not marked as loaded yet
-	BOOST_REQUIRE(!data.isLoaded());
+	// Check the basic size of the point
+	MaterialPoint point;
+	BOOST_REQUIRE_EQUAL(3,point.dimension());
 
-	// Load the input data
-	data.load(inputFile);
+	// Check component dimensionality
+	BOOST_REQUIRE_EQUAL(3,point.pos.size());
+	BOOST_REQUIRE_EQUAL(3,point.vel.size());
+	BOOST_REQUIRE_EQUAL(3,point.acc.size());
+	BOOST_REQUIRE_EQUAL(3,point.stress.size());
+	BOOST_REQUIRE_EQUAL(3,point.strain.size());
+	// And mass
+	BOOST_REQUIRE_EQUAL(0.0,point.mass);
 
-	// Check that the particles were loaded
-	BOOST_REQUIRE(data.isLoaded());
-	auto & particles = data.particles();
-	BOOST_REQUIRE_EQUAL(2,particles.size());
+	// Loading the points to test copy construction
+	for (int i = 0; i < 3; i++) {
+		point.pos[i] = (double) i;
+		point.vel[i] = (double) i;
+		point.acc[i] = (double) i;
+		point.stress[i] = (double) i;
+		point.strain[i] = (double) i;
+	}
+	point.mass = 1.0;
 
-	// Check positions of the two particles
-	BOOST_REQUIRE_CLOSE(1.5,particles[0].pos[0],1.0e-15);
-	BOOST_REQUIRE_CLOSE(1.5,particles[0].pos[1],1.0e-15);
-	BOOST_REQUIRE_CLOSE(2.5,particles[1].pos[0],1.0e-15);
-	BOOST_REQUIRE_CLOSE(1.5,particles[1].pos[1],1.0e-15);
+	// Check copy construction
+	MaterialPoint point2(point);
+	BOOST_REQUIRE_EQUAL(point.dimension(),point2.dimension());
+	for (int i = 0; i < 3; i++) {
+		BOOST_REQUIRE_CLOSE(point.pos[i],point2.pos[i],1.0e-15);
+		BOOST_REQUIRE_CLOSE(point.vel[i],point2.vel[i],1.0e-15);
+		BOOST_REQUIRE_CLOSE(point.acc[i],point2.acc[i],1.0e-15);
+		BOOST_REQUIRE_CLOSE(point.stress[i],point2.stress[i],1.0e-15);
+		BOOST_REQUIRE_CLOSE(point.strain[i],point2.strain[i],1.0e-15);
+	}
+	BOOST_REQUIRE_CLOSE(point.mass,point2.mass,1.0e-15);
 
 	return;
 }

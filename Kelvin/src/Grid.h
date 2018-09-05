@@ -37,6 +37,7 @@
 #include <set>
 #include <MassMatrix.h>
 #include <MeshContainer.h>
+#include <functional>
 
 namespace Kelvin {
 
@@ -44,6 +45,17 @@ namespace Kelvin {
 * This is the background Eulerian grid. It computes and stores the raw mesh
 * (through the meshContainer), velocity, acceleration, mass, stress,
 * strain, gradients of these quantities, etc.
+*
+* Nodes are stored as Points, which have position, velocity, and
+* acceleration. Accessing these quantities should be done by pulling and
+* indexing the list of nodes through the nodes() operation.
+* @code
+* auto & nodes = grid.nodes();
+* auto & pos5 = nodes[4].pos;
+* auto & vel5 = nodes[4].vel;
+* auto & acc5 = nodes[4].acc;
+* ...
+* @endcode
 */
 class Grid {
 
@@ -52,17 +64,7 @@ protected:
 	/**
 	 * Nodal positions
 	 */
-	std::vector<Point> _pos;
-
-	/**
-	 * Nodal velocities
-	 */
-	std::vector<Point> _vel;
-
-	/**
-	 * Nodal acceleration
-	 */
-	std::vector<Point> _acc;
+	std::vector<Point> _nodes;
 
 	/**
 	 * The list of massive nodes
@@ -95,6 +97,14 @@ protected:
 	 */
 	void updateMassMatrix();
 
+	/**
+	 * The list of forces applied on the grid. The function prototype for
+	 * forces is f(Point,double) where the first argument is the coordinates
+	 * where the force is currently applied and the second argument is the
+	 * mass.
+	 */
+    std::vector<std::function<void(const Point&,double)>> forces;
+
 public:
 
 	/**
@@ -126,25 +136,20 @@ public:
 	const MassMatrix & massMatrix() const;
 
 	/**
-	 * This operation returns the present position of the grid nodes
-	 * @return the position of the nodes, one for each massive node on the
-	 * grid.
+	 * This operation returns the present kinematic information at the nodes
+	 * as Points with positions, velocities, and accelerations. This includes
+	 * the whole grid, not just the massive nodes.
+	 * @return the kinematic information of the nodes
 	 */
-	const std::vector<Point> pos() const;
+	const std::vector<Point> nodes() const;
 
 	/**
-	 * This operation returns the present velocity at the grid nodes
-	 * @return the velocity at the nodes, one for each massive node on the
-	 * grid.
+	 * This function adds a force to the list of forces at are applied at the
+	 * grid points.
+	 * @param force the function to add to the list of applied forces. It must
+	 * take a point and a mass as input arguments.
 	 */
-	const std::vector<Point> vel() const;
-
-	/**
-	 * This operation returns the present acceleration at the grid nodes
-	 * @return the acceleration at the nodes, one for each massive node on the
-	 * grid.
-	 */
-	const std::vector<Point> acc() const;
+	void addForce(std::function<void(const Point &,double)> force);
 
 };
 

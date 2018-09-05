@@ -72,34 +72,34 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
     grid.assemble(points);
 
     // Check the nodal positions
-    auto & pos = grid.pos();
-    cout << "Num nodes = " << pos.size() << endl;
-    BOOST_REQUIRE_EQUAL(6,pos.size());
+    auto & nodes = grid.nodes();
+    cout << "Num nodes = " << nodes.size() << endl;
+    BOOST_REQUIRE_EQUAL(6,nodes.size());
     // (0.0,0.0) - Note that I am copying the value of the point here. That's
-    // OK for a small test, but don't do it in production code!
-    auto point = pos[0];
-    BOOST_REQUIRE_CLOSE(0.0,point.coords[0],0.0);
-    BOOST_REQUIRE_CLOSE(0.0,point.coords[1],0.0);
+    // OK for a small test, but don't do it in production code! Loop instead.
+    auto point = nodes[0].pos;
+    BOOST_REQUIRE_CLOSE(0.0,point[0],0.0);
+    BOOST_REQUIRE_CLOSE(0.0,point[1],0.0);
     // (1.0,0.0)
-    point = pos[1];
-    BOOST_REQUIRE_CLOSE(1.0,point.coords[0],1.0e-15);
-    BOOST_REQUIRE_CLOSE(0.0,point.coords[1],0.0);
+    point = nodes[1].pos;
+    BOOST_REQUIRE_CLOSE(1.0,point[0],1.0e-15);
+    BOOST_REQUIRE_CLOSE(0.0,point[1],0.0);
     // (2.0,0.0)
-    point = pos[2];
-    BOOST_REQUIRE_CLOSE(2.0,point.coords[0],1.0e-15);
-    BOOST_REQUIRE_CLOSE(0.0,point.coords[1],0.0);
+    point = nodes[2].pos;
+    BOOST_REQUIRE_CLOSE(2.0,point[0],1.0e-15);
+    BOOST_REQUIRE_CLOSE(0.0,point[1],0.0);
     // (0.0,1.0)
-    point = pos[3];
-    BOOST_REQUIRE_CLOSE(0.0,point.coords[0],0.0);
-    BOOST_REQUIRE_CLOSE(1.0,point.coords[1],1.0e-15);
+    point = nodes[3].pos;
+    BOOST_REQUIRE_CLOSE(0.0,point[0],0.0);
+    BOOST_REQUIRE_CLOSE(1.0,point[1],1.0e-15);
     // (1.0,1.0)
-    point = pos[4];
-    BOOST_REQUIRE_CLOSE(1.0,point.coords[0],1.0e-15);
-    BOOST_REQUIRE_CLOSE(1.0,point.coords[1],1.0e-15);
+    point = nodes[4].pos;
+    BOOST_REQUIRE_CLOSE(1.0,point[0],1.0e-15);
+    BOOST_REQUIRE_CLOSE(1.0,point[1],1.0e-15);
     // (2.0,1.0)
-    point = pos[5];
-    BOOST_REQUIRE_CLOSE(2.0,point.coords[0],1.0e-15);
-    BOOST_REQUIRE_CLOSE(1.0,point.coords[1],1.0e-15);
+    point = nodes[5].pos;
+    BOOST_REQUIRE_CLOSE(2.0,point[0],1.0e-15);
+    BOOST_REQUIRE_CLOSE(1.0,point[1],1.0e-15);
 
     // Check the mass matrix. A detailed check is warranted since the Grid
     // creates it.
@@ -121,12 +121,12 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
     // Not checking lumping - that is done in the mass matrix test.
 
     // Check the acceleration at the nodes
-    auto & acc = grid.acc();
+//    auto & acc = grid.acc();
 
     // FIXME! Tests!
 
     // Check the velocity at the nodes
-    auto & vel = grid.vel();
+//    auto & vel = grid.vel();
 
     // FIXME! Tests!
 

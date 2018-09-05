@@ -1,5 +1,5 @@
 /**----------------------------------------------------------------------------
- Copyright  2018-, UT-Battelle, LLC
+ Copyright (c) 2018-, UT-Battelle, LLC
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -29,44 +29,54 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE kelvin
+#ifndef SRC_MATERIALPOINT_H_
+#define SRC_MATERIALPOINT_H_
 
-#include <boost/test/included/unit_test.hpp>
-#include <MFEMMPMData.h>
+#include <Point.h>
 
-using namespace std;
-using namespace Kelvin;
-
-// Test file names
-static std::string inputFile = "2SquaresInput.ini";
+namespace Kelvin {
 
 /**
- * This operation insures that the data can be constructed and loaded
- * correctly. In this case, since this is a subclass, all it does is insure
- * that the particles vector is constructed.
+ * This is a subclass of Point that adds information for materials including
+ * mass, stress, and strain.
  */
-BOOST_AUTO_TEST_CASE(checkConstructionAndLoad) {
+class MaterialPoint: public Point {
+public:
 
-	MFEMMPMData data;
-	// Make sure the data is not marked as loaded yet
-	BOOST_REQUIRE(!data.isLoaded());
+	/**
+	 * The local stress at the material points with dimension equal to the
+	 * point dimension.
+	 */
+	std::vector<double> stress;
 
-	// Load the input data
-	data.load(inputFile);
+	/**
+	 * The local stress at the material points with dimension equal to the
+	 * point dimension.
+	 */
+	std::vector<double> strain;
 
-	// Check that the particles were loaded
-	BOOST_REQUIRE(data.isLoaded());
-	auto & particles = data.particles();
-	BOOST_REQUIRE_EQUAL(2,particles.size());
+	/**
+	 * The mass of the particle
+	 */
+	double mass;
 
-	// Check positions of the two particles
-	BOOST_REQUIRE_CLOSE(1.5,particles[0].pos[0],1.0e-15);
-	BOOST_REQUIRE_CLOSE(1.5,particles[0].pos[1],1.0e-15);
-	BOOST_REQUIRE_CLOSE(2.5,particles[1].pos[0],1.0e-15);
-	BOOST_REQUIRE_CLOSE(1.5,particles[1].pos[1],1.0e-15);
+	/**
+	 * Constructor
+	 */
+	MaterialPoint(int dim = 3);
 
-	return;
-}
+	/**
+	 * Copy Constructor
+	 */
+	MaterialPoint(const MaterialPoint & otherPoint);
 
+	/**
+	 * Destructor
+	 */
+	virtual ~MaterialPoint() {};
 
+};
+
+} /* namespace Kelvin */
+
+#endif /* SRC_MATERIALPOINT_H_ */

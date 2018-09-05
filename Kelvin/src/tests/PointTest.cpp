@@ -49,17 +49,32 @@ BOOST_AUTO_TEST_CASE(checkConstruction) {
 	Point twoDPoint(2);
 	BOOST_REQUIRE_EQUAL(2,twoDPoint.dimension());
 
-	// Try loading the points to make sure they don't fail
-	for (int i = 0; i < 3; i++) {
-		point.coords[i] = (double) i;
-		BOOST_REQUIRE_CLOSE((double) i,point.coords[i],1.0e-15);
+	// Check component dimensionality
+	BOOST_REQUIRE_EQUAL(3,point.pos.size());
+	BOOST_REQUIRE_EQUAL(3,point.vel.size());
+	BOOST_REQUIRE_EQUAL(3,point.acc.size());
+	BOOST_REQUIRE_EQUAL(2,twoDPoint.pos.size());
+	BOOST_REQUIRE_EQUAL(2,twoDPoint.vel.size());
+	BOOST_REQUIRE_EQUAL(2,twoDPoint.acc.size());
+
+	// Loading the points to test copy construction
+	for (int i = 0; i < 2; i++) {
+		twoDPoint.pos[i] = (double) i;
+		twoDPoint.vel[i] = (double) i;
+		twoDPoint.acc[i] = (double) i;
 	}
 
 	// Check copy construction
 	Point point2(twoDPoint);
 	BOOST_REQUIRE_EQUAL(twoDPoint.dimension(),point2.dimension());
-	BOOST_REQUIRE_CLOSE(twoDPoint.coords[0],point2.coords[0],1.0e-15);
-	BOOST_REQUIRE_CLOSE(twoDPoint.coords[1],point2.coords[1],1.0e-15);
+	for (int i = 0; i < 2; i++) {
+		twoDPoint.pos[i] = (double) i;
+		twoDPoint.vel[i] = (double) i;
+		twoDPoint.acc[i] = (double) i;
+		BOOST_REQUIRE_CLOSE(twoDPoint.pos[i],point2.pos[i],1.0e-15);
+		BOOST_REQUIRE_CLOSE(twoDPoint.vel[i],point2.vel[i],1.0e-15);
+		BOOST_REQUIRE_CLOSE(twoDPoint.acc[i],point2.acc[i],1.0e-15);
+	}
 
 	return;
 }

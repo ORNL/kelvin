@@ -158,13 +158,13 @@ BOOST_AUTO_TEST_CASE(checkMesh) {
     // Check the first point
     auto & firstPoint = points[0];
     BOOST_REQUIRE_EQUAL(2,firstPoint.dimension());
-    BOOST_REQUIRE_CLOSE(0.5,firstPoint.coords[0],1.0e-15);
-    BOOST_REQUIRE_CLOSE(0.5,firstPoint.coords[1],1.0e-15);
+    BOOST_REQUIRE_CLOSE(0.5,firstPoint.pos[0],1.0e-15);
+    BOOST_REQUIRE_CLOSE(0.5,firstPoint.pos[1],1.0e-15);
     // Check the second point
     auto & secondPoint = points[1];
     BOOST_REQUIRE_EQUAL(2,secondPoint.dimension());
-    BOOST_REQUIRE_CLOSE(1.5,secondPoint.coords[0],1.0e-15);
-    BOOST_REQUIRE_CLOSE(0.5,secondPoint.coords[1],1.0e-15);
+    BOOST_REQUIRE_CLOSE(1.5,secondPoint.pos[0],1.0e-15);
+    BOOST_REQUIRE_CLOSE(0.5,secondPoint.pos[1],1.0e-15);
 
     // Check the surrounding ids for a point in the second element
     std::vector<double> point = {1.5,0.5};

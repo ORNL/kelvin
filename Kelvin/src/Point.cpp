@@ -33,17 +33,19 @@
 
 namespace Kelvin {
 
-Point::Point(int dim) : nDim(dim), coords(dim) {
+Point::Point(int dim) : nDim(dim), pos(dim), vel(dim), acc(dim) {
 	nDim = dim;
 }
 
 Point::Point(const Point & otherPoint) : Point(otherPoint.nDim) {
 	for (int i = 0; i < nDim; i++) {
-		coords[i] = otherPoint.coords[i];
+		pos[i] = otherPoint.pos[i];
+		vel[i] = otherPoint.vel[i];
+		acc[i] = otherPoint.acc[i];
 	}
 }
 
-int Point::dimension() {
+int Point::dimension() const {
 	return nDim;
 }
 

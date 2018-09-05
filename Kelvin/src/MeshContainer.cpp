@@ -189,7 +189,7 @@ std::vector<Point> MeshContainer::getQuadraturePoints() {
 			// Load the point
 			Point point(dim);
 			for (int j = 0; j < dim; j++) {
-				point.coords[j] = vPoint(j);
+				point.pos[j] = vPoint(j);
 			}
 			points.push_back(point);
 		}

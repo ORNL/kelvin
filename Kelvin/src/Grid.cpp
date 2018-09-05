@@ -56,10 +56,11 @@ void Grid::assemble(const std::vector<Kelvin::Point> & particles) {
 	for (int i = 0; i < numVerts; i++) {
 		mcCoords = mesh.GetVertex(i);
 		Point point;
+		// Create the node. Only the position needs to be assigned.
 		for (int j = 0; j < dim; j++) {
-			point.coords[j] = mcCoords[j];
+			point.pos[j] = mcCoords[j];
 		}
-		_pos.push_back(point);
+		_nodes.push_back(point);
 	}
 
 	// The shape matrix is very sparse, so this computation exploits that by only
@@ -67,8 +68,8 @@ void Grid::assemble(const std::vector<Kelvin::Point> & particles) {
 	int numParticles = particles.size();
 	_shapeMatrix = make_unique<SparseMatrix>(numParticles,numVerts);
 	for (int i = 0; i < numParticles; i++) {
-		auto nodeIds = _meshContainer.getSurroundingNodeIds(particles[i].coords);
-		auto shape = _meshContainer.getNodalShapes(particles[i].coords);
+		auto nodeIds = _meshContainer.getSurroundingNodeIds(particles[i].pos);
+		auto shape = _meshContainer.getNodalShapes(particles[i].pos);
 		for (int j = 0; j < shape.size(); j++) {
 			_shapeMatrix->Add(i,nodeIds[j],shape[j]);
 			nodeSet.insert(nodeIds[j]);
@@ -104,16 +105,8 @@ const MassMatrix & Grid::massMatrix() const {
 	return *_massMatrix;
 }
 
-const std::vector<Point> Grid::pos() const {
-	return _pos;
-}
-
-const std::vector<Point> Grid::vel() const {
-	return _vel;
-}
-
-const std::vector<Point> Grid::acc() const {
-	return _acc;
+const std::vector<Point> Grid::nodes() const {
+	return _nodes;
 }
 
 } /* namespace Kelvin */

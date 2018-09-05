@@ -73,7 +73,7 @@ void MFEMMPMData::load(const std::string & inputFile) {
 		int numCoords = rawCoords.size();
 		Point point(rawCoords.size());
 		for (int j = 0; j < numCoords; j++) {
-			point.coords[j] = rawCoords[j];
+			point.pos[j] = rawCoords[j];
 		}
 		_particles.push_back(point);
 	}

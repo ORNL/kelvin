@@ -1,5 +1,5 @@
 /**----------------------------------------------------------------------------
- Copyright  2018-, UT-Battelle, LLC
+ Copyright (c) 2018-, UT-Battelle, LLC
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -29,44 +29,32 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE kelvin
+#include <MaterialPoint.h>
 
-#include <boost/test/included/unit_test.hpp>
-#include <MFEMMPMData.h>
+namespace Kelvin {
 
-using namespace std;
-using namespace Kelvin;
+MaterialPoint::MaterialPoint(int dim) : Point(dim), stress(dim), strain(dim),
+		mass(0.0) {
+	// TODO Auto-generated constructor stub
 
-// Test file names
-static std::string inputFile = "2SquaresInput.ini";
+}
 
-/**
- * This operation insures that the data can be constructed and loaded
- * correctly. In this case, since this is a subclass, all it does is insure
- * that the particles vector is constructed.
- */
-BOOST_AUTO_TEST_CASE(checkConstructionAndLoad) {
+MaterialPoint::MaterialPoint(const MaterialPoint & otherPoint) :
+		MaterialPoint(otherPoint.dimension()) {
 
-	MFEMMPMData data;
-	// Make sure the data is not marked as loaded yet
-	BOOST_REQUIRE(!data.isLoaded());
+	for (int i = 0; i < nDim; i++) {
+		pos[i] = otherPoint.pos[i];
+		vel[i] = otherPoint.vel[i];
+		acc[i] = otherPoint.acc[i];
+		stress[i] = otherPoint.stress[i];
+		strain[i] = otherPoint.strain[i];
+	}
+	mass = otherPoint.mass;
 
-	// Load the input data
-	data.load(inputFile);
-
-	// Check that the particles were loaded
-	BOOST_REQUIRE(data.isLoaded());
-	auto & particles = data.particles();
-	BOOST_REQUIRE_EQUAL(2,particles.size());
-
-	// Check positions of the two particles
-	BOOST_REQUIRE_CLOSE(1.5,particles[0].pos[0],1.0e-15);
-	BOOST_REQUIRE_CLOSE(1.5,particles[0].pos[1],1.0e-15);
-	BOOST_REQUIRE_CLOSE(2.5,particles[1].pos[0],1.0e-15);
-	BOOST_REQUIRE_CLOSE(1.5,particles[1].pos[1],1.0e-15);
+	// Do I actually need the above loop? Wouldn't copy assignment work?
+	// Something for later.
 
 	return;
 }
 
-
+} /* namespace Kelvin */
