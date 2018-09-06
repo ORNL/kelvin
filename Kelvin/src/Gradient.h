@@ -1,5 +1,5 @@
 /**----------------------------------------------------------------------------
- Copyright (c) 2018-, UT-Battelle, LLC
+ Copyright  2018-, UT-Battelle, LLC
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -29,71 +29,62 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#ifndef SRC_POINT_H_
-#define SRC_POINT_H_
+#ifndef SRC_GRADIENT_H_
+#define SRC_GRADIENT_H_
 
 #include <vector>
 
 namespace Kelvin {
 
 /**
- * This class represent a basic point. Its dimension is set on creation, with
+ * This class represent a basic Gradient. Its dimension is set on creation, with
  * a default value of n=3.
  *
  * This is a basic data class, so access to some member variables is
- * unrestricted. The size of the members is equal to the dimension of the point
+ * unrestricted. The size of the members is equal to the dimension of the Gradient
  * unless otherwise noted.
  *
- * Points allocate their space on construction, so they should only be created
+ * Gradients allocate their space on construction, so they should only be created
  * when they are needed.
  */
-class Point {
+class Gradient {
 protected:
 
 	/**
-	 * The number of dimensions of the point.
+	 * The number of dimensions of the Gradient.
 	 */
 	int nDim;
 
 public:
 
 	/**
-	 * The position vector of the point.
+	 * The vector holding the values of the gradient.
 	 */
-	std::vector<double> pos;
-
-	/**
-	 * The velocity vector of the point.
-	 */
-	std::vector<double> vel;
-
-	/**
-	 * The acceleration vector of the point.
-	 */
-	std::vector<double> acc;
+	std::vector<double> values;
 
 	/**
 	 * Constructor
 	 */
-	Point(int dim = 3);
+	Gradient(int dim = 3);
 
 	/**
 	 * Copy constructor
 	 */
-	Point(const Point & otherPoint);
+	Gradient(const Gradient & otherGradient);
 
 	/**
 	 * Destructor
 	 */
-	virtual ~Point() {};
+	virtual ~Gradient() {};
 
 	/**
-	 * This operation returns the dimension of the point, (i.e. - 1, 2 or 3D).
+	 * This operation returns the dimension of the Gradient, (i.e. - 1, 2 or 3D).
 	 * @return the dimension
 	 */
 	int dimension() const;
+
 };
 
 } /* namespace Kelvin */
 
-#endif /* SRC_POINT_H_ */
+#endif /* SRC_GRADIENT_H_ */

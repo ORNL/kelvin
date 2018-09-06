@@ -1,5 +1,5 @@
 /**----------------------------------------------------------------------------
- Copyright (c) 2018-, UT-Battelle, LLC
+ Copyright  2018-, UT-Battelle, LLC
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -29,71 +29,45 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#ifndef SRC_POINT_H_
-#define SRC_POINT_H_
+#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MODULE kelvin
 
-#include <vector>
+#include <boost/test/included/unit_test.hpp>
+#include <Gradient.h>
 
-namespace Kelvin {
+using namespace std;
+using namespace Kelvin;
 
 /**
- * This class represent a basic point. Its dimension is set on creation, with
- * a default value of n=3.
- *
- * This is a basic data class, so access to some member variables is
- * unrestricted. The size of the members is equal to the dimension of the point
- * unless otherwise noted.
- *
- * Points allocate their space on construction, so they should only be created
- * when they are needed.
+ * This operation insures that the Gradient can be constructed and read
+ * correctly.
  */
-class Point {
-protected:
+BOOST_AUTO_TEST_CASE(checkConstruction) {
 
-	/**
-	 * The number of dimensions of the point.
-	 */
-	int nDim;
+	// Check the basic size of the Gradient
+	Gradient grad;
+	BOOST_REQUIRE_EQUAL(3,grad.dimension());
+	Gradient twoDGrad(2);
+	BOOST_REQUIRE_EQUAL(2,twoDGrad.dimension());
 
-public:
+	// Check component dimensionality
+	BOOST_REQUIRE_EQUAL(3,grad.values.size());
+	BOOST_REQUIRE_EQUAL(2,twoDGrad.values.size());
 
-	/**
-	 * The position vector of the point.
-	 */
-	std::vector<double> pos;
+	// Loading the Gradients to test copy construction
+	for (int i = 0; i < 2; i++) {
+		twoDGrad.values[i] = (double) i;
+	}
 
-	/**
-	 * The velocity vector of the point.
-	 */
-	std::vector<double> vel;
+	// Check copy construction
+	Gradient grad2(twoDGrad);
+	BOOST_REQUIRE_EQUAL(twoDGrad.dimension(),grad2.dimension());
+	for (int i = 0; i < 2; i++) {
+		twoDGrad.values[i] = (double) i;
+		BOOST_REQUIRE_CLOSE(twoDGrad.values[i],grad2.values[i],1.0e-15);
+	}
 
-	/**
-	 * The acceleration vector of the point.
-	 */
-	std::vector<double> acc;
+	return;
+}
 
-	/**
-	 * Constructor
-	 */
-	Point(int dim = 3);
 
-	/**
-	 * Copy constructor
-	 */
-	Point(const Point & otherPoint);
-
-	/**
-	 * Destructor
-	 */
-	virtual ~Point() {};
-
-	/**
-	 * This operation returns the dimension of the point, (i.e. - 1, 2 or 3D).
-	 * @return the dimension
-	 */
-	int dimension() const;
-};
-
-} /* namespace Kelvin */
-
-#endif /* SRC_POINT_H_ */

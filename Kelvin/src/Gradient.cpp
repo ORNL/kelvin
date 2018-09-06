@@ -1,5 +1,5 @@
 /**----------------------------------------------------------------------------
- Copyright (c) 2018-, UT-Battelle, LLC
+ Copyright  2018-, UT-Battelle, LLC
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -29,71 +29,22 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#ifndef SRC_POINT_H_
-#define SRC_POINT_H_
-
-#include <vector>
+#include <Gradient.h>
 
 namespace Kelvin {
 
-/**
- * This class represent a basic point. Its dimension is set on creation, with
- * a default value of n=3.
- *
- * This is a basic data class, so access to some member variables is
- * unrestricted. The size of the members is equal to the dimension of the point
- * unless otherwise noted.
- *
- * Points allocate their space on construction, so they should only be created
- * when they are needed.
- */
-class Point {
-protected:
+Gradient::Gradient(int dim) : nDim(dim), values(dim) {
+	nDim = dim;
+}
 
-	/**
-	 * The number of dimensions of the point.
-	 */
-	int nDim;
+Gradient::Gradient(const Gradient & otherGradient) : Gradient(otherGradient.nDim) {
+	for (int i = 0; i < nDim; i++) {
+		values[i] = otherGradient.values[i];
+	}
+}
 
-public:
-
-	/**
-	 * The position vector of the point.
-	 */
-	std::vector<double> pos;
-
-	/**
-	 * The velocity vector of the point.
-	 */
-	std::vector<double> vel;
-
-	/**
-	 * The acceleration vector of the point.
-	 */
-	std::vector<double> acc;
-
-	/**
-	 * Constructor
-	 */
-	Point(int dim = 3);
-
-	/**
-	 * Copy constructor
-	 */
-	Point(const Point & otherPoint);
-
-	/**
-	 * Destructor
-	 */
-	virtual ~Point() {};
-
-	/**
-	 * This operation returns the dimension of the point, (i.e. - 1, 2 or 3D).
-	 * @return the dimension
-	 */
-	int dimension() const;
-};
+int Gradient::dimension() const {
+	return nDim;
+}
 
 } /* namespace Kelvin */
-
-#endif /* SRC_POINT_H_ */
