@@ -38,6 +38,7 @@
 #include <string>
 #include <vector>
 #include <Point.h>
+#include <Gradient.h>
 
 namespace Kelvin {
 
@@ -194,10 +195,23 @@ public:
 	 * does not return the total shape within an element, but instead returns
 	 * the shape for each nodal basis function separately.
 	 * @param point a vector containing the coordinates of the point to locate.
-	 * @return the nodal shapes at each node in the element that contains the
-	 * point. If the point is not found in the mesh, the vector will be empty.
+	 * @return the nodal shapes due to each node in the element that contains
+	 * the point. If the point is not found in the mesh, the vector will be
+	 * empty.
 	 */
 	std::vector<double> getNodalShapes(const std::vector<double> & point);
+
+	/**
+	 * This operation returns the gradients of the nodal shape functions for
+	 * the element that contains the point. The number and ordering of the
+	 * shapes should match those of getSurroundingNodeIds(), although the
+	 * node id is provided on the Gradients.
+	 * @param point a vector containing the coordinates of the point to locate.
+	 * @return the gradients due to each nodal shape function in the element
+	 * that contains the point. If the point is not found in the mesh, the
+	 * vector will be empty.
+	 */
+	std::vector<Gradient> getNodalGradients(const std::vector<double> & point);
 
 	/**
 	 * This operation returns the quadrature points in the mesh.

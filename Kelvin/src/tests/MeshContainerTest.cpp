@@ -187,7 +187,6 @@ BOOST_AUTO_TEST_CASE(checkMesh) {
    cout << "End checkMesh" << endl;
 
 	return;
-
 }
 
 /**
@@ -207,6 +206,7 @@ BOOST_AUTO_TEST_CASE(checkQuadraturePoints) {
 	// Load the mesh
     MeshContainer mc(propertyParser.getPropertyBlock("mesh"),spaceFactory);
 
+    return;
 }
 
 /**
@@ -310,5 +310,127 @@ BOOST_AUTO_TEST_CASE(checkShape) {
     }
 
 	return;
+}
 
+/**
+ * This operation checks the mesh container to insure that it can correctly
+ * report the value of the shape function gradients for a given element.
+ */
+BOOST_AUTO_TEST_CASE(checkGradients) {
+
+
+	// Create the space factory
+	H1FESpaceFactory spaceFactory;
+
+	// Load the input file
+	INIPropertyParser propertyParser;
+	propertyParser.setSource(inputFile);
+    propertyParser.parse();
+
+	// Load the mesh
+    MeshContainer mc(propertyParser.getPropertyBlock("mesh"),spaceFactory);
+
+    // This mesh has two elements, so grab the transformations for both from the
+    // mesh.
+    auto & mesh = mc.getMesh();
+    auto dimension = mesh.Dimension();
+    auto * e1Transform = mesh.GetElementTransformation(0);
+    auto * e2Transform = mesh.GetElementTransformation(0);
+
+    // Get the finite element types (they should be the same)
+    auto type1 = e1Transform->GetGeometryType();
+    auto type2 = e2Transform->GetGeometryType();
+    // Get the finite elements for each
+    auto * feCollection = mc.getSpace().FEColl();
+    auto * e1 = feCollection->FiniteElementForGeometry(type1);
+    auto * e2 = feCollection->FiniteElementForGeometry(type2);
+
+    /* The gradients are computed by transforming the physical coordinates into
+     * the coordinates in reference space and then calculating the shape on the
+     * canonical element. This requires:
+     * 1) Creating a dense matrix with each point as a column. Thus the matrix
+     * is n-points by d-dimensions.
+     * 2) Locating the elements in which the points reside and the values of
+     * the reference coordinates (integration points) in those elements.
+     * 3) Calculating the gradient on the finite element.
+     */
+
+    // Create the matrix of points
+    mfem::DenseMatrix points(2);
+    // row 0 contains x coordinates
+    points(0,0) = 0.5; // x1
+    points(0,1) = 1.5; // x2
+    // row 1 contains y coordinates
+    points(1,0) = 0.5; // y1
+    points(1,1) = 0.5; // y2
+
+    // Create return containers for the point data from the mesh. Gradients are
+    // stored in dense matrices.
+    mfem::Array<int> elementIds(2);
+    mfem::Array<mfem::IntegrationPoint> intPoints(2);
+    // Find the points in the mesh. This 1) locates the points in the mesh and
+    // 2) performs the translation to local coordinates within the finite
+    // element.
+    mesh.FindPoints(points,elementIds,intPoints);
+
+    // Print for debugging
+    auto & intPt1 = intPoints[0];
+    auto & intPt2 = intPoints[1];
+    BOOST_TEST_MESSAGE("----- Test Points -----");
+    points.Print();
+    BOOST_TEST_MESSAGE("intPt1 in e1 = (" << intPt1.x << ", " << intPt1.y << ")");
+    BOOST_TEST_MESSAGE("intPt2 in e2 = (" << intPt2.x << ", " << intPt2.y << ")");
+    BOOST_TEST_MESSAGE("-----------------------");
+
+    // Calculate the gradients of the shape functions on the finite elements
+    mfem::DenseMatrix grad1(e1->GetDof(),dimension);
+    e1->CalcDShape(intPt1,grad1);
+    BOOST_TEST_MESSAGE("----- Reference Gradient Values -----");
+    BOOST_TEST_MESSAGE("----- Element 1 Gradients -----");
+    grad1.Print();
+    mfem::DenseMatrix grad2(e2->GetDof(),dimension);
+    BOOST_TEST_MESSAGE("----- Element 2 Gradients -----");
+    e2->CalcDShape(intPt2,grad2);
+    grad2.Print();
+    BOOST_TEST_MESSAGE("----------------------------------");
+
+    /**
+     * The format of the gradient matrix is such that each row contains the
+     * partial derivatives of the shape functions, dN_i/dU_j. The partial
+     * derivatives with respect to the spatial coordinate - the elements of the
+     * Jacobian, dN_i/dx_j - are packed into the first nDim elements of the
+     * rows with the partial derivatives with respect to other degrees of
+     * freedom stored in the remaining elements.
+     */
+
+    // Now get the gradients through the MeshContainer API and compare them.
+
+    // Create a vector for each point
+    vector<double> pt1Vec = {points(0,0),points(1,0)};
+    vector<double> pt2Vec = {points(0,1),points(1,1)};
+    // Get the gradients through the mesh container API
+    auto pt1Grads = mc.getNodalGradients(pt1Vec);
+    auto pt2Grads = mc.getNodalGradients(pt2Vec);
+
+    // Check the gradients - first, they should be the same size as each other
+    BOOST_REQUIRE_EQUAL(pt1Grads.size(),pt2Grads.size());
+    // They should be the same size as the matrix height from MFEM.
+    BOOST_REQUIRE_EQUAL(pt1Grads.size(),grad1.Height());
+    BOOST_REQUIRE_EQUAL(pt2Grads.size(),grad2.Height());
+    // The values should match. e1...
+	for (int i = 0; i < e1->GetDof(); i++) {
+		for (int j = 0; j < dimension; j++) {
+			auto grad = pt1Grads[i];
+			BOOST_REQUIRE_CLOSE(grad.values[j],grad1(i,j),1.0e-15);
+    	}
+    }
+    // e2
+    for (int i = 0; i < e2->GetDof(); i++) {
+    	for (int j = 0; j < dimension; j++) {
+        	auto grad = pt2Grads[i];
+			BOOST_REQUIRE_CLOSE(grad.values[j],grad2(i, j), 1.0e-15);
+		}
+    }
+
+	return;
 }

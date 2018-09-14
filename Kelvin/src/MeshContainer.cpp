@@ -153,16 +153,87 @@ std::vector<double> MeshContainer::getNodalShapes(const std::vector<double> & po
 
     	// Compute the shape
     	int numShapes = fElement->GetDof();
-    	mfem::Vector shape(numShapes);
-    	fElement->CalcShape(intPoint[0],shape);
+    	mfem::Vector shapeVec(numShapes);
+    	fElement->CalcShape(intPoint[0],shapeVec);
 
     	// Repack the shapes to return them
+    	shapes.resize(numShapes);
     	for (int i = 0; i < numShapes; i++) {
-    		shapes.push_back(shape[i]);
+    		shapes[i] = shapeVec[i];
     	}
     }
 
 	return shapes;
+}
+
+std::vector<Gradient> MeshContainer::getNodalGradients(const std::vector<double> & point) {
+	std::vector<Gradient> gradients;
+
+	// Find the element that contains the point
+	mfem::Array<int> elementId(1);
+	mfem::Array<mfem::IntegrationPoint> intPoint(1);
+	auto pointMatrix = convertPointToMatrix(point);
+    mesh.FindPoints(pointMatrix,elementId,intPoint);
+
+	// Only proceed if the element was found.
+    if (elementId[0] > -1) {
+
+    	// Get the element transform, type and the finite element itself.
+    	auto * elemTransform = mesh.GetElementTransformation(0);
+    	auto type = elemTransform->GetGeometryType();
+    	auto * feCollection = space.FEColl();
+    	auto * fElement= feCollection->FiniteElementForGeometry(type);
+
+    	// Compute the gradient
+    	int numDof = fElement->GetDof();
+    	mfem::DenseMatrix gradientMatrix(numDof,dim);
+    	fElement->CalcDShape(intPoint[0],gradientMatrix);
+
+    	// Repack the gradients to return them. We only need numDof entries in
+    	// the vector, so shrink it.
+    	//
+    	// Repacking this data, especially like this, will turn out to be a
+    	// performance bottleneck. So... FIXME!
+    	gradients.resize(numDof);
+    	double * data = gradientMatrix.Data();
+    	for (int i = 0; i < numDof; i++) {
+    		Gradient grad;
+    		for (int j = 0; j < dim; j++) {
+    			grad.values[j] = gradientMatrix(i,j);
+    		}
+    		gradients[i] = grad;
+    	}
+    }
+
+	return gradients;
+
+//	// Find the element that contains the point
+//	mfem::Array<int> elementId(1);
+//	mfem::Array<mfem::IntegrationPoint> intPoint(1);
+//	auto pointMatrix = convertPointToMatrix(point);
+//    mesh.FindPoints(pointMatrix,elementId,intPoint);
+//
+//	// Only proceed if the element was found.
+//    if (elementId[0] > -1) {
+//
+//    	// Get the element transform, type and the finite element itself.
+//    	auto * elemTransform = mesh.GetElementTransformation(0);
+//    	auto type = elemTransform->GetGeometryType();
+//    	auto * feCollection = space.FEColl();
+//    	auto * fElement= feCollection->FiniteElementForGeometry(type);
+//
+//    	// Compute the shape
+//    	int numShapes = fElement->GetDof();
+//    	mfem::Vector shape(numShapes);
+//    	fElement->CalcShape(intPoint[0],shape);
+//
+//    	// Repack the shapes to return them
+//    	for (int i = 0; i < numShapes; i++) {
+//    		shapes.push_back(shape[i]);
+//    	}
+//    }
+
+	return gradients;
 }
 
 std::vector<Point> MeshContainer::getQuadraturePoints() {
