@@ -38,6 +38,7 @@
 #include <MassMatrix.h>
 #include <MeshContainer.h>
 #include <functional>
+#include <map>
 
 namespace Kelvin {
 
@@ -80,6 +81,11 @@ protected:
 	 * The shape/mapping matrix
 	 */
 	std::unique_ptr<mfem::SparseMatrix> _shapeMatrix;
+
+	/**
+	 * A map representing a sparse matrix holding the shape function gradients.
+	 */
+	std::map<int,std::vector<Gradient>> _gradientMap;
 
 	/**
 	 * The mass matrix that shows the amount of mass shared between nodes due
@@ -134,6 +140,17 @@ public:
 	 * @return the mass matrix
 	 */
 	const MassMatrix & massMatrix() const;
+
+	/**
+	 * This operation returns the gradients of the nodal shape functions for
+	 * the nodes that are near particles.
+	 * @return a map representing the matrix of gradients (technically a rank
+	 * 3 tensor). The map key represents the row id which is equal to the
+	 * particle id in the particles list provided to assemble(), and the value
+	 * set contains the Gradients and represents the columns assigned to that
+	 * row.
+	 */
+	const std::map<int,std::vector<Gradient>> & gradients() const;
 
 	/**
 	 * This operation returns the present kinematic information at the nodes

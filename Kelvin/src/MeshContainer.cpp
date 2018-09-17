@@ -196,42 +196,20 @@ std::vector<Gradient> MeshContainer::getNodalGradients(const std::vector<double>
     	// performance bottleneck. So... FIXME!
     	gradients.resize(numDof);
     	double * data = gradientMatrix.Data();
+    	// Get the vertex ids
+    	// Get the element
+        auto * element = mesh.GetElement(elementId[0]);
+        auto * vertexIds = element->GetVertices();
+        // Assuming numVerts = numDof
     	for (int i = 0; i < numDof; i++) {
     		Gradient grad;
+    		grad.nodeId = vertexIds[i];
     		for (int j = 0; j < dim; j++) {
     			grad.values[j] = gradientMatrix(i,j);
     		}
     		gradients[i] = grad;
     	}
     }
-
-	return gradients;
-
-//	// Find the element that contains the point
-//	mfem::Array<int> elementId(1);
-//	mfem::Array<mfem::IntegrationPoint> intPoint(1);
-//	auto pointMatrix = convertPointToMatrix(point);
-//    mesh.FindPoints(pointMatrix,elementId,intPoint);
-//
-//	// Only proceed if the element was found.
-//    if (elementId[0] > -1) {
-//
-//    	// Get the element transform, type and the finite element itself.
-//    	auto * elemTransform = mesh.GetElementTransformation(0);
-//    	auto type = elemTransform->GetGeometryType();
-//    	auto * feCollection = space.FEColl();
-//    	auto * fElement= feCollection->FiniteElementForGeometry(type);
-//
-//    	// Compute the shape
-//    	int numShapes = fElement->GetDof();
-//    	mfem::Vector shape(numShapes);
-//    	fElement->CalcShape(intPoint[0],shape);
-//
-//    	// Repack the shapes to return them
-//    	for (int i = 0; i < numShapes; i++) {
-//    		shapes.push_back(shape[i]);
-//    	}
-//    }
 
 	return gradients;
 }

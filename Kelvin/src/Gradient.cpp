@@ -33,11 +33,12 @@
 
 namespace Kelvin {
 
-Gradient::Gradient(int dim) : nDim(dim), values(dim) {
+Gradient::Gradient(int dim) : nDim(dim), nodeId(-1), values(dim) {
 	nDim = dim;
 }
 
 Gradient::Gradient(const Gradient & otherGradient) : Gradient(otherGradient.nDim) {
+	nodeId = otherGradient.nodeId;
 	for (int i = 0; i < nDim; i++) {
 		values[i] = otherGradient.values[i];
 	}

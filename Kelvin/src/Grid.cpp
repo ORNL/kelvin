@@ -68,15 +68,24 @@ void Grid::assemble(const std::vector<Kelvin::Point> & particles) {
 	int numParticles = particles.size();
 	_shapeMatrix = make_unique<SparseMatrix>(numParticles,numVerts);
 	for (int i = 0; i < numParticles; i++) {
+		// Get the shape
 		auto nodeIds = _meshContainer.getSurroundingNodeIds(particles[i].pos);
 		auto shape = _meshContainer.getNodalShapes(particles[i].pos);
 		for (int j = 0; j < shape.size(); j++) {
 			_shapeMatrix->Add(i,nodeIds[j],shape[j]);
 			nodeSet.insert(nodeIds[j]);
 		}
+		// Get the gradients associated with the particle
+		auto gradients = _meshContainer.getNodalGradients(particles[i].pos);
+		_gradientMap[i] = gradients;
 	}
 	_shapeMatrix->Finalize();
 	_shapeMatrix->SortColumnIndices();
+
+	// Create the gradient matrix. Use a std::map<int,std::vector<Gradient>> to
+	// store the gradient set. Use a std::map<int,std::map<int,int>> to handle
+	// a fast-indexed node set. Make sure all map accesses are by ref!
+
 
 	// Construct the mass matrix associated with the grid nodes
 	_massMatrix = make_unique<MassMatrix>(particles);
@@ -99,6 +108,10 @@ void Grid::update() {
 	// Get the diagonalized form of the mass matrix
 	auto diagonalMassMatrix = _massMatrix->lump();
 
+}
+
+const std::map<int,std::vector<Gradient>> & Grid::gradients() const {
+	return _gradientMap;
 }
 
 const MassMatrix & Grid::massMatrix() const {

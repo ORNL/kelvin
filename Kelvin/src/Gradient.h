@@ -60,6 +60,13 @@ protected:
 public:
 
 	/**
+	 * The ID of the node for the shape function that was used to compute the
+	 * gradient. The default value is -1, which should be an unrealistic value
+	 * in most schemes.
+	 */
+	int nodeId;
+
+	/**
 	 * The vector holding the values of the gradient.
 	 */
 	std::vector<double> values;

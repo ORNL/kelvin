@@ -101,6 +101,25 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
     BOOST_REQUIRE_CLOSE(2.0,point[0],1.0e-15);
     BOOST_REQUIRE_CLOSE(1.0,point[1],1.0e-15);
 
+    // Check the gradient matrix. A basic sanity check is enough since the
+    // gradients are thoroughly tested by the mesh container.
+    auto & gradients = grid.gradients();
+    BOOST_REQUIRE_EQUAL(2,gradients.size());
+    // Note that .at() must be used because the return value is const &
+    // and *this cannot be accepted as in put argument to [].
+    auto & gradList1 = gradients.at(0);
+    // 4 gradients, one per shape functiond: N1/dx, dN1/dy, dN2/dx, dN2/dy
+    BOOST_REQUIRE_EQUAL(4,gradList1.size());
+    // Just make sure that grad3 has the correct node id
+    vector<int> ids = {0,1,4,3};
+    for (int i = 0; i < gradList1.size(); i++) {
+    	auto & grad = gradList1[i];
+    	BOOST_REQUIRE_EQUAL(ids[i],grad.nodeId);
+    }
+
+    // This still doesn't deal with my fast sort problem though. Do I need that here?
+    // Why did I decide that I didn't need it in the grid class?
+
     // Check the mass matrix. A detailed check is warranted since the Grid
     // creates it.
     std::vector<double> refMasses = {0.0625, 0.0625, 0.0, 0.0625, 0.0625, 0.0,

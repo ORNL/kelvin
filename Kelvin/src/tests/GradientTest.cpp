@@ -47,8 +47,10 @@ BOOST_AUTO_TEST_CASE(checkConstruction) {
 	// Check the basic size of the Gradient
 	Gradient grad;
 	BOOST_REQUIRE_EQUAL(3,grad.dimension());
+	BOOST_REQUIRE_EQUAL(-1,grad.nodeId);
 	Gradient twoDGrad(2);
 	BOOST_REQUIRE_EQUAL(2,twoDGrad.dimension());
+	BOOST_REQUIRE_EQUAL(-1,twoDGrad.nodeId);
 
 	// Check component dimensionality
 	BOOST_REQUIRE_EQUAL(3,grad.values.size());
@@ -60,8 +62,10 @@ BOOST_AUTO_TEST_CASE(checkConstruction) {
 	}
 
 	// Check copy construction
+	twoDGrad.nodeId = 2;
 	Gradient grad2(twoDGrad);
 	BOOST_REQUIRE_EQUAL(twoDGrad.dimension(),grad2.dimension());
+	BOOST_REQUIRE_EQUAL(twoDGrad.nodeId,grad2.nodeId);
 	for (int i = 0; i < 2; i++) {
 		twoDGrad.values[i] = (double) i;
 		BOOST_REQUIRE_CLOSE(twoDGrad.values[i],grad2.values[i],1.0e-15);

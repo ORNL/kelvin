@@ -418,16 +418,20 @@ BOOST_AUTO_TEST_CASE(checkGradients) {
     BOOST_REQUIRE_EQUAL(pt1Grads.size(),grad1.Height());
     BOOST_REQUIRE_EQUAL(pt2Grads.size(),grad2.Height());
     // The values should match. e1...
+    auto ids = mc.getSurroundingNodeIds(pt1Vec);
 	for (int i = 0; i < e1->GetDof(); i++) {
+		auto & grad = pt1Grads[i];
+		BOOST_REQUIRE_EQUAL(ids[i],grad.nodeId);
 		for (int j = 0; j < dimension; j++) {
-			auto grad = pt1Grads[i];
 			BOOST_REQUIRE_CLOSE(grad.values[j],grad1(i,j),1.0e-15);
     	}
     }
     // e2
+	ids = mc.getSurroundingNodeIds(pt2Vec);
     for (int i = 0; i < e2->GetDof(); i++) {
+    	auto grad = pt2Grads[i];
+		BOOST_REQUIRE_EQUAL(ids[i],grad.nodeId);
     	for (int j = 0; j < dimension; j++) {
-        	auto grad = pt2Grads[i];
 			BOOST_REQUIRE_CLOSE(grad.values[j],grad2(i, j), 1.0e-15);
 		}
     }
