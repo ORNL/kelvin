@@ -29,71 +29,26 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#ifndef SRC_GRADIENT_H_
-#define SRC_GRADIENT_H_
-
-#include <vector>
+#include <KelvinBaseTypes.h>
 
 namespace Kelvin {
 
-/**
- * This class represents a basic Gradient. Its dimension is set on creation,
- * with a default value of n=3. Gradients should be used in collections such
- * that the gradients of many points are a vector of Gradient objects, with
- * each Gradient storing one value of dN_i/dU_j.
- *
- * This is a basic data class, so access to some member variables is
- * unrestricted. The size of the members is equal to the dimension of the
- * Gradient unless otherwise noted.
- *
- * Gradients allocate their space on construction, so they should only be
- * created when they are needed.
- */
-class Gradient {
-protected:
+NodalValueVector::NodalValueVector(int dim) : nDim(dim), nodeId(-1),
+		values(dim) {
+	nDim = dim;
+}
 
-	/**
-	 * The number of dimensions of the Gradient.
-	 */
-	int nDim;
+NodalValueVector::NodalValueVector(
+		const NodalValueVector & otherNodalValueVector) : NodalValueVector(
+				otherNodalValueVector.nDim) {
+	nodeId = otherNodalValueVector.nodeId;
+	for (int i = 0; i < nDim; i++) {
+		values[i] = otherNodalValueVector.values[i];
+	}
+}
 
-public:
-
-	/**
-	 * The ID of the node for the shape function that was used to compute the
-	 * gradient. The default value is -1, which should be an unrealistic value
-	 * in most schemes.
-	 */
-	int nodeId;
-
-	/**
-	 * The vector holding the values of the gradient.
-	 */
-	std::vector<double> values;
-
-	/**
-	 * Constructor
-	 */
-	Gradient(int dim = 3);
-
-	/**
-	 * Copy constructor
-	 */
-	Gradient(const Gradient & otherGradient);
-
-	/**
-	 * Destructor
-	 */
-	virtual ~Gradient() {};
-
-	/**
-	 * This operation returns the dimension of the Gradient, (i.e. - 1, 2 or 3D).
-	 * @return the dimension
-	 */
-	int dimension() const;
-
-};
+int NodalValueVector::dimension() const {
+	return nDim;
+}
 
 } /* namespace Kelvin */
-
-#endif /* SRC_GRADIENT_H_ */

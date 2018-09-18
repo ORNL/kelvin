@@ -38,7 +38,7 @@
 #include <string>
 #include <vector>
 #include <Point.h>
-#include <Gradient.h>
+#include <KelvinBaseTypes.h>
 
 namespace Kelvin {
 

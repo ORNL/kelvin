@@ -114,6 +114,11 @@ const std::map<int,std::vector<Gradient>> & Grid::gradients() const {
 	return _gradientMap;
 }
 
+const std::vector<ForceVector> & internalForces() {
+	vector<ForceVector> vec; // FIXME! Can't do this!
+	return vec;
+}
+
 const MassMatrix & Grid::massMatrix() const {
 	return *_massMatrix;
 }

@@ -1,3 +1,4 @@
+
 /**----------------------------------------------------------------------------
  Copyright  2018-, UT-Battelle, LLC
  All rights reserved.
@@ -33,22 +34,22 @@
 #define BOOST_TEST_MODULE kelvin
 
 #include <boost/test/included/unit_test.hpp>
-#include <Gradient.h>
+#include <KelvinBaseTypes.h>
 
 using namespace std;
 using namespace Kelvin;
 
 /**
- * This operation insures that the Gradient can be constructed and read
+ * This operation insures that the NodalValueVector can be constructed and read
  * correctly.
  */
 BOOST_AUTO_TEST_CASE(checkConstruction) {
 
-	// Check the basic size of the Gradient
-	Gradient grad;
+	// Check the basic size of the NodalValueVector
+	NodalValueVector grad;
 	BOOST_REQUIRE_EQUAL(3,grad.dimension());
 	BOOST_REQUIRE_EQUAL(-1,grad.nodeId);
-	Gradient twoDGrad(2);
+	NodalValueVector twoDGrad(2);
 	BOOST_REQUIRE_EQUAL(2,twoDGrad.dimension());
 	BOOST_REQUIRE_EQUAL(-1,twoDGrad.nodeId);
 
@@ -56,14 +57,14 @@ BOOST_AUTO_TEST_CASE(checkConstruction) {
 	BOOST_REQUIRE_EQUAL(3,grad.values.size());
 	BOOST_REQUIRE_EQUAL(2,twoDGrad.values.size());
 
-	// Loading the Gradients to test copy construction
+	// Loading the NodalValueVectors to test copy construction
 	for (int i = 0; i < 2; i++) {
 		twoDGrad.values[i] = (double) i;
 	}
 
 	// Check copy construction
 	twoDGrad.nodeId = 2;
-	Gradient grad2(twoDGrad);
+	NodalValueVector grad2(twoDGrad);
 	BOOST_REQUIRE_EQUAL(twoDGrad.dimension(),grad2.dimension());
 	BOOST_REQUIRE_EQUAL(twoDGrad.nodeId,grad2.nodeId);
 	for (int i = 0; i < 2; i++) {

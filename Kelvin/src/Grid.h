@@ -37,6 +37,7 @@
 #include <set>
 #include <MassMatrix.h>
 #include <MeshContainer.h>
+#include <KelvinBaseTypes.h>
 #include <functional>
 #include <map>
 
@@ -152,7 +153,12 @@ public:
 	 */
 	const std::map<int,std::vector<Gradient>> & gradients() const;
 
-//	const std::vector<Force> & internalForces();
+	/**
+	 * This operation computes and returns the internal forces at the grid
+	 * nodes.
+	 * @return the internal forces
+	 */
+	const std::vector<ForceVector> & internalForces();
 
 	/**
 	 * This operation returns the present kinematic information at the nodes
