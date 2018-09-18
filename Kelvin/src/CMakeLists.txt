@@ -91,6 +91,8 @@ if (PARSERS_DIR AND MFEM_DIR)
 
    # Install the Kelvin header files   
    install(FILES ${HEADERS} DESTINATION include)
+   # Install the Kelvin library
+   install(TARGETS ${LIBRARY_NAME} DESTINATION lib)
    
    # Build the particle mesh generator
    add_subdirectory(pmgen)
