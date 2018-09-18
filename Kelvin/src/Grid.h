@@ -152,6 +152,8 @@ public:
 	 */
 	const std::map<int,std::vector<Gradient>> & gradients() const;
 
+//	const std::vector<Force> & internalForces();
+
 	/**
 	 * This operation returns the present kinematic information at the nodes
 	 * as Points with positions, velocities, and accelerations. This includes

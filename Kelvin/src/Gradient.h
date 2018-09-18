@@ -37,17 +37,17 @@
 namespace Kelvin {
 
 /**
- * This class represent a basic Gradient. Its dimension is set on creation, with
- * a default value of n=3. Gradients should be used in collections such that the
- * gradients of many points are a vector of Gradient objects, with each Gradient
- * storing one value of dN_i/dU_j.
+ * This class represents a basic Gradient. Its dimension is set on creation,
+ * with a default value of n=3. Gradients should be used in collections such
+ * that the gradients of many points are a vector of Gradient objects, with
+ * each Gradient storing one value of dN_i/dU_j.
  *
  * This is a basic data class, so access to some member variables is
- * unrestricted. The size of the members is equal to the dimension of the Gradient
- * unless otherwise noted.
+ * unrestricted. The size of the members is equal to the dimension of the
+ * Gradient unless otherwise noted.
  *
- * Gradients allocate their space on construction, so they should only be created
- * when they are needed.
+ * Gradients allocate their space on construction, so they should only be
+ * created when they are needed.
  */
 class Gradient {
 protected:
