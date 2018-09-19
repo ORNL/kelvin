@@ -71,6 +71,12 @@ public:
 	MaterialPoint(const MaterialPoint & otherPoint);
 
 	/**
+	 * Copy Constructor for Points. Only pos, vel, and acc are copied and other
+	 * values are set to 0.0.
+	 */
+	MaterialPoint(const Point & otherPoint);
+
+	/**
 	 * Destructor
 	 */
 	virtual ~MaterialPoint() {};

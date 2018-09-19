@@ -32,7 +32,7 @@
 #ifndef SRC_GRID_H_
 #define SRC_GRID_H_
 
-#include <Point.h>
+#include <MaterialPoint.h>
 #include <mfem.hpp>
 #include <set>
 #include <MassMatrix.h>
@@ -131,7 +131,7 @@ public:
 	 * @param particles the particle list that represent a mass distributed
 	 * across the grid. Used to create shape and mass matrices.
 	 */
-	void assemble(const std::vector<Kelvin::Point> & particles);
+	void assemble(const std::vector<Kelvin::MaterialPoint> & particles);
 
 	/// Update kinematics, fields, etc.
 	void update();

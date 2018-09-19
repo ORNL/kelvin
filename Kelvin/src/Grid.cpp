@@ -46,7 +46,7 @@ Grid::~Grid() {
 	// TODO Auto-generated destructor stub
 }
 
-void Grid::assemble(const std::vector<Kelvin::Point> & particles) {
+void Grid::assemble(const std::vector<Kelvin::MaterialPoint> & particles) {
 
 	// Get the nodal coordinates from he mesh
 	auto & mesh = _meshContainer.getMesh();

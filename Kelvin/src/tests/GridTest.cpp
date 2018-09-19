@@ -68,8 +68,15 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
     Grid grid(mc);
     // Just use the quadrature points as the particles
     auto points = mc.getQuadraturePoints();
+    // FIXME! Convert to material points
+    std::vector<MaterialPoint> mPoints;
+    for (int i = 0; i < points.size(); i++) {
+    	MaterialPoint point(points[i]);
+    	mPoints.push_back(point);
+    }
+
     // Assemble it to create the arrays of nodes, shapes, masses, etc.
-    grid.assemble(points);
+    grid.assemble(mPoints);
 
     // Check the nodal positions
     auto & nodes = grid.nodes();

@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(checkMass) {
 
 	// Create some particles
 	int numParticles = 4;
-	vector<Kelvin::Point> particles(numParticles);
+	vector<Kelvin::MaterialPoint> particles(numParticles);
 	for (int i = 0; i < numParticles; i++) {
 		particles[i].pos[0] = 0.5 + ((double) i);
 		particles[i].pos[1] = 0.5 + ((double) i);

@@ -35,7 +35,7 @@
 #include <mfem.hpp>
 #include <vector>
 #include <set>
-#include <Point.h>
+#include <MaterialPoint.h>
 #include <functional>
 
 namespace Kelvin {
@@ -80,7 +80,7 @@ protected:
 	/**
 	 * The full set of particles that give rise to mass in the grid.
 	 */
-	const std::vector<Point> & particles;
+	const std::vector<MaterialPoint> & particles;
 
 	/**
 	 * The shape matrix that defines the relationship between nodes and
@@ -100,7 +100,7 @@ public:
 	 * particles for the system.
 	 * @param particlesList the particles in the system
 	 */
-	MassMatrix(const std::vector<Point> & particleList);
+	MassMatrix(const std::vector<MaterialPoint> & particleList);
 
 	/**
 	 * Destructor

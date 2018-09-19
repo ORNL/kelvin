@@ -57,4 +57,18 @@ MaterialPoint::MaterialPoint(const MaterialPoint & otherPoint) :
 	return;
 }
 
+MaterialPoint::MaterialPoint(const Point & otherPoint) :
+		MaterialPoint(otherPoint.dimension()) {
+
+	for (int i = 0; i < nDim; i++) {
+		pos[i] = otherPoint.pos[i];
+		vel[i] = otherPoint.vel[i];
+		acc[i] = otherPoint.acc[i];
+	}
+
+	// All other attributes are 0.0.
+
+	return;
+}
+
 } /* namespace Kelvin */

@@ -71,7 +71,7 @@ void MFEMMPMData::load(const std::string & inputFile) {
 	for (int i = 0; i < data->size(); i++) {
 		auto & rawCoords = data->at(i);
 		int numCoords = rawCoords.size();
-		Point point(rawCoords.size());
+		MaterialPoint point(rawCoords.size());
 		for (int j = 0; j < numCoords; j++) {
 			point.pos[j] = rawCoords[j];
 		}
@@ -92,7 +92,7 @@ Grid & MFEMMPMData::grid() {
 	return *_grid;
 }
 
-std::vector<Point> & MFEMMPMData::particles() {
+std::vector<MaterialPoint> & MFEMMPMData::particles() {
 	if (!loaded) throw "Data not loaded!";
 	return _particles;
 }

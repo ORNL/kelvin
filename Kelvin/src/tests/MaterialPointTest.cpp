@@ -78,6 +78,22 @@ BOOST_AUTO_TEST_CASE(checkConstruction) {
 	}
 	BOOST_REQUIRE_CLOSE(point.mass,point2.mass,1.0e-15);
 
+	// Check copy construction from a point
+	Point point3;
+	point3.pos[0] = 1.0;
+	point3.vel[0] = 1.0;
+	point3.acc[0] = 1.0;
+	MaterialPoint point4(point3);
+	BOOST_REQUIRE_CLOSE(point3.pos[0],point4.pos[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(point3.vel[0],point4.vel[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(point3.acc[0],point4.acc[0],1.0e-15);
+	// Other attributes should be zero
+	for (int i = 0; i < 3; i++) {
+			BOOST_REQUIRE_CLOSE(0.0,point4.stress[i],0.0);
+			BOOST_REQUIRE_CLOSE(0.0,point4.strain[i],0.0);
+	}
+	BOOST_REQUIRE_CLOSE(0.0,point4.mass,0.0);
+
 	return;
 }
 

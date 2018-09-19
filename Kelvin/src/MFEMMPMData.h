@@ -61,7 +61,7 @@ private:
 	 * This vector contains the point particles read from input and associated
 	 * with the mesh stored in the mesh container of this Data instance.
 	 */
-	std::vector<Point> _particles;
+	std::vector<MaterialPoint> _particles;
 
 public:
 	/**
@@ -77,9 +77,9 @@ public:
 	/**
 	 * This operation returns a set of points that represent Lagrangian
 	 * material points.
-	 * @return Point the set of Lagrangian Material Points.
+	 * @return the set of Lagrangian Material Points.
 	 */
-	std::vector<Point> & particles();
+	std::vector<MaterialPoint> & particles();
 
 	/**
 	 * This operation returns the computational grid that defines the Eulerian

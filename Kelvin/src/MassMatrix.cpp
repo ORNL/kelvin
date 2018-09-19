@@ -36,7 +36,7 @@ using namespace std;
 
 namespace Kelvin {
 
-MassMatrix::MassMatrix(const std::vector<Point> & particleList) :
+MassMatrix::MassMatrix(const std::vector<MaterialPoint> & particleList) :
 		nodes(nodesDummy),
 		particles(particleList), shapes(NULL) {
 	// TODO Auto-generated constructor stub
