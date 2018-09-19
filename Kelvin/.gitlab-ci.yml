@@ -10,3 +10,7 @@ build_job:
 uname_job:
   script:
     - uname -a
+
+ls_job:
+  script:
+    - ls -R
