@@ -7,9 +7,10 @@ apk del gcc g++ cmake git boost boost-dev doxygen make
 apk add libstdc++
 
 # Install Kelvin
-cd /home/furnace-prototype/Kelvin/build
+cd Kelvin/build
 make install
 
 # Clean up source directories
-cd /home
-rm -rf furnace-prototype mfem parsers
+cd $kelvin_basedir
+cd ..
+rm -rf furnace-prototype 
