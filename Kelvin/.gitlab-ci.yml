@@ -1,4 +1,4 @@
-image: alpine
+image: notarealIMAGE
 
 before_script:
   - echo "Before script executed"
