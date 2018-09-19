@@ -3,18 +3,6 @@ image: alpine
 before_script:
   - echo "Setting up build environment"; chmod +x Kelvin/util/alpine_*.sh; ./Kelvin/util/alpine_before_script.sh
 
-dep_install:
-  script:
-    - ./Kelvin/util/alpine_install_deps.sh
-
-parsers_build:
-  script:
-    - ./Kelvin/util/alpine_build_parsers.sh
-    
-mfem_build:
-  script:
-    - ./Kelvin/util/alpine_build_mfem.sh
-
 kelvin_build:
   script:
-    - ./Kelvin/util/alpine_build_kelvin.sh
+    - ./Kelvin/util/alpine_buildAll.sh
