@@ -6,3 +6,7 @@ before_script:
 build_job:
   script:
     - echo "Build job"
+    
+uname_job:
+  script:
+    - uname -a
