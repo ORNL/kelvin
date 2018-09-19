@@ -1,2 +1,3 @@
 #!/bin/sh
-#Nothing todo right now
+echo $PWD
+export kelvin_basedir=$PWD
