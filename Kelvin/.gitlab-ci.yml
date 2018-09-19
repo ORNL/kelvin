@@ -1,16 +1,20 @@
 image: alpine
 
 before_script:
-  - echo "Before script executed"
-  
-build_job:
-  script:
-    - echo "Build job"
-    
-uname_job:
-  script:
-    - uname -a
+  - echo "Setting up build environment"; chmod +x Kelvin/util/alpine_*.sh; ./Kelvin/util/alpine_before_script.sh
 
-ls_job:
+dep_install:
   script:
-    - ls -R
+    - ./Kelvin/util/alpine_install_deps.sh
+
+parsers_build:
+  script:
+    - ./Kelvin/util/alpine_build_parsers.sh
+    
+mfem_build:
+  script:
+    - ./Kelvin/util/alpine_build_mfem.sh
+
+kelvin_build:
+  script:
+    - ./Kelvin/util/alpine_build_kelvin.sh
