@@ -2,7 +2,7 @@
 
 # Install parsers
 echo $PWD
-cd home
+cd /home
 git clone https://github.com/jayjaybillings/parsers
 mkdir parsers/build
 cd parsers/build/
