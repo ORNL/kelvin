@@ -71,7 +71,7 @@ protected:
 	/**
 	 * The list of massive nodes
 	 */
-	std::set<int> nodeSet;
+	std::set<int> _nodeSet;
 
 	/**
 	 * The mesh container that holds the original finite element mesh.
@@ -105,12 +105,14 @@ protected:
 	void updateMassMatrix();
 
 	/**
-	 * The list of forces applied on the grid. The function prototype for
-	 * forces is f(Point,double) where the first argument is the coordinates
-	 * where the force is currently applied and the second argument is the
-	 * mass.
+	 * The values of the internal forces applied at the grid nodes.
 	 */
-    std::vector<std::function<void(const Point&,double)>> forces;
+    std::vector<ForceVector> _internalForces;
+
+	/**
+	 * The values of the external forces applied at the grid nodes.
+	 */
+    std::vector<ForceVector> _externalForces;
 
 public:
 
@@ -154,11 +156,14 @@ public:
 	const std::map<int,std::vector<Gradient>> & gradients() const;
 
 	/**
-	 * This operation computes and returns the internal forces at the grid
-	 * nodes.
+	 * This operation computes and returns the internal forces at the massive
+	 * grid nodes. Any node that does not have mass assigned to it is excluded.
+	 * @param particles the list of particles. This should be same list as that
+	 * pass to assemble().
 	 * @return the internal forces
 	 */
-	const std::vector<ForceVector> & internalForces();
+	const std::vector<ForceVector> & internalForces(
+			const std::vector<Kelvin::MaterialPoint> & particles);
 
 	/**
 	 * This operation returns the present kinematic information at the nodes

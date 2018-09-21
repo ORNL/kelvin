@@ -73,7 +73,7 @@ void Grid::assemble(const std::vector<Kelvin::MaterialPoint> & particles) {
 		auto shape = _meshContainer.getNodalShapes(particles[i].pos);
 		for (int j = 0; j < shape.size(); j++) {
 			_shapeMatrix->Add(i,nodeIds[j],shape[j]);
-			nodeSet.insert(nodeIds[j]);
+			_nodeSet.insert(nodeIds[j]);
 		}
 		// Get the gradients associated with the particle
 		auto gradients = _meshContainer.getNodalGradients(particles[i].pos);
@@ -90,7 +90,20 @@ void Grid::assemble(const std::vector<Kelvin::MaterialPoint> & particles) {
 	// Construct the mass matrix associated with the grid nodes
 	_massMatrix = make_unique<MassMatrix>(particles);
 	double particleMass = 1.0; // FIXME! Needs to be something real and from input.
-	_massMatrix->assemble(*_shapeMatrix,nodeSet);
+	_massMatrix->assemble(*_shapeMatrix,_nodeSet);
+
+	// Resize the internal and external force vectors
+	ForceVector emptyForceWithCorrectDimensionality(dim);
+	int numForces = _nodeSet.size();
+	_internalForces.resize(numForces,emptyForceWithCorrectDimensionality);
+	_externalForces.resize(numForces,emptyForceWithCorrectDimensionality);
+	// Set the force node ids
+	set<int>::iterator it;
+	int index = 0;
+	for (it = _nodeSet.begin(); it != _nodeSet.end(); it++) {
+		_internalForces[index].nodeId = *it;
+		index++;
+	}
 
 	return;
 }
@@ -114,9 +127,47 @@ const std::map<int,std::vector<Gradient>> & Grid::gradients() const {
 	return _gradientMap;
 }
 
-const std::vector<ForceVector> & internalForces() {
-	vector<ForceVector> vec; // FIXME! Can't do this!
-	return vec;
+const std::vector<ForceVector> & Grid::internalForces(
+		const std::vector<Kelvin::MaterialPoint> & particles) {
+
+	/**
+	 * This operation computes the internal forces according to Sulsky's 1994
+	 * paper:
+	 * f = -\sum_p M_p * G_ip^T * stress_p
+	 */
+
+	// Compute the forces
+	int numForces = _internalForces.size();
+	int dim = _meshContainer.dimension();
+	int numParticles = particles.size();
+	for (int i = 0; i < numForces; i++) {
+		auto & forceVector = _internalForces[i];
+		int forceNodeId = forceVector.nodeId;
+		// Computer the component of the force due to each particle. The
+		// gradient map contains the gradients for each particle for each
+		// surrounding node, so we need to look to see if the node id
+		// of any of those gradients matches the node id of force vector.
+		for (int j = 0; j < numParticles; j++) {
+			auto & mPoint = particles[j];
+			auto & gradients = _gradientMap[j];
+			auto numGrads = gradients.size();
+			// Compute the component due to each element of the gradient...
+			for (int k = 0; k < numGrads; k++) {
+				auto & grad = gradients[k];
+				int nodeId = grad.nodeId;
+				// ... iff its node id matches
+				if (nodeId == forceNodeId) {
+					// Need to compute it over all dimensions
+					for (int l = 0; l < dim; l++) {
+						forceVector.values[l] -= grad.values[l]*
+								mPoint.mass*mPoint.stress[l];
+					}
+				}
+			}
+		}
+	}
+
+	return _internalForces;
 }
 
 const MassMatrix & Grid::massMatrix() const {

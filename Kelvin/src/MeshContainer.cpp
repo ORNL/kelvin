@@ -195,7 +195,6 @@ std::vector<Gradient> MeshContainer::getNodalGradients(const std::vector<double>
     	// Repacking this data, especially like this, will turn out to be a
     	// performance bottleneck. So... FIXME!
     	gradients.resize(numDof);
-    	double * data = gradientMatrix.Data();
     	// Get the vertex ids
     	// Get the element
         auto * element = mesh.GetElement(elementId[0]);

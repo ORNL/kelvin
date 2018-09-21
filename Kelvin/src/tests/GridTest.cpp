@@ -124,6 +124,19 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
     	BOOST_REQUIRE_EQUAL(ids[i],grad.nodeId);
     }
 
+    // Handy loop for debugging the gradients that I don't want to rewrite!
+    cout << "----- Gradients -----" << endl;
+    for (int i = 0; i < gradients.size(); i++) {
+    	auto & elemGrads = gradients.at(i);
+    	for (int j = 0; j < elemGrads.size(); j++) {
+    		cout << elemGrads[j].values[0] << " "
+    				<< elemGrads[j].values[1]
+					<< " " << elemGrads[j].nodeId << endl;
+    	}
+    	cout << endl;
+    }
+    cout << "-----" << endl;
+
     // This still doesn't deal with my fast sort problem though. Do I need that here?
     // Why did I decide that I didn't need it in the grid class?
 
@@ -145,6 +158,49 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
     }
 
     // Not checking lumping - that is done in the mass matrix test.
+
+    // Set the particle properties to 1 to get a value for the internal forces
+    // that is equal to the gradient/sum of gradients.
+    for (int i = 0; i < mPoints.size(); i++) {
+    	mPoints[i].stress[0] = 1.0;
+    	mPoints[i].stress[1] = 1.0;
+    	mPoints[i].mass = 1.0;
+    }
+
+    // Check the computation of the internal forces. Should be equal to the
+    // gradients given the configuration of the particles above.
+    auto internalForces = grid.internalForces(mPoints);
+    // For this mesh, this should be equal to the number of nodes.
+    BOOST_REQUIRE_EQUAL(nodes.size(),internalForces.size());
+    for (int i = 0; i < internalForces.size(); i++) {
+    	auto & forceVector = internalForces[i];
+    	BOOST_REQUIRE_EQUAL(2,forceVector.dimension());
+    }
+    // n1
+	BOOST_REQUIRE_CLOSE(0.5,internalForces[0].values[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(0.5,internalForces[0].values[1],1.0e-15);
+	// n2
+	BOOST_REQUIRE_CLOSE(0.0,internalForces[1].values[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(1.0,internalForces[1].values[1],1.0e-15);
+	// n3
+	BOOST_REQUIRE_CLOSE(-0.5,internalForces[2].values[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(0.5,internalForces[2].values[1],1.0e-15);
+	// n4
+	BOOST_REQUIRE_CLOSE(0.5,internalForces[3].values[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(-0.5,internalForces[3].values[1], 1.0e-15);
+	// n5
+	BOOST_REQUIRE_CLOSE(0.0,internalForces[4].values[0], 1.0e-15);
+	BOOST_REQUIRE_CLOSE(-1.0,internalForces[4].values[1], 1.0e-15);
+	// n6
+	BOOST_REQUIRE_CLOSE(-0.5,internalForces[5].values[0], 1.0e-15);
+	BOOST_REQUIRE_CLOSE(-0.5,internalForces[5].values[1], 1.0e-15);
+
+	// Check the computation of the external forces. Does not current include
+	// traction, so it should be equal to the shapes given the particle
+	// configuration above.
+
+
+//    auto externalForces = grid.externalForces();
 
     // Check the acceleration at the nodes
 //    auto & acc = grid.acc();
