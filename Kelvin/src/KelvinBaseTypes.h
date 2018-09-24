@@ -94,6 +94,12 @@ public:
 	 */
 	int dimension() const;
 
+	/**
+	 * This operation clears the contents of the values, but leaves the node id
+	 * unchanged.
+	 */
+	void clear();
+
 };
 
 /**

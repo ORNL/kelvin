@@ -30,6 +30,7 @@
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
 #include <KelvinBaseTypes.h>
+#include <algorithm>
 
 namespace Kelvin {
 
@@ -49,6 +50,13 @@ NodalValueVector::NodalValueVector(
 
 int NodalValueVector::dimension() const {
 	return nDim;
+}
+
+void NodalValueVector::clear() {
+	// I wonder if fill() and copy() are better than looping?
+	// Maybe so since they are templated and use ranged loops.
+	// Food for thought.
+	fill(values.begin(),values.end(),0.0);
 }
 
 } /* namespace Kelvin */

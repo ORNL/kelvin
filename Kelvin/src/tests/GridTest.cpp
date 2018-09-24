@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
 			0.0, 0.0625, 0.0625, 0.0625, 0.0625, 0.0, 0.0625, 0.0625, 0.0,
 			0.0625,	0.125, 0.0625, 0.0625, 0.125, 0.0625, 0.0, 0.0625, 0.0625,
 			0.0, 0.0625, 0.0625};
-    auto & massMatrix = grid.massMatrix();
+    auto & massMatrix = grid.massMatrix(mPoints);
     int k = 0;
     for (int i = 0; i < 6; i++) {
     	for (int j = 0; j < 6; j++) {
@@ -165,11 +165,13 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
     	mPoints[i].stress[0] = 1.0;
     	mPoints[i].stress[1] = 1.0;
     	mPoints[i].mass = 1.0;
+    	mPoints[i].bodyForce[0] = 1.0;
+    	mPoints[i].bodyForce[1] = 1.0;
     }
 
     // Check the computation of the internal forces. Should be equal to the
     // gradients given the configuration of the particles above.
-    auto internalForces = grid.internalForces(mPoints);
+    auto & internalForces = grid.internalForces(mPoints);
     // For this mesh, this should be equal to the number of nodes.
     BOOST_REQUIRE_EQUAL(nodes.size(),internalForces.size());
     for (int i = 0; i < internalForces.size(); i++) {
@@ -198,7 +200,64 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
 	// Check the computation of the external forces. Does not current include
 	// traction, so it should be equal to the shapes given the particle
 	// configuration above.
+	auto & externalForces = grid.externalForces(mPoints);
+	BOOST_REQUIRE_EQUAL(nodes.size(),externalForces.size());
+    for (int i = 0; i < externalForces.size(); i++) {
+    	auto & forceVector = externalForces[i];
+    	BOOST_REQUIRE_EQUAL(2,forceVector.dimension());
+    }
+    // n1
+	BOOST_REQUIRE_CLOSE(0.25,externalForces[0].values[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(0.25,externalForces[0].values[1],1.0e-15);
+	// n2
+	BOOST_REQUIRE_CLOSE(0.5,externalForces[1].values[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(0.5,externalForces[1].values[1],1.0e-15);
+	// n3
+	BOOST_REQUIRE_CLOSE(0.25,externalForces[2].values[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(0.25,externalForces[2].values[1],1.0e-15);
+	// n4
+	BOOST_REQUIRE_CLOSE(0.25,externalForces[3].values[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(0.25,externalForces[3].values[1], 1.0e-15);
+	// n5
+	BOOST_REQUIRE_CLOSE(0.5,externalForces[4].values[0], 1.0e-15);
+	BOOST_REQUIRE_CLOSE(0.5,externalForces[4].values[1], 1.0e-15);
+	// n6
+	BOOST_REQUIRE_CLOSE(0.25,externalForces[5].values[0], 1.0e-15);
+	BOOST_REQUIRE_CLOSE(0.25,externalForces[5].values[1], 1.0e-15);
 
+	// Compute the accelerations at the grid points
+	grid.updateNodalAccelerations(1.0,mPoints);
+	auto lumpedMasses = massMatrix.lump();
+	// Check them. Should be a = (f_int + f_ex)/m.
+	cout << "----- Accelerations" << endl;
+	for (int i = 0; i < nodes.size(); i++) {
+		cout << i << " ";
+		for (int j = 0; j < 2; j++) {
+			cout << nodes[i].acc[j] << " ";
+		}
+		cout << "| " << lumpedMasses[i] << endl;
+	}
+	// n1
+	BOOST_REQUIRE_CLOSE(3.0,nodes[0].acc[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(3.0,nodes[0].acc[1],1.0e-15);
+	// n2
+	BOOST_REQUIRE_CLOSE(1.0,nodes[1].acc[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(3.0,nodes[1].acc[1],1.0e-15);
+	// n3
+	BOOST_REQUIRE_CLOSE(-1.0,nodes[2].acc[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(3.0,nodes[2].acc[1],1.0e-15);
+	// n4
+	BOOST_REQUIRE_CLOSE(3.0,nodes[3].acc[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(-1.0,nodes[3].acc[1],1.0e-15);
+	// n5
+	BOOST_REQUIRE_CLOSE(1.0,nodes[4].acc[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(-1.0,nodes[4].acc[1],1.0e-15);
+	// n6
+	BOOST_REQUIRE_CLOSE(-1.0,nodes[5].acc[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(-1.0,nodes[5].acc[1],1.0e-15);
+
+	// Compute the velocity at the grid point for time dt = 1.0
+	grid.updateNodalVelocities(1.0,mPoints);
 
 //    auto externalForces = grid.externalForces();
 

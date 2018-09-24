@@ -34,7 +34,7 @@
 namespace Kelvin {
 
 MaterialPoint::MaterialPoint(int dim) : Point(dim), stress(dim), strain(dim),
-		mass(0.0) {
+		bodyForce(dim), mass(0.0) {
 	// TODO Auto-generated constructor stub
 
 }
@@ -48,6 +48,7 @@ MaterialPoint::MaterialPoint(const MaterialPoint & otherPoint) :
 		acc[i] = otherPoint.acc[i];
 		stress[i] = otherPoint.stress[i];
 		strain[i] = otherPoint.strain[i];
+		bodyForce[i] = otherPoint.bodyForce[i];
 	}
 	mass = otherPoint.mass;
 

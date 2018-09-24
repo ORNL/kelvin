@@ -56,6 +56,11 @@ public:
 	std::vector<double> strain;
 
 	/**
+	 * The total body force on the particle.
+	 */
+	std::vector<double> bodyForce;
+
+	/**
 	 * The mass of the particle
 	 */
 	double mass;

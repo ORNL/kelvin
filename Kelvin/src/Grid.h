@@ -142,7 +142,8 @@ public:
 	 * Get the mass matrix associated with the grid.
 	 * @return the mass matrix
 	 */
-	const MassMatrix & massMatrix() const;
+	MassMatrix & massMatrix(
+			const std::vector<Kelvin::MaterialPoint> & particles);
 
 	/**
 	 * This operation returns the gradients of the nodal shape functions for
@@ -158,11 +159,20 @@ public:
 	/**
 	 * This operation computes and returns the internal forces at the massive
 	 * grid nodes. Any node that does not have mass assigned to it is excluded.
-	 * @param particles the list of particles. This should be same list as that
-	 * pass to assemble().
+	 * @param particles the list of particles. This should be the same list as
+	 * that passed to assemble().
 	 * @return the internal forces
 	 */
 	const std::vector<ForceVector> & internalForces(
+			const std::vector<Kelvin::MaterialPoint> & particles);
+
+	/**
+	 * This operation computes and returns the external forces at the massive
+	 * grid nodes. Any node that does not have mass assigned to it is excluded.
+	 * @param particles the list of particles. THis should be the same list as
+	 * that passed to assemble().
+	 */
+	const std::vector<ForceVector> & externalForces(
 			const std::vector<Kelvin::MaterialPoint> & particles);
 
 	/**
@@ -171,15 +181,31 @@ public:
 	 * the whole grid, not just the massive nodes.
 	 * @return the kinematic information of the nodes
 	 */
-	const std::vector<Point> nodes() const;
+	const std::vector<Point> & nodes() const;
 
 	/**
-	 * This function adds a force to the list of forces at are applied at the
-	 * grid points.
-	 * @param force the function to add to the list of applied forces. It must
-	 * take a point and a mass as input arguments.
+	 * This operation computes the acceleration at the nodes using the
+	 * internal and external forces, and the mass matrix. The result is stored
+	 * directly on the nodes() array. The base class implementation does not
+	 * use the time step since the acceleration is computed directly from the
+	 * equation of motion.
+	 * @param timeStep the amount of time that has passed between the present
+	 * and new values (which will be computed)
+	 * @param particles the present particle configuration on the grid
 	 */
-	void addForce(std::function<void(const Point &,double)> force);
+	void updateNodalAccelerations(const double & timeStep,
+			const std::vector<Kelvin::MaterialPoint> & particles);
+
+	/**
+	 * This operation computes the acceleration at the nodes using the
+	 * internal and external forces, and the mass matrix. The result is stored
+	 * directly on the nodes() array.
+	 * @param timeStep the amount of time that has passed between the present
+	 * and new values (which will be computed)
+	 * @param particles the present particle configuration on the grid
+	 */
+	void updateNodalVelocities(const double & timeStep,
+			const std::vector<Kelvin::MaterialPoint> & particles);
 
 };
 

@@ -75,4 +75,28 @@ BOOST_AUTO_TEST_CASE(checkConstruction) {
 	return;
 }
 
+/**
+ * This operation insures that the NodalValueVector can be cleared correctly.
+ */
+BOOST_AUTO_TEST_CASE(checkClearing) {
+\
+	NodalValueVector twoDGrad(2);
+	BOOST_REQUIRE_EQUAL(2,twoDGrad.dimension());
+	BOOST_REQUIRE_EQUAL(-1,twoDGrad.nodeId);
+	BOOST_REQUIRE_EQUAL(2,twoDGrad.values.size());
+
+	// Loading the NodalValueVectors to test copy construction
+	for (int i = 0; i < 2; i++) {
+		twoDGrad.values[i] = (double) i;
+	}
+
+	// Clear the vector and check it
+	twoDGrad.clear();
+	for (int i = 0; i < 2; i++) {
+		BOOST_REQUIRE_CLOSE(0.0,twoDGrad.values[i],0.0);
+	}
+
+	return;
+}
+
 

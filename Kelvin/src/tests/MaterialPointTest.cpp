@@ -53,6 +53,7 @@ BOOST_AUTO_TEST_CASE(checkConstruction) {
 	BOOST_REQUIRE_EQUAL(3,point.acc.size());
 	BOOST_REQUIRE_EQUAL(3,point.stress.size());
 	BOOST_REQUIRE_EQUAL(3,point.strain.size());
+	BOOST_REQUIRE_EQUAL(3,point.bodyForce.size());
 	// And mass
 	BOOST_REQUIRE_EQUAL(0.0,point.mass);
 
@@ -63,6 +64,7 @@ BOOST_AUTO_TEST_CASE(checkConstruction) {
 		point.acc[i] = (double) i;
 		point.stress[i] = (double) i;
 		point.strain[i] = (double) i;
+		point.bodyForce[i] = (double) i;
 	}
 	point.mass = 1.0;
 
@@ -75,6 +77,7 @@ BOOST_AUTO_TEST_CASE(checkConstruction) {
 		BOOST_REQUIRE_CLOSE(point.acc[i],point2.acc[i],1.0e-15);
 		BOOST_REQUIRE_CLOSE(point.stress[i],point2.stress[i],1.0e-15);
 		BOOST_REQUIRE_CLOSE(point.strain[i],point2.strain[i],1.0e-15);
+		BOOST_REQUIRE_CLOSE(point.bodyForce[i],point2.bodyForce[i],1.0e-15);
 	}
 	BOOST_REQUIRE_CLOSE(point.mass,point2.mass,1.0e-15);
 
@@ -91,6 +94,7 @@ BOOST_AUTO_TEST_CASE(checkConstruction) {
 	for (int i = 0; i < 3; i++) {
 			BOOST_REQUIRE_CLOSE(0.0,point4.stress[i],0.0);
 			BOOST_REQUIRE_CLOSE(0.0,point4.strain[i],0.0);
+			BOOST_REQUIRE_CLOSE(0.0,point4.bodyForce[i],0.0);
 	}
 	BOOST_REQUIRE_CLOSE(0.0,point4.mass,0.0);
 

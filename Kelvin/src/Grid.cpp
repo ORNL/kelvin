@@ -48,7 +48,7 @@ Grid::~Grid() {
 
 void Grid::assemble(const std::vector<Kelvin::MaterialPoint> & particles) {
 
-	// Get the nodal coordinates from he mesh
+	// Get the nodal coordinates from the mesh
 	auto & mesh = _meshContainer.getMesh();
 	int numVerts = mesh.GetNV();
 	double * mcCoords;
@@ -82,15 +82,8 @@ void Grid::assemble(const std::vector<Kelvin::MaterialPoint> & particles) {
 	_shapeMatrix->Finalize();
 	_shapeMatrix->SortColumnIndices();
 
-	// Create the gradient matrix. Use a std::map<int,std::vector<Gradient>> to
-	// store the gradient set. Use a std::map<int,std::map<int,int>> to handle
-	// a fast-indexed node set. Make sure all map accesses are by ref!
-
-
 	// Construct the mass matrix associated with the grid nodes
 	_massMatrix = make_unique<MassMatrix>(particles);
-	double particleMass = 1.0; // FIXME! Needs to be something real and from input.
-	_massMatrix->assemble(*_shapeMatrix,_nodeSet);
 
 	// Resize the internal and external force vectors
 	ForceVector emptyForceWithCorrectDimensionality(dim);
@@ -102,6 +95,7 @@ void Grid::assemble(const std::vector<Kelvin::MaterialPoint> & particles) {
 	int index = 0;
 	for (it = _nodeSet.begin(); it != _nodeSet.end(); it++) {
 		_internalForces[index].nodeId = *it;
+		_externalForces[index].nodeId = *it;
 		index++;
 	}
 
@@ -142,6 +136,7 @@ const std::vector<ForceVector> & Grid::internalForces(
 	int numParticles = particles.size();
 	for (int i = 0; i < numForces; i++) {
 		auto & forceVector = _internalForces[i];
+		forceVector.clear();
 		int forceNodeId = forceVector.nodeId;
 		// Computer the component of the force due to each particle. The
 		// gradient map contains the gradients for each particle for each
@@ -170,12 +165,133 @@ const std::vector<ForceVector> & Grid::internalForces(
 	return _internalForces;
 }
 
-const MassMatrix & Grid::massMatrix() const {
+const std::vector<ForceVector> & Grid::externalForces(
+		const std::vector<Kelvin::MaterialPoint> & particles) {
+
+	/**
+	 * This operation computes the internal forces according to Sulsky's 1994
+	 * paper:
+	 * f = \sum_p M_p * S_ip^T * bodyForces_p
+	 */
+
+	Vector rowI;
+	Array<int> colsI;
+
+	// Compute the forces
+	int numForces = _externalForces.size();
+	int dim = _meshContainer.dimension();
+	int numParticles = particles.size();
+	for (int i = 0; i < numForces; i++) {
+		auto & forceVector = _externalForces[i];
+		forceVector.clear();
+		int forceNodeId = forceVector.nodeId;
+		// Computer the component of the force due to each particle. The shape
+		// matrix contains all the shapes and the nodeset describes which nodes
+		// are massive.
+		for (int j = 0; j < numParticles; j++) {
+			auto & mPoint = particles[j];
+			_shapeMatrix->GetRow(j, colsI, rowI);
+			int colI = colsI.Find(i);
+			if (colI >= 0) {
+				// Need to compute it over all dimensions
+				for (int l = 0; l < dim; l++) {
+					forceVector.values[l] += rowI[colI]*
+							mPoint.mass * mPoint.bodyForce[l];
+				}
+			}
+		}
+	}
+
+	// TESTING GRID FUNCTIONS - NOW GETTING SLEEPY AND WILL MESS SOMETHING UP. GOING TO LAY DOWN.
+
+	cout << "GRID FUNCTION TEST JUNK!" << endl;
+
+	auto & space = _meshContainer.getSpace();
+	GridFunction gf(&space);
+	gf = 1.0;
+	Vector nVals(dim);
+
+	int numNodes = 6;
+	gf.GetNodalValues(nVals);
+	nVals.Print();
+
+	// Find the element that contains the point
+	mfem::IntegrationPoint intPoint;
+	intPoint.Set2(0.5,0.5);
+	std::vector<double> point = {0.5,0.5};
+
+	cout << gf.GetValue(0,intPoint) << endl;
+	auto shape = _meshContainer.getNodalShapes(point);
+	for (int i = 0; i < shape.size(); i++) {
+		cout << shape[i] << " ";
+	}
+	cout << endl;
+
+	gf[1] = 2.0;
+	gf[4] = 2.0;
+	cout << gf.GetValue(0,intPoint) << endl;
+
+	// FYI - IT WORKED AS EXPECTED.
+
+	return _externalForces;
+}
+
+MassMatrix & Grid::massMatrix(
+		const std::vector<Kelvin::MaterialPoint> & particles) {
+	_massMatrix->assemble(*_shapeMatrix,_nodeSet);
 	return *_massMatrix;
 }
 
-const std::vector<Point> Grid::nodes() const {
+const std::vector<Point> & Grid::nodes() const {
 	return _nodes;
+}
+
+void Grid::updateNodalAccelerations(const double & timeStep,
+		const std::vector<Kelvin::MaterialPoint> & particles) {
+
+	int dim = _meshContainer.dimension();
+	// Compute the mass matrix (Sulsky steps 8 & 10a)
+	auto & massMat = massMatrix(particles);
+	// Lump the mass matrix (Sulsky step 10b)
+	auto lumpedMassMat = massMat.lump();
+	// Compute the forces (Sulsky step 9)
+	auto & intForces = internalForces(particles);
+	auto & exForces = externalForces(particles);
+	// Making an assumption here that the node sets for the internal and
+	// external forces match. That's reasonable given the implementation of the
+	// base class, but may not be in the case of a subclass.
+
+	// Only proceed if the sizes of these systems match. If the do not, this
+	// is a critical error, so it should be checked regularly.
+	bool sizesMatch = (intForces.size() == exForces.size())
+			&& (lumpedMassMat.size() == intForces.size());
+	if (sizesMatch) {
+		int numNodes = lumpedMassMat.size();
+		// a_i = (f^int_i + f^ex_i)/m_i
+		for (int i = 0; i < numNodes; i++) {
+			auto & intForceVec = intForces[i];
+			auto & exForceVec = exForces[i];
+			// Under the nodeset assumption above, just get the node id from
+			// the internal force vector
+			int nodeId = intForceVec.nodeId;
+			for (int j = 0; j < dim; j++) {
+				// Note that the mass is non-dimensional (thus i, not j)
+				_nodes[nodeId].acc[j] = (intForceVec.values[j]
+						+ exForceVec.values[j])/lumpedMassMat[i];
+			}
+		}
+	} else {
+		throw "Mass matrix diagonal and force vector size mismatch (unequal).";
+	}
+	// Compute the acceleration and update the grid (Sulsky step 1)
+	// ALL GRID POINTS?
+
+	return;
+}
+
+void Grid::updateNodalVelocities(const double & timeStep,
+		const std::vector<Kelvin::MaterialPoint> & particles) {
+	return;
 }
 
 } /* namespace Kelvin */
