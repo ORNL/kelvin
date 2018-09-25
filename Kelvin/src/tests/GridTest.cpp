@@ -137,7 +137,8 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
     }
     cout << "-----" << endl;
 
-    // This still doesn't deal with my fast sort problem though. Do I need that here?
+    // This still doesn't deal with my fast sort problem though. Do I need that
+    // here?
     // Why did I decide that I didn't need it in the grid class?
 
     // Check the mass matrix. A detailed check is warranted since the Grid
@@ -152,6 +153,17 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
     for (int i = 0; i < 6; i++) {
     	for (int j = 0; j < 6; j++) {
     		auto mij = massMatrix(i,j);
+    		BOOST_REQUIRE_CLOSE(refMasses[k],mij,1.0e-15);
+    		k++;
+    	}
+    }
+    // Check the other version of the massMatrix() call that returns the
+    // previously computed mass matrix.
+    auto & storedMassMatrix = grid.massMatrix();
+    k = 0;
+    for (int i = 0; i < 6; i++) {
+    	for (int j = 0; j < 6; j++) {
+    		auto mij = storedMassMatrix(i,j);
     		BOOST_REQUIRE_CLOSE(refMasses[k],mij,1.0e-15);
     		k++;
     	}
@@ -256,23 +268,70 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
 	BOOST_REQUIRE_CLOSE(-1.0,nodes[5].acc[0],1.0e-15);
 	BOOST_REQUIRE_CLOSE(-1.0,nodes[5].acc[1],1.0e-15);
 
+	// Set the initial particle velocities and update the grid
+    for (int i = 0; i < mPoints.size(); i++) {
+    	mPoints[i].vel[0] = 1.0;
+    	mPoints[i].vel[1] = 1.0;
+    }
+	// Compute the velocities at the grid points from the momenta
+	grid.updateNodalVelocitiesFromMomenta(mPoints);
+	// Check them.
+	cout << "----- Velocities from Momenta" << endl;
+	for (int i = 0; i < nodes.size(); i++) {
+		cout << i << " ";
+		for (int j = 0; j < 2; j++) {
+			cout << nodes[i].vel[j] << " ";
+		}
+		cout << "| " << lumpedMasses[i] << endl;
+	}
+	// n1
+	BOOST_REQUIRE_CLOSE(1.0,nodes[0].vel[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(1.0,nodes[0].vel[1],1.0e-15);
+	// n2
+	BOOST_REQUIRE_CLOSE(1.0,nodes[1].vel[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(1.0,nodes[1].vel[1],1.0e-15);
+	// n3
+	BOOST_REQUIRE_CLOSE(1.0,nodes[2].vel[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(1.0,nodes[2].vel[1],1.0e-15);
+	// n4
+	BOOST_REQUIRE_CLOSE(1.0,nodes[3].vel[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(1.0,nodes[3].vel[1],1.0e-15);
+	// n5
+	BOOST_REQUIRE_CLOSE(1.0,nodes[4].vel[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(1.0,nodes[4].vel[1],1.0e-15);
+	// n6
+	BOOST_REQUIRE_CLOSE(1.0,nodes[5].vel[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(1.0,nodes[5].vel[1],1.0e-15);
+
 	// Compute the velocity at the grid point for time dt = 1.0
 	grid.updateNodalVelocities(1.0,mPoints);
-
-//    auto externalForces = grid.externalForces();
-
-    // Check the acceleration at the nodes
-//    auto & acc = grid.acc();
-
-    // FIXME! Tests!
-
-    // Check the velocity at the nodes
-//    auto & vel = grid.vel();
-
-    // FIXME! Tests!
-
-    BOOST_FAIL("Not yet implemented.");
+	// Check them.
+	cout << "----- Velocities with acceleration update" << endl;
+	for (int i = 0; i < nodes.size(); i++) {
+		cout << i << " ";
+		for (int j = 0; j < 2; j++) {
+			cout << nodes[i].vel[j] << " ";
+		}
+		cout << "| " << lumpedMasses[i] << endl;
+	}
+	// n1
+	BOOST_REQUIRE_CLOSE(4.0,nodes[0].vel[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(4.0,nodes[0].vel[1],1.0e-15);
+	// n2
+	BOOST_REQUIRE_CLOSE(2.0,nodes[1].vel[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(4.0,nodes[1].vel[1],1.0e-15);
+	// n3
+	BOOST_REQUIRE_CLOSE(0.0,nodes[2].vel[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(4.0,nodes[2].vel[1],1.0e-15);
+	// n4
+	BOOST_REQUIRE_CLOSE(4.0,nodes[3].vel[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(0.0,nodes[3].vel[1],1.0e-15);
+	// n5
+	BOOST_REQUIRE_CLOSE(2.0,nodes[4].vel[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(0.0,nodes[4].vel[1],1.0e-15);
+	// n6
+	BOOST_REQUIRE_CLOSE(0.0,nodes[5].vel[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(0.0,nodes[5].vel[1],1.0e-15);
 
 	return;
-
 }

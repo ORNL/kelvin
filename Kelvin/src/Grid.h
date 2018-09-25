@@ -139,11 +139,19 @@ public:
 	void update();
 
 	/**
-	 * Get the mass matrix associated with the grid.
+	 * Get the mass matrix associated with the grid. This operation computes
+	 * the mass matrix from the particle distribution.
 	 * @return the mass matrix
 	 */
 	MassMatrix & massMatrix(
 			const std::vector<Kelvin::MaterialPoint> & particles);
+
+	/**
+	 * Get the mass matrix associated with the grid. This returns the mass
+	 * matrix computed previously, or the default, empty matrix.
+	 * @return the mass matrix
+	 */
+	MassMatrix & massMatrix();
 
 	/**
 	 * This operation returns the gradients of the nodal shape functions for
@@ -197,9 +205,20 @@ public:
 			const std::vector<Kelvin::MaterialPoint> & particles);
 
 	/**
+	 * This operation updates the nodal velocities at the present time using
+	 * momenta calculated from the particle configuration. The result is stored
+	 * directly on the nodes() array. Only velocities at the massive nodes are
+	 * updated. The mass matrix is not recomputed; the present mass matrix is
+	 * used.
+	 */
+	void updateNodalVelocitiesFromMomenta(
+			const std::vector<Kelvin::MaterialPoint> & particles);
+
+	/**
 	 * This operation computes the acceleration at the nodes using the
 	 * internal and external forces, and the mass matrix. The result is stored
-	 * directly on the nodes() array.
+	 * directly on the nodes() array. Only velocities at the massive nodes are
+	 * updated.
 	 * @param timeStep the amount of time that has passed between the present
 	 * and new values (which will be computed)
 	 * @param particles the present particle configuration on the grid

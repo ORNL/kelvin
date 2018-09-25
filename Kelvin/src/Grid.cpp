@@ -81,6 +81,7 @@ void Grid::assemble(const std::vector<Kelvin::MaterialPoint> & particles) {
 	}
 	_shapeMatrix->Finalize();
 	_shapeMatrix->SortColumnIndices();
+	//FIXME! Make sure that the shape matrix and node set are cleared at each timestep !!!!
 
 	// Construct the mass matrix associated with the grid nodes
 	_massMatrix = make_unique<MassMatrix>(particles);
@@ -150,7 +151,7 @@ const std::vector<ForceVector> & Grid::internalForces(
 			for (int k = 0; k < numGrads; k++) {
 				auto & grad = gradients[k];
 				int nodeId = grad.nodeId;
-				// ... iff its node id matches
+				// ... iff the node is near the particle
 				if (nodeId == forceNodeId) {
 					// Need to compute it over all dimensions
 					for (int l = 0; l < dim; l++) {
@@ -191,13 +192,15 @@ const std::vector<ForceVector> & Grid::externalForces(
 		for (int j = 0; j < numParticles; j++) {
 			auto & mPoint = particles[j];
 			_shapeMatrix->GetRow(j, colsI, rowI);
-			int colI = colsI.Find(i);
+			int colI = colsI.Find(forceNodeId);
+			// Must confirm that the particle is near the node, which means
+			// checking the placement in the columns array.
 			if (colI >= 0) {
-				// Need to compute it over all dimensions
-				for (int l = 0; l < dim; l++) {
-					forceVector.values[l] += rowI[colI]*
-							mPoint.mass * mPoint.bodyForce[l];
-				}
+			// Compute over all dimensions.
+			for (int l = 0; l < dim; l++) {
+				forceVector.values[l] += rowI[colI] * mPoint.mass
+						* mPoint.bodyForce[l];
+			}
 			}
 		}
 	}
@@ -242,6 +245,10 @@ MassMatrix & Grid::massMatrix(
 	return *_massMatrix;
 }
 
+MassMatrix & Grid::massMatrix() {
+	return *_massMatrix;
+}
+
 const std::vector<Point> & Grid::nodes() const {
 	return _nodes;
 }
@@ -257,7 +264,7 @@ void Grid::updateNodalAccelerations(const double & timeStep,
 	// Compute the forces (Sulsky step 9)
 	auto & intForces = internalForces(particles);
 	auto & exForces = externalForces(particles);
-	// Making an assumption here that the node sets for the internal and
+	// I'm making an assumption here that the node sets for the internal and
 	// external forces match. That's reasonable given the implementation of the
 	// base class, but may not be in the case of a subclass.
 
@@ -266,6 +273,7 @@ void Grid::updateNodalAccelerations(const double & timeStep,
 	bool sizesMatch = (intForces.size() == exForces.size())
 			&& (lumpedMassMat.size() == intForces.size());
 	if (sizesMatch) {
+		// Compute the acceleration and update the grid (Sulsky step 1)
 		int numNodes = lumpedMassMat.size();
 		// a_i = (f^int_i + f^ex_i)/m_i
 		for (int i = 0; i < numNodes; i++) {
@@ -283,14 +291,66 @@ void Grid::updateNodalAccelerations(const double & timeStep,
 	} else {
 		throw "Mass matrix diagonal and force vector size mismatch (unequal).";
 	}
-	// Compute the acceleration and update the grid (Sulsky step 1)
-	// ALL GRID POINTS?
+
+	return;
+}
+
+void Grid::updateNodalVelocitiesFromMomenta(
+		const std::vector<Kelvin::MaterialPoint> & particles) {
+
+	// Update the nodal velocities based on particle momenta, Sulsky step 11.
+	// v_i = (\sum_p N_i(x_p) M_p v_p)/m_i
+	Vector rowI;
+	Array<int> colsI;
+	int dim = _meshContainer.dimension();
+	int k = 0;
+	auto & massMat = massMatrix();
+	auto lumpedMassMat = massMat.lump();
+	set<int>::iterator nodeIt;
+	int numParticles = particles.size();
+	// Only compute the velocity for the nodes that have mass
+	for (nodeIt = _nodeSet.begin(); nodeIt != _nodeSet.end(); nodeIt++) {
+		auto & nodalVel = _nodes[*nodeIt].vel;
+		// Clear the old values
+		nodalVel.clear();
+		// Compute the momentum due to each particle
+		for (int i = 0; i < numParticles; i++) {
+			auto & mPoint = particles[i];
+			// Get the shape
+			_shapeMatrix->GetRow(i, colsI, rowI);
+			int colI = colsI.Find(*nodeIt);
+			// Must confirm that the particle is near the node, which means
+			// checking the placement in the columns array.
+			if (colI >= 0) {
+				for (int j = 0; j < dim; j++) {
+					nodalVel[j] += (rowI[colI] * mPoint.mass * mPoint.vel[j])
+							/ lumpedMassMat[k];
+				}
+			}
+		}
+		k++;
+	}
 
 	return;
 }
 
 void Grid::updateNodalVelocities(const double & timeStep,
 		const std::vector<Kelvin::MaterialPoint> & particles) {
+
+	// Update the velocities with a simple Euler update. Sulsky step 2.
+	Vector rowI;
+	Array<int> colsI;
+	int dim = _meshContainer.dimension();
+	set<int>::iterator nodeIt;
+	int numParticles = particles.size();
+	for (nodeIt = _nodeSet.begin(); nodeIt != _nodeSet.end(); nodeIt++) {
+		auto & nodalVel = _nodes[*nodeIt].vel;
+		auto & nodalAcc = _nodes[*nodeIt].acc;
+		for (int j = 0; j < dim; j++) {
+			nodalVel[j] += timeStep*nodalAcc[j];
+		}
+	}
+
 	return;
 }
 
