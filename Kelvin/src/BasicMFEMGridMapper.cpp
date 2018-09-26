@@ -1,6 +1,5 @@
-
 /**----------------------------------------------------------------------------
- Copyright (c) 2018-, UT-Battelle, LLC
+ Copyright (c) 2017-, UT-Battelle, LLC
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -30,69 +29,17 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#include <MFEMMPMSolver.h>
-#include <set>
-#include <MassMatrix.h>
-
-using namespace std;
-using namespace mfem;
+#include <BasicMFEMGridMapper.h>
 
 namespace Kelvin {
 
-MFEMMPMSolver::MFEMMPMSolver() {
+BasicMFEMGridMapper::BasicMFEMGridMapper(const mfem::Mesh & mesh) : _mesh(mesh) {
 	// TODO Auto-generated constructor stub
 
 }
 
-MFEMMPMSolver::~MFEMMPMSolver() {
+BasicMFEMGridMapper::~BasicMFEMGridMapper() {
 	// TODO Auto-generated destructor stub
 }
-
-void MFEMMPMSolver::solve(MFEMMPMData & data) {
-
-	// Assemble the grid
-	auto & particles = data.particles();
-	auto & grid = data.grid();
-	grid.assemble(particles);
-
-	// Set basic start time parameters - FIXME! Will read from input
-	double tFinal = 10.0, dt = 1.0;
-
-	// Compute the acceleration at the grid nodes
-	grid.updateNodalAccelerations(dt,particles);
-	// Compute the initial velocity from the momenta
-	grid.updateNodalVelocitiesFromMomenta(particles);
-	// Compute the velocity update
-	grid.updateNodalVelocities(dt,particles);
-
-	// Compute grad(v) at the material points
-
-	// Use the velocity gradient to compute the strain rate at material points
-
-	// Compute/update the stress at material points using the constitutive
-	// equation
-
-	// Use mapping functions to compute the velocity and acceleration at the
-	// material points
-
-
-	// Compute updates to the material point positions and velocity using
-	// explicit integration
-
-	// Update mapping matrices
-
-	// Update gradients
-
-	// Update the consistent mass matrix on the grid
-
-	// Update the diagonal mass matrix
-
-	// Use conservation of momentum to solve for the new grid velocities
-
-	// Loop
-
-
-}
-
 
 } /* namespace Kelvin */

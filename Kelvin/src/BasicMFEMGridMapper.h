@@ -1,6 +1,5 @@
-
 /**----------------------------------------------------------------------------
- Copyright (c) 2018-, UT-Battelle, LLC
+ Copyright  2018-, UT-Battelle, LLC
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -30,69 +29,29 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#include <MFEMMPMSolver.h>
-#include <set>
-#include <MassMatrix.h>
+#ifndef SRC_BASICMFEMGRIDMAPPER_H_
+#define SRC_BASICMFEMGRIDMAPPER_H_
 
-using namespace std;
-using namespace mfem;
+#include <GridMapper.h>
+#include <mfem.hpp>
 
 namespace Kelvin {
 
-MFEMMPMSolver::MFEMMPMSolver() {
-	// TODO Auto-generated constructor stub
+/**
+ * This is a GridMapper that uses MFEM to map grid properties to the particles.
+ */
+class BasicMFEMGridMapper: public GridMapper {
 
-}
+	const mfem::Mesh & _mesh;
 
-MFEMMPMSolver::~MFEMMPMSolver() {
-	// TODO Auto-generated destructor stub
-}
+public:
 
-void MFEMMPMSolver::solve(MFEMMPMData & data) {
+	BasicMFEMGridMapper(const mfem::Mesh & mesh);
 
-	// Assemble the grid
-	auto & particles = data.particles();
-	auto & grid = data.grid();
-	grid.assemble(particles);
+	virtual ~BasicMFEMGridMapper();
 
-	// Set basic start time parameters - FIXME! Will read from input
-	double tFinal = 10.0, dt = 1.0;
-
-	// Compute the acceleration at the grid nodes
-	grid.updateNodalAccelerations(dt,particles);
-	// Compute the initial velocity from the momenta
-	grid.updateNodalVelocitiesFromMomenta(particles);
-	// Compute the velocity update
-	grid.updateNodalVelocities(dt,particles);
-
-	// Compute grad(v) at the material points
-
-	// Use the velocity gradient to compute the strain rate at material points
-
-	// Compute/update the stress at material points using the constitutive
-	// equation
-
-	// Use mapping functions to compute the velocity and acceleration at the
-	// material points
-
-
-	// Compute updates to the material point positions and velocity using
-	// explicit integration
-
-	// Update mapping matrices
-
-	// Update gradients
-
-	// Update the consistent mass matrix on the grid
-
-	// Update the diagonal mass matrix
-
-	// Use conservation of momentum to solve for the new grid velocities
-
-	// Loop
-
-
-}
-
+};
 
 } /* namespace Kelvin */
+
+#endif /* SRC_BASICMFEMGRIDMAPPER_H_ */
