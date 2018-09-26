@@ -234,6 +234,30 @@ const std::vector<ForceVector> & Grid::externalForces(
 	gf[4] = 2.0;
 	cout << gf.GetValue(0,intPoint) << endl;
 
+	H1_FECollection accCol(1,dim);
+	FiniteElementSpace accSpace(&_meshContainer.getMesh(),&accCol,dim,
+			Ordering::byVDIM);
+	GridFunction accGf(&accSpace);
+	for (int i = 0; i < _nodes.size(); i++) {
+		for (int j = 0; j < dim; j++) {
+			accGf[i*dim+j] = i*dim+j;
+			cout << i << " " << j << " " << i*dim+j << endl;
+		}
+	}
+	cout << "Testing 2D gf" << endl;
+	accGf.Print();
+
+	Vector acc(dim);
+//	mfem::Array<int> elementId(1);
+//	mfem::Array<mfem::IntegrationPoint> intPoint(1);
+//	auto pointMatrix = convertPointToMatrix(point);
+	accGf.GetVectorValue(0,intPoint,acc);
+	cout << "acc vector values drawn from accGf" << endl;
+	acc.Print();
+	intPoint.Set2(1.5,0.5);
+	accGf.GetVectorValue(0,intPoint,acc);
+	acc.Print();
+
 	// FYI - IT WORKED AS EXPECTED.
 
 	return _externalForces;

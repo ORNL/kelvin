@@ -96,7 +96,7 @@ MeshContainer::getDirichletBoundaryConditions() {
 	return dbConditions;
 }
 
-inline mfem::DenseMatrix MeshContainer::convertPointToMatrix(const std::vector<double> & point) {
+mfem::DenseMatrix MeshContainer::convertPointToMatrix(const std::vector<double> & point) {
 
 	// Pack the point
 	mfem::DenseMatrix pointMatrix(point.size(),1);

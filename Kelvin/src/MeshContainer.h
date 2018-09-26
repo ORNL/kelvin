@@ -98,11 +98,6 @@ private:
 	 */
 	std::vector<DirichletBoundaryCondition> dbConditions;
 
-	/**
-	 * This operation converts a vector representation of a point to a dense MFEM matrix.
-	 */
-	inline mfem::DenseMatrix convertPointToMatrix(const std::vector<double> & point);
-
 public:
 
 	/**
@@ -218,6 +213,13 @@ public:
 	 * @return the quadrature points
 	 */
 	std::vector<Point> getQuadraturePoints();
+
+	/**
+	 * This operation converts a vector representation of a point to a dense MFEM
+	 * matrix.
+	 * @return the dense matrix representing the point
+	 */
+	mfem::DenseMatrix convertPointToMatrix(const std::vector<double> & point);
 
 };
 
