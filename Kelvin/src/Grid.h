@@ -129,7 +129,8 @@ public:
 	virtual ~Grid();
 
 	/**
-	 * Assemble all matrices. Rock and roll.
+	 * Assemble all matrices. Rock and roll. This operation should be called
+	 * exactly once.
 	 * @param particles the particle list that represent a mass distributed
 	 * across the grid. Used to create shape and mass matrices.
 	 */

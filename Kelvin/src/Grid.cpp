@@ -55,7 +55,7 @@ void Grid::assemble(const std::vector<Kelvin::MaterialPoint> & particles) {
 	int dim = _meshContainer.dimension();
 	for (int i = 0; i < numVerts; i++) {
 		mcCoords = mesh.GetVertex(i);
-		Point point;
+		Point point(dim);
 		// Create the node. Only the position needs to be assigned.
 		for (int j = 0; j < dim; j++) {
 			point.pos[j] = mcCoords[j];

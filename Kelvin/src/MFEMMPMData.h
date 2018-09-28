@@ -46,6 +46,10 @@ namespace Kelvin {
  * This classes adds a method to retrieve a list of particles. The particles
  * are read from a file that is passed in as input in a block of the simulation
  * input file. The format of the file must be csv with x,y,z coordinates.
+ *
+ * Note that this class does not call grid.assemble() since it is only
+ * responsible for unmarshalling the data, not directing what is done with it.
+ * The appropriate client class should make this and other calls.
  */
 class MFEMMPMData: public MFEMData {
 private:

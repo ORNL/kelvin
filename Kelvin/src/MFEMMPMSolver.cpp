@@ -33,6 +33,7 @@
 #include <MFEMMPMSolver.h>
 #include <set>
 #include <MassMatrix.h>
+#include <BasicMFEMGridMapper.h>
 
 using namespace std;
 using namespace mfem;
@@ -54,40 +55,60 @@ void MFEMMPMSolver::solve(MFEMMPMData & data) {
 	auto & particles = data.particles();
 	auto & grid = data.grid();
 	grid.assemble(particles);
+	// Setup a mapper for mapping from the grid to the material points
+	BasicMFEMGridMapper mapper(data.meshContainer().getMesh());
+	// Create a storage vector for velocities from the mapper
+	int dim = data.meshContainer().dimension();
+	int numParticles = particles.size();
+	std::vector<double> velUpdate(numParticles*dim);
 
 	// Set basic start time parameters - FIXME! Will read from input
-	double tFinal = 10.0, dt = 1.0;
+	double tInit = 0.0, tFinal = 10.0, dt = 1.0; // dtOverstep = tFinal % dt;
+	int numTimeSteps = (int) tFinal/dt, printStepFrequency = 5;
 
-	// Compute the acceleration at the grid nodes
-	grid.updateNodalAccelerations(dt,particles);
-	// Compute the initial velocity from the momenta
-	grid.updateNodalVelocitiesFromMomenta(particles);
-	// Compute the velocity update
-	grid.updateNodalVelocities(dt,particles);
+	// FIXME! time stepping issues
+	// 1) Handle final time overstepping
+	// 2) Follow time step limitations described in the mpm-libre article
 
-	// Compute grad(v) at the material points
+	// Integrate over time. At the moment this will not integrate exactly to
+	// tFinal. See time stepping issues above - just a place holder for now.
+	for (int ts = 0; ts < numTimeSteps; ts++) {
 
-	// Use the velocity gradient to compute the strain rate at material points
+		// Compute the acceleration at the grid nodes
+		grid.updateNodalAccelerations(dt, particles);
+		// Compute the initial velocity from the momenta
+		grid.updateNodalVelocitiesFromMomenta(particles);
+		// Compute the velocity update
+		grid.updateNodalVelocities(dt, particles);
 
-	// Compute/update the stress at material points using the constitutive
-	// equation
+		// USE A CONSTITUTIVE EQUATION CLASS INSTEAD! PASS GRID AND PARTICLES
+		// Compute grad(v) at the material points - Do I need this?
+		// Use the velocity gradient to compute the strain rate at material
+		// points
+		// Compute/update the stress at material points using the constitutive
+		// equation
 
-	// Use mapping functions to compute the velocity and acceleration at the
-	// material points
+		// Use mapping functions to compute the velocity and acceleration at
+		// the material points
+		mapper.updateParticleAccelerations(grid, particles);
+		mapper.updateParticleVelocities(grid, particles, velUpdate);
 
+		// Compute updates to the material point positions and velocity using
+		// explicit integration. This is just a simple explicit Euler update.
+		for (int i = 0; i < numParticles; i++) {
+			auto & mPoint = particles[i];
+			for (int j = 0; j < dim; j++) {
+				mPoint.pos[j] += dt * velUpdate[i * dim + j];
+				mPoint.vel[j] += dt * mPoint.acc[j];
+			}
+		}
 
-	// Compute updates to the material point positions and velocity using
-	// explicit integration
+		// Print stepping information
+		if (!(ts % printStepFrequency)) {
+			cout << "dt = " << dt << ", ts = " << ts << endl;
+		}
 
-	// Update mapping matrices
-
-	// Update gradients
-
-	// Update the consistent mass matrix on the grid
-
-	// Update the diagonal mass matrix
-
-	// Use conservation of momentum to solve for the new grid velocities
+	}
 
 	// Loop
 

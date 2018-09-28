@@ -67,7 +67,7 @@ void MFEMMPMData::load(const std::string & inputFile) {
 	cout << "Loaded " << data->size() << " particles from "
 			<< particlesFile << endl;
 
-	// Convert to points and pack the particles vector
+	// Convert to material points and pack the particles vector
 	for (int i = 0; i < data->size(); i++) {
 		auto & rawCoords = data->at(i);
 		int numCoords = rawCoords.size();
@@ -80,9 +80,6 @@ void MFEMMPMData::load(const std::string & inputFile) {
 
 	// Configure the data needed by the grid
 	_grid = make_unique<Grid>(*mc);
-
-	// Assemble the shape and mass matrices
-	_grid->assemble(_particles);
 
 	return;
 }
