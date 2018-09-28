@@ -226,6 +226,13 @@ public:
 	void updateNodalVelocities(const double & timeStep,
 			const std::vector<Kelvin::MaterialPoint> & particles);
 
+	/*
+	 * This operation returns the set of node ids representing the nodes on the
+	 * grid that have mass
+	 * @return the set of node ids
+	 */
+	const std::set<int> & massiveNodeSet();
+
 };
 
 } /* namespace Kelvin */

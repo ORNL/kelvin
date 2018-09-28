@@ -43,21 +43,46 @@ namespace Kelvin {
  */
 class GridMapper {
 public:
-	/**
-	 * Constructor
-	 */
-	GridMapper();
 
 	/**
 	 * Destructor
 	 */
-	virtual ~GridMapper();
+	virtual ~GridMapper() {};
 
-	void updateParticleAccelerations(const Kelvin::Grid & grid,
-			const std::vector<Kelvin::MaterialPoint> & particles) const;
+	/**
+	 * This function maps the acceleration on the grid nodes to particle
+	 * positions. This operation updates the particle arrays in-place.
+	 * @param grid the grid where nodal accelerations are stored
+	 * @param particles the material points for which accelerations should be
+	 * calculated
+	 */
+	virtual void updateParticleAccelerations(const Kelvin::Grid & grid,
+			std::vector<Kelvin::MaterialPoint> & particles) const = 0;
 
-	void updateParticleVelocities(const Kelvin::Grid & grid,
-			const std::vector<Kelvin::MaterialPoint> & particles);
+	/**
+	 * This function maps the velocity on the grid nodes to particle
+	 * positions. This operation updates the particle arrays in-place.
+	 * @param grid the grid where nodal velocities are stored
+	 * @param particles the material points for which accelerations should be
+	 * calculated
+	 */
+	virtual void updateParticleVelocities(const Kelvin::Grid & grid,
+			std::vector<Kelvin::MaterialPoint> & particles) const = 0;
+
+	/**
+	 * This function maps the velocity on the grid nodes to particle
+	 * positions. This operation provides the updates to the particle arrays
+	 * in an out of place vector.
+	 * @param grid the grid where nodal velocities are stored
+	 * @param particles the material points for which accelerations should be
+	 * calculated
+	 * @param velocities a vector in which the velocities should be stored with
+	 * total length equal to the number of particles by the number of
+	 * dimensions
+	 */
+	virtual void updateParticleVelocities(const Kelvin::Grid & grid,
+			const std::vector<Kelvin::MaterialPoint> & particles,
+			std::vector<double> & velocities) const = 0;
 };
 
 } /* namespace Kelvin */

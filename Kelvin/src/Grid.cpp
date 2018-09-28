@@ -378,4 +378,8 @@ void Grid::updateNodalVelocities(const double & timeStep,
 	return;
 }
 
+const std::set<int> & Grid::massiveNodeSet() {
+	return _nodeSet;
+}
+
 } /* namespace Kelvin */

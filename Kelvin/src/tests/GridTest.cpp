@@ -333,5 +333,12 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
 	BOOST_REQUIRE_CLOSE(0.0,nodes[5].vel[0],1.0e-15);
 	BOOST_REQUIRE_CLOSE(0.0,nodes[5].vel[1],1.0e-15);
 
+	// Get the massive node set and make sure it contains [0,5].
+	auto & nodeSet = grid.massiveNodeSet();
+	for (int i = 0; i < 6; i++) {
+		auto result = nodeSet.find(i);
+		BOOST_REQUIRE(result != nodeSet.end());
+	}
+
 	return;
 }

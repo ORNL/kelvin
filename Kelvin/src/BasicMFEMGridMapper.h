@@ -42,14 +42,29 @@ namespace Kelvin {
  */
 class BasicMFEMGridMapper: public GridMapper {
 
-	const mfem::Mesh & _mesh;
+	mfem::Mesh & _mesh;
 
 public:
 
-	BasicMFEMGridMapper(const mfem::Mesh & mesh);
+	/**
+	 * Constructor
+	 */
+	BasicMFEMGridMapper(mfem::Mesh & mesh);
 
+	/**
+	 * Destructor
+	 */
 	virtual ~BasicMFEMGridMapper();
 
+	void updateParticleAccelerations(const Kelvin::Grid & grid,
+			std::vector<Kelvin::MaterialPoint> & particles) const;
+
+	void updateParticleVelocities(const Kelvin::Grid & grid,
+			std::vector<Kelvin::MaterialPoint> & particles) const;
+
+	void updateParticleVelocities(const Kelvin::Grid & grid,
+			const std::vector<Kelvin::MaterialPoint> & particles,
+			std::vector<double> & velocities) const;
 };
 
 } /* namespace Kelvin */

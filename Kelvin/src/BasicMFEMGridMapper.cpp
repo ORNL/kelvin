@@ -30,16 +30,141 @@
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
 #include <BasicMFEMGridMapper.h>
+#include <Grid.h>
+
+using namespace Kelvin;
+using namespace std;
+using namespace mfem;
 
 namespace Kelvin {
 
-BasicMFEMGridMapper::BasicMFEMGridMapper(const mfem::Mesh & mesh) : _mesh(mesh) {
+BasicMFEMGridMapper::BasicMFEMGridMapper(mfem::Mesh & mesh) : _mesh(mesh) {
 	// TODO Auto-generated constructor stub
 
 }
 
 BasicMFEMGridMapper::~BasicMFEMGridMapper() {
 	// TODO Auto-generated destructor stub
+}
+
+void BasicMFEMGridMapper::updateParticleAccelerations(const Kelvin::Grid & grid,
+		std::vector<Kelvin::MaterialPoint> & particles) const {
+
+	// Create the H1 field
+	int dim = _mesh.Dimension();
+	H1_FECollection accCol(1,dim);
+	FiniteElementSpace accSpace(&_mesh,&accCol,dim,Ordering::byVDIM);
+	// Create and fill the grid function
+	GridFunction accGf(&accSpace);
+	auto & nodes = grid.nodes();
+	for (int i = 0; i < nodes.size(); i++) {
+		auto & nodeAcc = nodes[i].acc;
+		for (int j = 0; j < dim; j++) {
+			accGf[i*dim+j] = nodeAcc[j];
+		}
+	}
+
+	// Debug crap
+	cout << "Testing 2D gf" << endl;
+	accGf.Print();
+
+	// Map the grid accelerations to the particles
+	mfem::IntegrationPoint intPoint;
+	Vector acc(dim);
+	for (int i = 0; i < particles.size(); i++) {
+		auto & mPoint = particles[i];
+		intPoint.Set(mPoint.pos.data(),dim);
+		accGf.GetVectorValue(0,intPoint,acc);
+		// Write the acceleration data back to the point
+		for (int j = 0; j < dim; j++) {
+			mPoint.acc[j] = acc[j];
+		}
+		cout << "acc vector values drawn from accGf" << endl;
+		acc.Print();
+	}
+
+	return;
+}
+
+void BasicMFEMGridMapper::updateParticleVelocities(const Kelvin::Grid & grid,
+		std::vector<Kelvin::MaterialPoint> & particles) const {
+
+	// Create the H1 field
+	int dim = _mesh.Dimension();
+	H1_FECollection velCol(1,dim);
+	FiniteElementSpace velSpace(&_mesh,&velCol,dim,Ordering::byVDIM);
+	// Create and fill the grid function
+	GridFunction velGf(&velSpace);
+	auto & nodes = grid.nodes();
+	for (int i = 0; i < nodes.size(); i++) {
+		auto & nodeVel = nodes[i].vel;
+		for (int j = 0; j < dim; j++) {
+			velGf[i*dim+j] = nodeVel[j];
+		}
+	}
+
+	// Debug crap
+	cout << "Testing 2D gf" << endl;
+	velGf.Print();
+
+	// Map the grid velocities to the particles
+	mfem::IntegrationPoint intPoint;
+	Vector vel(dim);
+	for (int i = 0; i < particles.size(); i++) {
+		auto & mPoint = particles[i];
+		intPoint.Set(mPoint.pos.data(),dim);
+		velGf.GetVectorValue(0,intPoint,vel);
+		// Write the velocity data back to the point
+		for (int j = 0; j < dim; j++) {
+			mPoint.vel[j] = vel[j];
+		}
+		cout << "vel vector values drawn from velGf" << endl;
+		vel.Print();
+	}
+
+	return;
+
+}
+
+void BasicMFEMGridMapper::updateParticleVelocities(const Kelvin::Grid & grid,
+		const std::vector<Kelvin::MaterialPoint> & particles,
+		std::vector<double> & velocities) const {
+
+	// Create the H1 field
+	int dim = _mesh.Dimension();
+	H1_FECollection velCol(1, dim);
+	FiniteElementSpace velSpace(&_mesh, &velCol, dim, Ordering::byVDIM);
+	// Create and fill the grid function
+	GridFunction velGf(&velSpace);
+	auto & nodes = grid.nodes();
+	for (int i = 0; i < nodes.size(); i++) {
+		auto & nodeVel = nodes[i].vel;
+		for (int j = 0; j < dim; j++) {
+			velGf[i * dim + j] = nodeVel[j];
+		}
+	}
+
+	// Debug crap
+	cout << "Testing 2D gf" << endl;
+	velGf.Print();
+
+	// Map the grid velocities to the storage vector
+	mfem::IntegrationPoint intPoint;
+	Vector vel(dim);
+	for (int i = 0; i < particles.size(); i++) {
+		auto & mPoint = particles[i];
+		intPoint.Set(mPoint.pos.data(), dim);
+		velGf.GetVectorValue(0, intPoint, vel);
+		// Write the velocity data back to the storage vector
+		for (int j = 0; j < dim; j++) {
+			velocities[i*dim+j] = vel[j];
+		}
+		cout << "vel vector values drawn from velGf" << endl;
+		vel.Print();
+	}
+
+	return;
+
 }
 
 } /* namespace Kelvin */
