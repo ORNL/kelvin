@@ -37,7 +37,11 @@
 namespace Kelvin {
 
 /**
- * This is a basic interface for solvers.
+ * This is a basic interface for solvers. The template parameter D represents
+ * the exact type of the data class used by the solver.
+ *
+ * Clients should expect that the data object will be directly updated by the
+ * solver.
  */
 template <class D>
 class Solver {

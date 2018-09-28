@@ -70,9 +70,9 @@ void MFEMMPMSolver::solve(MFEMMPMData & data) {
 	// 1) Handle final time overstepping
 	// 2) Follow time step limitations described in the mpm-libre article
 
-	// Integrate over time. At the moment this will not integrate exactly to
-	// tFinal. See time stepping issues above - just a place holder for now.
-	for (int ts = 0; ts < numTimeSteps; ts++) {
+	// Integrate over time. At the moment this will not integrate correctly to
+	// tFinal. See time stepping issues above - just a placeholder for now.
+	for (int ts = 0; ts < numTimeSteps+1; ts++) {
 
 		// Compute the acceleration at the grid nodes
 		grid.updateNodalAccelerations(dt, particles);

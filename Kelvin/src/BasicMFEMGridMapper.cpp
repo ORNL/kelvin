@@ -64,10 +64,6 @@ void BasicMFEMGridMapper::updateParticleAccelerations(const Kelvin::Grid & grid,
 		}
 	}
 
-	// Debug crap
-	cout << "Testing 2D gf" << endl;
-	accGf.Print();
-
 	// Map the grid accelerations to the particles
 	mfem::IntegrationPoint intPoint;
 	Vector acc(dim);
@@ -79,8 +75,6 @@ void BasicMFEMGridMapper::updateParticleAccelerations(const Kelvin::Grid & grid,
 		for (int j = 0; j < dim; j++) {
 			mPoint.acc[j] = acc[j];
 		}
-		cout << "acc vector values drawn from accGf" << endl;
-		acc.Print();
 	}
 
 	return;
@@ -103,10 +97,6 @@ void BasicMFEMGridMapper::updateParticleVelocities(const Kelvin::Grid & grid,
 		}
 	}
 
-	// Debug crap
-	cout << "Testing 2D gf" << endl;
-	velGf.Print();
-
 	// Map the grid velocities to the particles
 	mfem::IntegrationPoint intPoint;
 	Vector vel(dim);
@@ -118,8 +108,6 @@ void BasicMFEMGridMapper::updateParticleVelocities(const Kelvin::Grid & grid,
 		for (int j = 0; j < dim; j++) {
 			mPoint.vel[j] = vel[j];
 		}
-		cout << "vel vector values drawn from velGf" << endl;
-		vel.Print();
 	}
 
 	return;
@@ -144,10 +132,6 @@ void BasicMFEMGridMapper::updateParticleVelocities(const Kelvin::Grid & grid,
 		}
 	}
 
-	// Debug crap
-	cout << "Testing 2D gf" << endl;
-	velGf.Print();
-
 	// Map the grid velocities to the storage vector
 	mfem::IntegrationPoint intPoint;
 	Vector vel(dim);
@@ -159,8 +143,6 @@ void BasicMFEMGridMapper::updateParticleVelocities(const Kelvin::Grid & grid,
 		for (int j = 0; j < dim; j++) {
 			velocities[i*dim+j] = vel[j];
 		}
-		cout << "vel vector values drawn from velGf" << endl;
-		vel.Print();
 	}
 
 	return;
