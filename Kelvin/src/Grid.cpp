@@ -12,7 +12,7 @@
  this list of conditions and the following disclaimer in the documentation
  and/or other materials provided with the distribution.
 
- * Neither the name of fern nor the names of its
+ * Neither the name of Kelvin nor the names of its
  contributors may be used to endorse or promote products derived from
  this software without specific prior written permission.
 
@@ -204,61 +204,6 @@ const std::vector<ForceVector> & Grid::externalForces(
 			}
 		}
 	}
-
-	// TESTING GRID FUNCTIONS - NOW GETTING SLEEPY AND WILL MESS SOMETHING UP. GOING TO LAY DOWN.
-
-	cout << "GRID FUNCTION TEST JUNK!" << endl;
-
-	auto & space = _meshContainer.getSpace();
-	GridFunction gf(&space);
-	gf = 1.0;
-	Vector nVals(dim);
-
-	int numNodes = 6;
-	gf.GetNodalValues(nVals);
-	nVals.Print();
-
-	// Find the element that contains the point
-	mfem::IntegrationPoint intPoint;
-	intPoint.Set2(0.5,0.5);
-	std::vector<double> point = {0.5,0.5};
-
-	cout << gf.GetValue(0,intPoint) << endl;
-	auto shape = _meshContainer.getNodalShapes(point);
-	for (int i = 0; i < shape.size(); i++) {
-		cout << shape[i] << " ";
-	}
-	cout << endl;
-
-	gf[1] = 2.0;
-	gf[4] = 2.0;
-	cout << gf.GetValue(0,intPoint) << endl;
-
-	H1_FECollection accCol(1,dim);
-	FiniteElementSpace accSpace(&_meshContainer.getMesh(),&accCol,dim,
-			Ordering::byVDIM);
-	GridFunction accGf(&accSpace);
-	for (int i = 0; i < _nodes.size(); i++) {
-		for (int j = 0; j < dim; j++) {
-			accGf[i*dim+j] = i*dim+j;
-			cout << i << " " << j << " " << i*dim+j << endl;
-		}
-	}
-	cout << "Testing 2D gf" << endl;
-	accGf.Print();
-
-	Vector acc(dim);
-//	mfem::Array<int> elementId(1);
-//	mfem::Array<mfem::IntegrationPoint> intPoint(1);
-//	auto pointMatrix = convertPointToMatrix(point);
-	accGf.GetVectorValue(0,intPoint,acc);
-	cout << "acc vector values drawn from accGf" << endl;
-	acc.Print();
-	intPoint.Set2(1.5,0.5);
-	accGf.GetVectorValue(0,intPoint,acc);
-	acc.Print();
-
-	// FYI - IT WORKED AS EXPECTED.
 
 	return _externalForces;
 }
