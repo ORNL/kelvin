@@ -44,16 +44,16 @@ class MaterialPoint: public Point {
 public:
 
 	/**
-	 * The local stress at the material points with dimension equal to the
-	 * point dimension.
+	 * The local stress tensor at the material point with size equal to
+	 * dimension by dimension.
 	 */
-	std::vector<double> stress;
+	std::vector<std::vector<double>> stress;
 
 	/**
-	 * The local stress at the material points with dimension equal to the
-	 * point dimension.
+	 * The local strain tensor at the material point with size equal to
+	 * dimension by dimension.
 	 */
-	std::vector<double> strain;
+	std::vector<std::vector<double>> strain;
 
 	/**
 	 * The total body force on the particle.

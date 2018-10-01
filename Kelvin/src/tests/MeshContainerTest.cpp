@@ -422,6 +422,10 @@ BOOST_AUTO_TEST_CASE(checkGradients) {
 	for (int i = 0; i < e1->GetDof(); i++) {
 		auto & grad = pt1Grads[i];
 		BOOST_REQUIRE_EQUAL(ids[i],grad.nodeId);
+		// Check the dimension of the gradient vector. This is an important bug
+		// that can destroy gradient based calculations later (like internal
+		// forces).
+		BOOST_REQUIRE_EQUAL(dimension,grad.values.size());
 		for (int j = 0; j < dimension; j++) {
 			BOOST_REQUIRE_CLOSE(grad.values[j],grad1(i,j),1.0e-15);
     	}

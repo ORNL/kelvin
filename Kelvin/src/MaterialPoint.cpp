@@ -35,8 +35,14 @@ namespace Kelvin {
 
 MaterialPoint::MaterialPoint(int dim) : Point(dim), stress(dim), strain(dim),
 		bodyForce(dim), mass(0.0) {
-	// TODO Auto-generated constructor stub
-
+	// Resize the stress and strain tensor rows to constrain their memory
+	// footprint.
+	for (int i = 0; i < dim; i++) {
+		auto & stressRow = stress[i];
+		stressRow.resize(dim);
+		auto & strainRow = strain[i];
+		strainRow.resize(dim);
+	}
 }
 
 MaterialPoint::MaterialPoint(const MaterialPoint & otherPoint) :
@@ -46,8 +52,10 @@ MaterialPoint::MaterialPoint(const MaterialPoint & otherPoint) :
 		pos[i] = otherPoint.pos[i];
 		vel[i] = otherPoint.vel[i];
 		acc[i] = otherPoint.acc[i];
-		stress[i] = otherPoint.stress[i];
-		strain[i] = otherPoint.strain[i];
+		for (int j = 0; j < nDim; j++) {
+			stress[i][j] = otherPoint.stress[i][j];
+			strain[i][j] = otherPoint.strain[i][j];
+		}
 		bodyForce[i] = otherPoint.bodyForce[i];
 	}
 	mass = otherPoint.mass;

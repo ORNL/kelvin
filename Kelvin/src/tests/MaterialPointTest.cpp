@@ -44,26 +44,32 @@ using namespace Kelvin;
 BOOST_AUTO_TEST_CASE(checkConstruction) {
 
 	// Check the basic size of the point
+	int dim = 3;
 	MaterialPoint point;
-	BOOST_REQUIRE_EQUAL(3,point.dimension());
+	BOOST_REQUIRE_EQUAL(dim,point.dimension());
 
 	// Check component dimensionality
-	BOOST_REQUIRE_EQUAL(3,point.pos.size());
-	BOOST_REQUIRE_EQUAL(3,point.vel.size());
-	BOOST_REQUIRE_EQUAL(3,point.acc.size());
-	BOOST_REQUIRE_EQUAL(3,point.stress.size());
-	BOOST_REQUIRE_EQUAL(3,point.strain.size());
-	BOOST_REQUIRE_EQUAL(3,point.bodyForce.size());
+	BOOST_REQUIRE_EQUAL(dim,point.pos.size());
+	BOOST_REQUIRE_EQUAL(dim,point.vel.size());
+	BOOST_REQUIRE_EQUAL(dim,point.acc.size());
+	BOOST_REQUIRE_EQUAL(dim,point.stress.size());
+	BOOST_REQUIRE_EQUAL(dim,point.strain.size());
+	BOOST_REQUIRE_EQUAL(dim,point.bodyForce.size());
 	// And mass
 	BOOST_REQUIRE_EQUAL(0.0,point.mass);
+	// Check the sizes of the rows of the stress and strain tensors
+	for (int i = 0; i < dim; i++) {
+		BOOST_REQUIRE_EQUAL(dim,point.stress[i].size());
+		BOOST_REQUIRE_EQUAL(dim,point.strain[i].size());
+	}
 
 	// Loading the points to test copy construction
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < dim; i++) {
 		point.pos[i] = (double) i;
 		point.vel[i] = (double) i;
 		point.acc[i] = (double) i;
-		point.stress[i] = (double) i;
-		point.strain[i] = (double) i;
+		point.stress[i] = {(double) i,(double) i, (double) i};
+		point.strain[i] = {(double) i,(double) i, (double) i};
 		point.bodyForce[i] = (double) i;
 	}
 	point.mass = 1.0;
@@ -71,12 +77,14 @@ BOOST_AUTO_TEST_CASE(checkConstruction) {
 	// Check copy construction
 	MaterialPoint point2(point);
 	BOOST_REQUIRE_EQUAL(point.dimension(),point2.dimension());
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < dim; i++) {
 		BOOST_REQUIRE_CLOSE(point.pos[i],point2.pos[i],1.0e-15);
 		BOOST_REQUIRE_CLOSE(point.vel[i],point2.vel[i],1.0e-15);
 		BOOST_REQUIRE_CLOSE(point.acc[i],point2.acc[i],1.0e-15);
-		BOOST_REQUIRE_CLOSE(point.stress[i],point2.stress[i],1.0e-15);
-		BOOST_REQUIRE_CLOSE(point.strain[i],point2.strain[i],1.0e-15);
+		for (int j = 0; j < dim; j++) {
+			BOOST_REQUIRE_CLOSE(point.stress[i][j],point2.stress[i][j],1.0e-15);
+			BOOST_REQUIRE_CLOSE(point.strain[i][j],point2.strain[i][j],1.0e-15);
+		}
 		BOOST_REQUIRE_CLOSE(point.bodyForce[i],point2.bodyForce[i],1.0e-15);
 	}
 	BOOST_REQUIRE_CLOSE(point.mass,point2.mass,1.0e-15);
@@ -91,10 +99,11 @@ BOOST_AUTO_TEST_CASE(checkConstruction) {
 	BOOST_REQUIRE_CLOSE(point3.vel[0],point4.vel[0],1.0e-15);
 	BOOST_REQUIRE_CLOSE(point3.acc[0],point4.acc[0],1.0e-15);
 	// Other attributes should be zero
-	for (int i = 0; i < 3; i++) {
-			BOOST_REQUIRE_CLOSE(0.0,point4.stress[i],0.0);
-			BOOST_REQUIRE_CLOSE(0.0,point4.strain[i],0.0);
-			BOOST_REQUIRE_CLOSE(0.0,point4.bodyForce[i],0.0);
+	for (int i = 0; i < dim; i++) {
+		for (int j = 0; j < dim; j++) {
+			BOOST_REQUIRE_CLOSE(0.0,point4.stress[i][j],1.0e-15);
+			BOOST_REQUIRE_CLOSE(0.0,point4.strain[i][j],1.0e-15);
+		}
 	}
 	BOOST_REQUIRE_CLOSE(0.0,point4.mass,0.0);
 

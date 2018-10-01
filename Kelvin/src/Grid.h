@@ -114,6 +114,18 @@ protected:
 	 */
     std::vector<ForceVector> _externalForces;
 
+    /**
+     * This is a utility operation for computing vector matrix multiply. It
+     * does not do deep bounds checking because the bounds are presumably
+     * either checked or required to be equal in the client caller.
+     * @param vec the input vector
+     * @param matrix the input matrix
+     * @param vec*matrix
+     */
+    void computeVectorMatrixProduct(const std::vector<double> & vec,
+    		const std::vector<std::vector<double>> & matrix,
+    		std::vector<double> & resultVec);
+
 public:
 
 	/**

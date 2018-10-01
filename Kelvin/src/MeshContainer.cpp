@@ -201,7 +201,7 @@ std::vector<Gradient> MeshContainer::getNodalGradients(const std::vector<double>
         auto * vertexIds = element->GetVertices();
         // Assuming numVerts = numDof
     	for (int i = 0; i < numDof; i++) {
-    		Gradient grad;
+    		Gradient grad(dim);
     		grad.nodeId = vertexIds[i];
     		for (int j = 0; j < dim; j++) {
     			grad.values[j] = gradientMatrix(i,j);

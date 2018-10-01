@@ -122,6 +122,41 @@ const std::map<int,std::vector<Gradient>> & Grid::gradients() const {
 	return _gradientMap;
 }
 
+
+void Grid::computeVectorMatrixProduct(const std::vector<double> & vec,
+		const std::vector<std::vector<double>> & matrix,
+		std::vector<double> & resultVec) {
+
+	int dim = vec.size();
+	for (int i = 0; i < dim; i++) {
+		for (int j = 0; j < dim; j++) {
+			resultVec[i] += vec[j]*matrix[j][i];
+		}
+	}
+//
+//	cout << "Vector" << endl;
+//	for (int i = 0; i < dim; i++) {
+//		cout << vec[i] << " ";
+//	}
+//	cout << endl;
+//
+//	cout << "Matrix" << endl;
+//	for (int i = 0; i < dim; i++) {
+//		for (int j = 0; j < dim; j++) {
+//			cout << matrix[i][j] << " ";
+//		}
+//		cout << endl;
+//	}
+//
+//	cout << "Result" << endl;
+//	for (int i = 0; i < dim; i++) {
+//		cout << resultVec[i] << " ";
+//	}
+//	cout << endl;
+
+	return;
+}
+
 const std::vector<ForceVector> & Grid::internalForces(
 		const std::vector<Kelvin::MaterialPoint> & particles) {
 
@@ -147,16 +182,21 @@ const std::vector<ForceVector> & Grid::internalForces(
 			auto & mPoint = particles[j];
 			auto & gradients = _gradientMap[j];
 			auto numGrads = gradients.size();
-			// Compute the component due to each element of the gradient...
+			// Compute the component due to each gradient vector
 			for (int k = 0; k < numGrads; k++) {
 				auto & grad = gradients[k];
 				int nodeId = grad.nodeId;
 				// ... iff the node is near the particle
 				if (nodeId == forceNodeId) {
+					// Compute the product of the gradient vector and stress
+					// tensor. It is easiest to compute it in the place of the
+					// force vector, then multiply the force vector by the
+					// -1.0*m_p to get the correct result.
+					computeVectorMatrixProduct(grad.values,mPoint.stress,
+							forceVector.values);
 					// Need to compute it over all dimensions
 					for (int l = 0; l < dim; l++) {
-						forceVector.values[l] -= grad.values[l]*
-								mPoint.mass*mPoint.stress[l];
+						forceVector.values[l] *= -mPoint.mass;
 					}
 				}
 			}

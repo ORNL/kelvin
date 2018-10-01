@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
     	for (int j = 0; j < elemGrads.size(); j++) {
     		cout << elemGrads[j].values[0] << " "
     				<< elemGrads[j].values[1]
-					<< " " << elemGrads[j].nodeId << endl;
+					<< " | " << elemGrads[j].nodeId << endl;
     	}
     	cout << endl;
     }
@@ -174,8 +174,8 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
     // Set the particle properties to 1 to get a value for the internal forces
     // that is equal to the gradient/sum of gradients.
     for (int i = 0; i < mPoints.size(); i++) {
-    	mPoints[i].stress[0] = 1.0;
-    	mPoints[i].stress[1] = 1.0;
+    	mPoints[i].stress[0] = {1.0,1.0};
+    	mPoints[i].stress[1] = {1.0,1.0};
     	mPoints[i].mass = 1.0;
     	mPoints[i].bodyForce[0] = 1.0;
     	mPoints[i].bodyForce[1] = 1.0;
@@ -191,23 +191,23 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
     	BOOST_REQUIRE_EQUAL(2,forceVector.dimension());
     }
     // n1
-	BOOST_REQUIRE_CLOSE(0.5,internalForces[0].values[0],1.0e-15);
-	BOOST_REQUIRE_CLOSE(0.5,internalForces[0].values[1],1.0e-15);
+	BOOST_REQUIRE_CLOSE(1.0,internalForces[0].values[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(1.0,internalForces[0].values[1],1.0e-15);
 	// n2
-	BOOST_REQUIRE_CLOSE(0.0,internalForces[1].values[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(1.0,internalForces[1].values[0],1.0e-15);
 	BOOST_REQUIRE_CLOSE(1.0,internalForces[1].values[1],1.0e-15);
 	// n3
-	BOOST_REQUIRE_CLOSE(-0.5,internalForces[2].values[0],1.0e-15);
-	BOOST_REQUIRE_CLOSE(0.5,internalForces[2].values[1],1.0e-15);
+	BOOST_REQUIRE_CLOSE(0.0,internalForces[2].values[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(0.0,internalForces[2].values[1],1.0e-15);
 	// n4
-	BOOST_REQUIRE_CLOSE(0.5,internalForces[3].values[0],1.0e-15);
-	BOOST_REQUIRE_CLOSE(-0.5,internalForces[3].values[1], 1.0e-15);
+	BOOST_REQUIRE_CLOSE(0.0,internalForces[3].values[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(0.0,internalForces[3].values[1], 1.0e-15);
 	// n5
-	BOOST_REQUIRE_CLOSE(0.0,internalForces[4].values[0], 1.0e-15);
-	BOOST_REQUIRE_CLOSE(-1.0,internalForces[4].values[1], 1.0e-15);
+	BOOST_REQUIRE_CLOSE(1.0,internalForces[4].values[0], 1.0e-15);
+	BOOST_REQUIRE_CLOSE(1.0,internalForces[4].values[1], 1.0e-15);
 	// n6
-	BOOST_REQUIRE_CLOSE(-0.5,internalForces[5].values[0], 1.0e-15);
-	BOOST_REQUIRE_CLOSE(-0.5,internalForces[5].values[1], 1.0e-15);
+	BOOST_REQUIRE_CLOSE(-1.0,internalForces[5].values[0], 1.0e-15);
+	BOOST_REQUIRE_CLOSE(-1.0,internalForces[5].values[1], 1.0e-15);
 
 	// Check the computation of the external forces. Does not current include
 	// traction, so it should be equal to the shapes given the particle
@@ -249,24 +249,27 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
 		}
 		cout << "| " << lumpedMasses[i] << endl;
 	}
+
+	// FIXME! Get your notebook out and compare against the newly computed f_int values
+
 	// n1
-	BOOST_REQUIRE_CLOSE(3.0,nodes[0].acc[0],1.0e-15);
-	BOOST_REQUIRE_CLOSE(3.0,nodes[0].acc[1],1.0e-15);
+	BOOST_REQUIRE_CLOSE(5.0,nodes[0].acc[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(5.0,nodes[0].acc[1],1.0e-15);
 	// n2
-	BOOST_REQUIRE_CLOSE(1.0,nodes[1].acc[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(3.0,nodes[1].acc[0],1.0e-15);
 	BOOST_REQUIRE_CLOSE(3.0,nodes[1].acc[1],1.0e-15);
 	// n3
-	BOOST_REQUIRE_CLOSE(-1.0,nodes[2].acc[0],1.0e-15);
-	BOOST_REQUIRE_CLOSE(3.0,nodes[2].acc[1],1.0e-15);
+	BOOST_REQUIRE_CLOSE(1.0,nodes[2].acc[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(1.0,nodes[2].acc[1],1.0e-15);
 	// n4
-	BOOST_REQUIRE_CLOSE(3.0,nodes[3].acc[0],1.0e-15);
-	BOOST_REQUIRE_CLOSE(-1.0,nodes[3].acc[1],1.0e-15);
+	BOOST_REQUIRE_CLOSE(1.0,nodes[3].acc[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(1.0,nodes[3].acc[1],1.0e-15);
 	// n5
-	BOOST_REQUIRE_CLOSE(1.0,nodes[4].acc[0],1.0e-15);
-	BOOST_REQUIRE_CLOSE(-1.0,nodes[4].acc[1],1.0e-15);
+	BOOST_REQUIRE_CLOSE(3.0,nodes[4].acc[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(3.0,nodes[4].acc[1],1.0e-15);
 	// n6
-	BOOST_REQUIRE_CLOSE(-1.0,nodes[5].acc[0],1.0e-15);
-	BOOST_REQUIRE_CLOSE(-1.0,nodes[5].acc[1],1.0e-15);
+	BOOST_REQUIRE_CLOSE(-3.0,nodes[5].acc[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(-3.0,nodes[5].acc[1],1.0e-15);
 
 	// Set the initial particle velocities and update the grid
     for (int i = 0; i < mPoints.size(); i++) {
@@ -315,23 +318,23 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
 		cout << "| " << lumpedMasses[i] << endl;
 	}
 	// n1
-	BOOST_REQUIRE_CLOSE(4.0,nodes[0].vel[0],1.0e-15);
-	BOOST_REQUIRE_CLOSE(4.0,nodes[0].vel[1],1.0e-15);
+	BOOST_REQUIRE_CLOSE(6.0,nodes[0].vel[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(6.0,nodes[0].vel[1],1.0e-15);
 	// n2
-	BOOST_REQUIRE_CLOSE(2.0,nodes[1].vel[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(4.0,nodes[1].vel[0],1.0e-15);
 	BOOST_REQUIRE_CLOSE(4.0,nodes[1].vel[1],1.0e-15);
 	// n3
-	BOOST_REQUIRE_CLOSE(0.0,nodes[2].vel[0],1.0e-15);
-	BOOST_REQUIRE_CLOSE(4.0,nodes[2].vel[1],1.0e-15);
+	BOOST_REQUIRE_CLOSE(2.0,nodes[2].vel[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(2.0,nodes[2].vel[1],1.0e-15);
 	// n4
-	BOOST_REQUIRE_CLOSE(4.0,nodes[3].vel[0],1.0e-15);
-	BOOST_REQUIRE_CLOSE(0.0,nodes[3].vel[1],1.0e-15);
+	BOOST_REQUIRE_CLOSE(2.0,nodes[3].vel[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(2.0,nodes[3].vel[1],1.0e-15);
 	// n5
-	BOOST_REQUIRE_CLOSE(2.0,nodes[4].vel[0],1.0e-15);
-	BOOST_REQUIRE_CLOSE(0.0,nodes[4].vel[1],1.0e-15);
+	BOOST_REQUIRE_CLOSE(4.0,nodes[4].vel[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(4.0,nodes[4].vel[1],1.0e-15);
 	// n6
-	BOOST_REQUIRE_CLOSE(0.0,nodes[5].vel[0],1.0e-15);
-	BOOST_REQUIRE_CLOSE(0.0,nodes[5].vel[1],1.0e-15);
+	BOOST_REQUIRE_CLOSE(-2.0,nodes[5].vel[0],1.0e-15);
+	BOOST_REQUIRE_CLOSE(-2.0,nodes[5].vel[1],1.0e-15);
 
 	// Get the massive node set and make sure it contains [0,5].
 	auto & nodeSet = grid.massiveNodeSet();
