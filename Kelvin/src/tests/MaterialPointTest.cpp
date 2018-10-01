@@ -73,6 +73,7 @@ BOOST_AUTO_TEST_CASE(checkConstruction) {
 		point.bodyForce[i] = (double) i;
 	}
 	point.mass = 1.0;
+	point.materialId = 5.0;
 
 	// Check copy construction
 	MaterialPoint point2(point);
@@ -88,6 +89,7 @@ BOOST_AUTO_TEST_CASE(checkConstruction) {
 		BOOST_REQUIRE_CLOSE(point.bodyForce[i],point2.bodyForce[i],1.0e-15);
 	}
 	BOOST_REQUIRE_CLOSE(point.mass,point2.mass,1.0e-15);
+	BOOST_REQUIRE_EQUAL(point.materialId,point2.materialId);
 
 	// Check copy construction from a point
 	Point point3;
@@ -106,6 +108,7 @@ BOOST_AUTO_TEST_CASE(checkConstruction) {
 		}
 	}
 	BOOST_REQUIRE_CLOSE(0.0,point4.mass,0.0);
+	BOOST_REQUIRE_EQUAL(0,point4.materialId);
 
 	return;
 }

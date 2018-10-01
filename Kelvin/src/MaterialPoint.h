@@ -66,6 +66,13 @@ public:
 	double mass;
 
 	/**
+	 * The material id associated with the material point. This is primarly
+	 * used to identify the correct material properties and constitutive
+	 * relationship for the material point. The default value is zero.
+	 */
+	int materialId;
+
+	/**
 	 * Constructor
 	 */
 	MaterialPoint(int dim = 3);

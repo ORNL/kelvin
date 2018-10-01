@@ -34,7 +34,7 @@
 namespace Kelvin {
 
 MaterialPoint::MaterialPoint(int dim) : Point(dim), stress(dim), strain(dim),
-		bodyForce(dim), mass(0.0) {
+		bodyForce(dim), mass(0.0), materialId(0) {
 	// Resize the stress and strain tensor rows to constrain their memory
 	// footprint.
 	for (int i = 0; i < dim; i++) {
@@ -59,6 +59,7 @@ MaterialPoint::MaterialPoint(const MaterialPoint & otherPoint) :
 		bodyForce[i] = otherPoint.bodyForce[i];
 	}
 	mass = otherPoint.mass;
+	materialId = otherPoint.materialId;
 
 	// Do I actually need the above loop? Wouldn't copy assignment work?
 	// Something for later.
