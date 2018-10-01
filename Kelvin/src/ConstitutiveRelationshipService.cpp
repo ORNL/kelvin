@@ -29,79 +29,40 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#ifndef SRC_MFEMMANAGER_H_
-#define SRC_MFEMMANAGER_H_
-
+#include <ConstitutiveRelationshipService.h>
+#include <stdexcept>
 #include <iostream>
-#include <mfem.hpp>
+
+using namespace std;
 
 namespace Kelvin {
 
-/**
- * This class is a simple manager that provides functions to initialize and
- * solve problems using MFEM.
- */
-template <class S, class D>
-class MFEMManager {
+// Initialize the map
+std::map<int,std::unique_ptr<ConstitutiveRelationship>>
+	ConstitutiveRelationshipService::_relationships;
 
-	/**
-	 * The data used in the problem solved by MFEM. Should be a subclass of
-	 * MFEMData.
-	 */
-	D data;
+ConstitutiveRelationshipService::~ConstitutiveRelationshipService() {
+	// TODO Auto-generated destructor stub
+}
 
-	/**
-	 * The solver used with MFEM to compute the solution. Should be a subclass
-	 * of Solver.
-	 */
-	S solver;
+void ConstitutiveRelationshipService::add(const int & id,
+		std::unique_ptr<ConstitutiveRelationship> relationship) {
 
-public:
-
-	/**
-	 * Constructor
-	 */
-	MFEMManager() {};
-
-	/**
-	 * Destructor
-	 */
-	virtual ~MFEMManager() {};
-
-	/**
-	 * This operation sets up the MFEM problem in the manager by configuring
-	 * input options and data.
-	 */
-	void setup(const std::string & inputFile, const int argc, char * argv[]) {
-
-		// Create the default command line arguments
-		mfem::OptionsParser args(argc, argv);
-		const char * inputFilePtr = inputFile.c_str();
-		args.AddOption(&inputFilePtr, "-i", "--input", "Input file to use.");
-
-		// Parse the arguments and do a cursory check.
-		args.Parse();
-		if (!args.Good()) {
-			args.PrintUsage(std::cout);
-			throw "Invalid input arguments!";
-		}
-
-		// Load the data
-		data.load(std::string(inputFilePtr));
-
-		return;
+	if (_relationships.count(id) == 0) {
+		_relationships[id] = std::move(relationship);
+	} else {
+		std::stringstream error;
+		error << "Constitutive relationship with id "
+				<< id << " already exists." << std::endl;
+		throw std::runtime_error(error.str());
 	}
 
-	/**
-	 * Run the solve. This will delegate to the pre-configured solver.
-	 */
-	void solve() {
-		// Delegate the solve
-		solver.solve(data);
-	}
+	return;
+}
 
-};
+ConstitutiveRelationship &
+	ConstitutiveRelationshipService::get(const int & id) {
+	return *_relationships[0];
+}
 
 } /* namespace Kelvin */
-
-#endif /* SRC_MFEMMANAGER_H_ */

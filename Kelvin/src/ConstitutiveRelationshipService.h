@@ -29,79 +29,59 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#ifndef SRC_MFEMMANAGER_H_
-#define SRC_MFEMMANAGER_H_
+#ifndef SRC_CONSTITUTIVERELATIONSHIPSERVICE_H_
+#define SRC_CONSTITUTIVERELATIONSHIPSERVICE_H_
 
-#include <iostream>
-#include <mfem.hpp>
+#include <ConstitutiveRelationship.h>
+#include <map>
+#include <memory>
 
 namespace Kelvin {
 
 /**
- * This class is a simple manager that provides functions to initialize and
- * solve problems using MFEM.
+ * This is a global service for registering and retrieving constitutive
+ * relationships to enable multi-material support. Clients register
+ * constitutive equations with the register() operaiton and retrieve them with
+ * get(). All constitutive relationships are assigned a unique id.
+ *
+ * The easiest way for Clients to access this service is to call it in or near
+ * main().
  */
-template <class S, class D>
-class MFEMManager {
+class ConstitutiveRelationshipService {
+private:
 
 	/**
-	 * The data used in the problem solved by MFEM. Should be a subclass of
-	 * MFEMData.
+	 * The map that indexes constitutive equations against integer ids.
 	 */
-	D data;
-
-	/**
-	 * The solver used with MFEM to compute the solution. Should be a subclass
-	 * of Solver.
-	 */
-	S solver;
+	static std::map<int,std::unique_ptr<ConstitutiveRelationship>>
+		_relationships;
 
 public:
 
 	/**
-	 * Constructor
+	 * This operation registers a new constitutive relationship with the
+	 * service that can be used by clients.
+	 * @param relationship the constitutive relationship to register
+	 * @param id the material id for the constitutive relationship
 	 */
-	MFEMManager() {};
+	static void add(const int & id,
+			std::unique_ptr<ConstitutiveRelationship> relationship);
+
+	/**
+	 * This operation retrieves a previously registered constitutive
+	 * relationship. It will throw an exception if the relationship was not
+	 * found in the registry.
+	 * @paramid the material id for the constitutive relationship
+	 * @return the constitutive relationship
+	 */
+	static ConstitutiveRelationship & get(const int & id);
 
 	/**
 	 * Destructor
 	 */
-	virtual ~MFEMManager() {};
-
-	/**
-	 * This operation sets up the MFEM problem in the manager by configuring
-	 * input options and data.
-	 */
-	void setup(const std::string & inputFile, const int argc, char * argv[]) {
-
-		// Create the default command line arguments
-		mfem::OptionsParser args(argc, argv);
-		const char * inputFilePtr = inputFile.c_str();
-		args.AddOption(&inputFilePtr, "-i", "--input", "Input file to use.");
-
-		// Parse the arguments and do a cursory check.
-		args.Parse();
-		if (!args.Good()) {
-			args.PrintUsage(std::cout);
-			throw "Invalid input arguments!";
-		}
-
-		// Load the data
-		data.load(std::string(inputFilePtr));
-
-		return;
-	}
-
-	/**
-	 * Run the solve. This will delegate to the pre-configured solver.
-	 */
-	void solve() {
-		// Delegate the solve
-		solver.solve(data);
-	}
-
+	virtual ~ConstitutiveRelationshipService();
 };
 
 } /* namespace Kelvin */
 
-#endif /* SRC_MFEMMANAGER_H_ */
+#endif /* SRC_CONSTITUTIVERELATIONSHIPSERVICE_H_ */

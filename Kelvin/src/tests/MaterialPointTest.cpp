@@ -110,6 +110,12 @@ BOOST_AUTO_TEST_CASE(checkConstruction) {
 	BOOST_REQUIRE_CLOSE(0.0,point4.mass,0.0);
 	BOOST_REQUIRE_EQUAL(0,point4.materialId);
 
+	std::string foo("bar");
+	cout << sizeof(foo) << " " << foo.length() << endl;
+	foo.resize(foo.length());
+	cout << sizeof(foo) << " " << foo.length() << endl;
+	cout << sizeof(int) << endl;
+
 	return;
 }
 

@@ -29,79 +29,47 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#ifndef SRC_MFEMMANAGER_H_
-#define SRC_MFEMMANAGER_H_
+#ifndef SRC_CONSTITUTIVERELATIONSHIP_H_
+#define SRC_CONSTITUTIVERELATIONSHIP_H_
 
-#include <iostream>
-#include <mfem.hpp>
+#include <MaterialPoint.h>
+#include <Grid.h>
+#include <map>
 
 namespace Kelvin {
 
 /**
- * This class is a simple manager that provides functions to initialize and
- * solve problems using MFEM.
+ * This is the base class for materials deformations provided through
+ * constitutive equations in Kelvin. It is a simple interface for stress and
+ * strain updates.
  */
-template <class S, class D>
-class MFEMManager {
-
-	/**
-	 * The data used in the problem solved by MFEM. Should be a subclass of
-	 * MFEMData.
-	 */
-	D data;
-
-	/**
-	 * The solver used with MFEM to compute the solution. Should be a subclass
-	 * of Solver.
-	 */
-	S solver;
+class ConstitutiveRelationship {
 
 public:
 
 	/**
-	 * Constructor
-	 */
-	MFEMManager() {};
-
-	/**
 	 * Destructor
 	 */
-	virtual ~MFEMManager() {};
+	virtual ~ConstitutiveRelationship() {};
 
 	/**
-	 * This operation sets up the MFEM problem in the manager by configuring
-	 * input options and data.
+	 * This operation updates the strain at the material points.
+	 * @param grid the computational grid on which nodal quantities are defined.
+	 * @param the material points at which the strains should be updated.
 	 */
-	void setup(const std::string & inputFile, const int argc, char * argv[]) {
-
-		// Create the default command line arguments
-		mfem::OptionsParser args(argc, argv);
-		const char * inputFilePtr = inputFile.c_str();
-		args.AddOption(&inputFilePtr, "-i", "--input", "Input file to use.");
-
-		// Parse the arguments and do a cursory check.
-		args.Parse();
-		if (!args.Good()) {
-			args.PrintUsage(std::cout);
-			throw "Invalid input arguments!";
-		}
-
-		// Load the data
-		data.load(std::string(inputFilePtr));
-
-		return;
-	}
+	virtual void updateStrain(const Kelvin::Grid & grid,
+			std::vector<Kelvin::MaterialPoint> & matPoints) = 0;
 
 	/**
-	 * Run the solve. This will delegate to the pre-configured solver.
+	 * This operation updates the stress at the material points.
+	 * @param grid the computational grid on which nodal quantities are defined.
+	 * @param the material points at which the strains should be updated.
 	 */
-	void solve() {
-		// Delegate the solve
-		solver.solve(data);
-	}
+	virtual void updateStress(const Kelvin::Grid & grid,
+			std::vector<Kelvin::MaterialPoint> & matPoints) = 0;
 
 };
 
 } /* namespace Kelvin */
 
-#endif /* SRC_MFEMMANAGER_H_ */
+#endif /* SRC_CONSTITUTIVERELATIONSHIP_H_ */
