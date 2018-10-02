@@ -1,8 +1,0 @@
-image: alpine
-
-before_script:
-  - echo "Setting up build environment"; chmod +x Kelvin/util/alpine_*.sh; ./Kelvin/util/alpine_before_script.sh
-
-kelvin_build:
-  script:
-    - ./Kelvin/util/alpine_buildAll.sh

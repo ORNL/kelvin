@@ -1,3 +1,0 @@
-20180731 14:20
-Background mesh and particles created using PMGen with coarsening at 1000.0.
-./src/pmgen/PMGen -m ~/git/furnace-prototype/Kelvin/data/2DPlate/plate.vtk -c 1000.0
