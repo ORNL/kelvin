@@ -75,6 +75,9 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
     	mPoints.push_back(point);
     }
 
+    // Check the dimension
+    BOOST_REQUIRE_EQUAL(mc.dimension(),grid.dimension());
+
     // Assemble it to create the arrays of nodes, shapes, masses, etc.
     grid.assemble(mPoints);
 

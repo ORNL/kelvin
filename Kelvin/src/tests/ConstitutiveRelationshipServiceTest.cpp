@@ -57,7 +57,7 @@ public:
 	 * @param grid the computational grid on which nodal quantities are defined.
 	 * @param the material points at which the strains should be updated.
 	 */
-	virtual void updateStrain(const Kelvin::Grid & grid,
+	virtual void updateStrainRate(const Kelvin::Grid & grid,
 			std::vector<Kelvin::MaterialPoint> & matPoints) {
 
 		// Just set the strains to 5.0.
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE(checkServiceRegistration) {
 	auto & relationship = ConstitutiveRelationshipService::get(0);
 
 	// Update the strain using the relationship
-	relationship.updateStrain(grid,mPoints);
+	relationship.updateStrainRate(grid,mPoints);
 
 	// Check them
 	int dim = mPoints[0].dimension();

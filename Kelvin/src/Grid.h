@@ -141,6 +141,12 @@ public:
 	virtual ~Grid();
 
 	/**
+	 * The dimension of the grid
+	 * @return the dimension
+	 */
+	const int dimension() const;
+
+	/**
 	 * Assemble all matrices. Rock and roll. This operation should be called
 	 * exactly once.
 	 * @param particles the particle list that represent a mass distributed

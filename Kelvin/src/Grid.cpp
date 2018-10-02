@@ -46,6 +46,10 @@ Grid::~Grid() {
 	// TODO Auto-generated destructor stub
 }
 
+const int Grid::dimension() const {
+	return _meshContainer.dimension();
+}
+
 void Grid::assemble(const std::vector<Kelvin::MaterialPoint> & particles) {
 
 	// Get the nodal coordinates from the mesh

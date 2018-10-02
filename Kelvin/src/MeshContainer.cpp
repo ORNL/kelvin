@@ -146,7 +146,7 @@ std::vector<double> MeshContainer::getNodalShapes(const std::vector<double> & po
     if (elementId[0] > -1) {
 
     	// Get the element transform, type and the finite element itself.
-    	auto * elemTransform = mesh.GetElementTransformation(0);
+    	auto * elemTransform = mesh.GetElementTransformation(elementId[0]);
     	auto type = elemTransform->GetGeometryType();
     	auto * feCollection = space.FEColl();
     	auto * fElement= feCollection->FiniteElementForGeometry(type);
@@ -179,7 +179,7 @@ std::vector<Gradient> MeshContainer::getNodalGradients(const std::vector<double>
     if (elementId[0] > -1) {
 
     	// Get the element transform, type and the finite element itself.
-    	auto * elemTransform = mesh.GetElementTransformation(0);
+    	auto * elemTransform = mesh.GetElementTransformation(elementId[0]);
     	auto type = elemTransform->GetGeometryType();
     	auto * feCollection = space.FEColl();
     	auto * fElement= feCollection->FiniteElementForGeometry(type);
@@ -188,6 +188,10 @@ std::vector<Gradient> MeshContainer::getNodalGradients(const std::vector<double>
     	int numDof = fElement->GetDof();
     	mfem::DenseMatrix gradientMatrix(numDof,dim);
     	fElement->CalcDShape(intPoint[0],gradientMatrix);
+
+    	cout << "Gradient MC" << endl;
+    	gradientMatrix.Print();
+    	cout << "-----" << endl;
 
     	// Repack the gradients to return them. We only need numDof entries in
     	// the vector, so shrink it.

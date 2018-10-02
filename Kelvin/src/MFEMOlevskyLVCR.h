@@ -29,49 +29,79 @@
 
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
-#ifndef SRC_CONSTITUTIVERELATIONSHIP_H_
-#define SRC_CONSTITUTIVERELATIONSHIP_H_
+#ifndef SRC_MFEMOLEVSKYLVCR_H_
+#define SRC_MFEMOLEVSKYLVCR_H_
 
-#include <MaterialPoint.h>
-#include <Grid.h>
-#include <map>
+#include <ConstitutiveRelationship.h>
+#include <MFEMData.h>
 
 namespace Kelvin {
 
-/**
- * This is the base class for materials deformations provided through
- * constitutive equations in Kelvin. It is a simple interface for stress and
- * strain updates.
- */
-class ConstitutiveRelationship {
+class MFEMOlevskyLVCR : public ConstitutiveRelationship {
+
+	/**
+	 * The data for the simulation. Primarily used to retrieve the MFEM mesh
+	 * from the mesh container.
+	 */
+	MFEMData & _data;
+
+	/**
+	 * The ratio of the volume of pores to the total volume.
+	 */
+	double porosity;
+
+	/**
+	 * The shear modulus of the material
+	 */
+	double shearModulus;
+
+	/**
+	 * (1.0-porosity)^2
+	 */
+	double phi;
+
+	/**
+	 * (2/3)(1-porosity)^3/porosity
+	 */
+	double psi;
+
+	/**
+	 * The material density
+	 */
+	double density;
 
 public:
 
 	/**
-	 * Destructor
+	 * Constructor
 	 */
-	virtual ~ConstitutiveRelationship() {};
+	MFEMOlevskyLVCR(MFEMData & data);
 
 	/**
-	 * This operation updates the strain rate at the material points.
-	 * @param grid the computational grid on which nodal quantities are
-	 * defined.
+	 * Destructor
+	 */
+	virtual ~MFEMOlevskyLVCR();
+
+	/**
+	 * This operation updates the strain rate at the material points using
+	 * infinitesimal strain theory, 1/2(\grad v + \grad v^T).
+	 * @param grid the computational grid on which nodal quantities are defined.
 	 * @param the material points at which the strains should be updated.
 	 */
 	virtual void updateStrainRate(const Kelvin::Grid & grid,
-			std::vector<Kelvin::MaterialPoint> & matPoints) = 0;
+			std::vector<Kelvin::MaterialPoint> & matPoints);
 
 	/**
-	 * This operation updates the stress at the material points.
-	 * @param grid the computational grid on which nodal quantities are
-	 * defined.
+	 * This operation updates the stress at the material points using the
+	 * constitutive equation for linear viscous materials from Eugene Olevsky's
+	 * Continuum Theory of Sintering.
+	 * @param grid the computational grid on which nodal quantities are defined.
 	 * @param the material points at which the strains should be updated.
 	 */
 	virtual void updateStress(const Kelvin::Grid & grid,
-			std::vector<Kelvin::MaterialPoint> & matPoints) = 0;
-
+			std::vector<Kelvin::MaterialPoint> & matPoints);
 };
 
 } /* namespace Kelvin */
 
-#endif /* SRC_CONSTITUTIVERELATIONSHIP_H_ */
+#endif /* SRC_MFEMOLEVSKYLVCR_H_ */
