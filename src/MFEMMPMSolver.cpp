@@ -64,7 +64,7 @@ void MFEMMPMSolver::solve(MFEMMPMData & data) {
 	std::vector<double> velUpdate(numParticles*dim);
 
 	// Set basic start time parameters - FIXME! Will read from input
-	double tInit = 0.0, tFinal = 10.0, dt = 1.0; // dtOverstep = tFinal % dt;
+	double tInit = 0.0, tFinal = 10.0, dt = 1.0e-5; // dtOverstep = tFinal % dt;
 	int numTimeSteps = (int) tFinal/dt, printStepFrequency = 5;
 
 	// FIXME! time stepping issues
@@ -96,9 +96,11 @@ void MFEMMPMSolver::solve(MFEMMPMData & data) {
 			// Get the constitutive equations
 			auto & conRel = ConstitutiveRelationshipService::get(
 					mPoint.materialId);
-
 			// Compute/update the stress at material points using the
 			// constitutive equation
+			conRel.updateStrainRate(grid,mPoint);
+			conRel.updateStress(grid,mPoint);
+			// Update the positions and velocities
 			for (int j = 0; j < dim; j++) {
 				mPoint.pos[j] += dt * velUpdate[i * dim + j];
 				mPoint.vel[j] += dt * mPoint.acc[j];
@@ -107,7 +109,8 @@ void MFEMMPMSolver::solve(MFEMMPMData & data) {
 
 		// Print stepping information
 		if (!(ts % printStepFrequency)) {
-			cout << "dt = " << dt << ", ts = " << ts << endl;
+			cout << "dt = " << dt << ", ts = " << ts << ", t = "
+					<< (tInit+dt*ts) << endl;
 		}
 
 	}

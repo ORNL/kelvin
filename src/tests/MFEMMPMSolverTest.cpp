@@ -34,6 +34,8 @@
 
 #include <boost/test/included/unit_test.hpp>
 #include <MFEMMPMSolver.h>
+#include <ConstitutiveRelationshipService.h>
+#include <MFEMOlevskyLVCR.h>
 
 using namespace std;
 using namespace Kelvin;
@@ -49,6 +51,12 @@ BOOST_AUTO_TEST_CASE(checkConstruction) {
 	// Load the test data
 	MFEMMPMData data;
 	data.load(inputFile);
+
+	// Register the constitutive relationship
+	unique_ptr<ConstitutiveRelationship> olevskyLVCR =
+			make_unique<MFEMOlevskyLVCR>(data);
+	// Add them to the service
+	ConstitutiveRelationshipService::add(1,std::move(olevskyLVCR));
 
 	MFEMMPMSolver solver;
 	solver.solve(data);

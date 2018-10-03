@@ -62,7 +62,7 @@ void ConstitutiveRelationshipService::add(const int & id,
 
 ConstitutiveRelationship &
 	ConstitutiveRelationshipService::get(const int & id) {
-	return *_relationships[0];
+	return *_relationships[id];
 }
 
 } /* namespace Kelvin */

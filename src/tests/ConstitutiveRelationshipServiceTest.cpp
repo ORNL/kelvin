@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(checkServiceRegistration) {
 	unique_ptr<ConstitutiveRelationship> testRelPtr =
 			make_unique<TestConstitutiveRelationship>();
 	// Add it to the service
-	ConstitutiveRelationshipService::add(0,std::move(testRelPtr));
+	ConstitutiveRelationshipService::add(8675309,std::move(testRelPtr));
 
 	// Create the space factory
 	H1FESpaceFactory spaceFactory;
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(checkServiceRegistration) {
     }
 
 	// Get the test relationship
-	auto & relationship = ConstitutiveRelationshipService::get(0);
+	auto & relationship = ConstitutiveRelationshipService::get(8675309);
 
 	// Check them
 	int dim = mPoints[0].dimension();
