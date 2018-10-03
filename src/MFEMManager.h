@@ -34,6 +34,11 @@
 
 #include <iostream>
 #include <mfem.hpp>
+#include <memory>
+#include <MFEMOlevskyLVCR.h>
+#include <ConstitutiveRelationshipService.h>
+
+using namespace std;
 
 namespace Kelvin {
 
@@ -88,6 +93,12 @@ public:
 
 		// Load the data
 		data.load(std::string(inputFilePtr));
+
+		// Create the constitutive relationships
+		unique_ptr<ConstitutiveRelationship> olevskyLVCR =
+				make_unique<MFEMOlevskyLVCR>(data);
+		// Add them to the service
+		ConstitutiveRelationshipService::add(1,std::move(olevskyLVCR));
 
 		return;
 	}

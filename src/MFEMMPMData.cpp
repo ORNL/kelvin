@@ -67,19 +67,30 @@ void MFEMMPMData::load(const std::string & inputFile) {
 	cout << "Loaded " << data->size() << " particles from "
 			<< particlesFile << endl;
 
-	// Convert to material points and pack the particles vector
-	for (int i = 0; i < data->size(); i++) {
-		auto & rawCoords = data->at(i);
-		int numCoords = rawCoords.size();
-		MaterialPoint point(rawCoords.size());
-		for (int j = 0; j < numCoords; j++) {
-			point.pos[j] = rawCoords[j];
-		}
-		_particles.push_back(point);
-	}
-
 	// Configure the data needed by the grid
 	_grid = make_unique<Grid>(*mc);
+
+	// Compute and set the particle mass
+	double totalMass = fire::StringCaster<double>::cast(block.at("totalMass"));
+	double particleMass = totalMass/data->size();
+	// Load the first dim columns of the data file to convert to material
+	// points and pack the particles vector
+	int numCoords = _grid->dimension();
+	for (int i = 0; i < data->size(); i++) {
+		auto & rawData = data->at(i);
+		MaterialPoint point(numCoords);
+		// Set the position
+		for (int j = 0; j < numCoords; j++) {
+			point.pos[j] = rawData[j];
+		}
+		// Set the material type, which is the numCoords entry from the file
+		// since the arrays are zero indexed.
+		point.materialId = rawData[numCoords];
+		// Set the mass
+		point.mass = particleMass;
+		// Push the particle into the list
+		_particles.push_back(point);
+	}
 
 	return;
 }

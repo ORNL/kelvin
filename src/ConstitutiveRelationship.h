@@ -56,19 +56,19 @@ public:
 	 * This operation updates the strain rate at the material points.
 	 * @param grid the computational grid on which nodal quantities are
 	 * defined.
-	 * @param the material points at which the strains should be updated.
+	 * @param the material point at which the strains should be updated.
 	 */
 	virtual void updateStrainRate(const Kelvin::Grid & grid,
-			std::vector<Kelvin::MaterialPoint> & matPoints) = 0;
+			Kelvin::MaterialPoint & matPoint) = 0;
 
 	/**
 	 * This operation updates the stress at the material points.
 	 * @param grid the computational grid on which nodal quantities are
 	 * defined.
-	 * @param the material points at which the strains should be updated.
+	 * @param the material point at which the strains should be updated.
 	 */
 	virtual void updateStress(const Kelvin::Grid & grid,
-			std::vector<Kelvin::MaterialPoint> & matPoints) = 0;
+			Kelvin::MaterialPoint & matPoint) = 0;
 
 };
 

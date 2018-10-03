@@ -86,20 +86,20 @@ public:
 	 * This operation updates the strain rate at the material points using
 	 * infinitesimal strain theory, 1/2(\grad v + \grad v^T).
 	 * @param grid the computational grid on which nodal quantities are defined.
-	 * @param the material points at which the strains should be updated.
+	 * @param the material point at which the strains should be updated.
 	 */
 	virtual void updateStrainRate(const Kelvin::Grid & grid,
-			std::vector<Kelvin::MaterialPoint> & matPoints);
+			Kelvin::MaterialPoint & matPoints);
 
 	/**
 	 * This operation updates the stress at the material points using the
 	 * constitutive equation for linear viscous materials from Eugene Olevsky's
 	 * Continuum Theory of Sintering.
 	 * @param grid the computational grid on which nodal quantities are defined.
-	 * @param the material points at which the strains should be updated.
+	 * @param the material point at which the strains should be updated.
 	 */
 	virtual void updateStress(const Kelvin::Grid & grid,
-			std::vector<Kelvin::MaterialPoint> & matPoints);
+			Kelvin::MaterialPoint & matPoints);
 };
 
 } /* namespace Kelvin */

@@ -52,34 +52,21 @@ using namespace fire;
 class TestConstitutiveRelationship : public ConstitutiveRelationship {
 public:
 
-	/**
-	 * This operation updates the strain at the material points.
-	 * @param grid the computational grid on which nodal quantities are defined.
-	 * @param the material points at which the strains should be updated.
-	 */
 	virtual void updateStrainRate(const Kelvin::Grid & grid,
-			std::vector<Kelvin::MaterialPoint> & matPoints) {
+			Kelvin::MaterialPoint & matPoint) {
 
 		// Just set the strains to 5.0.
-		int dim = matPoints[0].dimension();
-		for (int i = 0; i < matPoints.size(); i++) {
-			auto & point = matPoints[i];
-			for (int j = 0; j < dim; j++) {
-				for (int k = 0; k < dim; k++) {
-					point.strain[j][k] = 5.0;
-				}
+		int dim = matPoint.dimension();
+		for (int j = 0; j < dim; j++) {
+			for (int k = 0; k < dim; k++) {
+				matPoint.strain[j][k] = 5.0;
 			}
 		}
 
 	}
 
-	/**
-	 * This operation updates the stress at the material points.
-	 * @param grid the computational grid on which nodal quantities are defined.
-	 * @param the material points at which the strains should be updated.
-	 */
 	virtual void updateStress(const Kelvin::Grid & grid,
-			std::vector<Kelvin::MaterialPoint> & matPoints) {
+			Kelvin::MaterialPoint & matPoints) {
 
 	}
 
@@ -125,12 +112,11 @@ BOOST_AUTO_TEST_CASE(checkServiceRegistration) {
 	// Get the test relationship
 	auto & relationship = ConstitutiveRelationshipService::get(0);
 
-	// Update the strain using the relationship
-	relationship.updateStrainRate(grid,mPoints);
-
 	// Check them
 	int dim = mPoints[0].dimension();
 	for (int i = 0; i < mPoints.size(); i++) {
+		// Update the strain using the relationship
+		relationship.updateStrainRate(grid,mPoints[i]);
 		auto & point = mPoints[i];
 		for (int j = 0; j < dim; j++) {
 			for (int k = 0; k < dim; k++) {

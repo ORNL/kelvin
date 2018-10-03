@@ -65,6 +65,12 @@ BOOST_AUTO_TEST_CASE(checkConstructionAndLoad) {
 	BOOST_REQUIRE_CLOSE(1.5,particles[0].pos[1],1.0e-15);
 	BOOST_REQUIRE_CLOSE(2.5,particles[1].pos[0],1.0e-15);
 	BOOST_REQUIRE_CLOSE(1.5,particles[1].pos[1],1.0e-15);
+	// Check the mass
+	BOOST_REQUIRE_CLOSE(0.031/2.0,particles[0].mass,1.0e-15);
+	BOOST_REQUIRE_CLOSE(0.031/2.0,particles[1].mass,1.0e-15);
+	// Check the material id
+	BOOST_REQUIRE_EQUAL(1,particles[0].materialId);
+	BOOST_REQUIRE_EQUAL(1,particles[1].materialId);
 
 	return;
 }

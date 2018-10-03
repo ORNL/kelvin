@@ -7,5 +7,7 @@
 	<buildSpec>
 	</buildSpec>
 	<natures>
+		<nature>org.eclipse.cdt.core.cnature</nature>
+		<nature>org.eclipse.cdt.core.ccnature</nature>
 	</natures>
 </projectDescription>

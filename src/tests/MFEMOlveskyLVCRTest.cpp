@@ -110,7 +110,9 @@ BOOST_AUTO_TEST_CASE(checkStrain) {
 	MFEMOlevskyLVCR conRel(data);
 
 	// Compute the strain
-	conRel.updateStrainRate(grid,mPoints);
+	for (int i = 0; i < mPoints.size(); i++) {
+		conRel.updateStrainRate(grid,mPoints[i]);
+	}
 	// Setup reference values
 	std::vector<double> p1Strain{0,-1,-1,-2};
 	std::vector<double> p2Strain{-4,-3,-3,-2};
@@ -198,10 +200,13 @@ BOOST_AUTO_TEST_CASE(checkStress) {
 	// Create the constitutive equation
 	MFEMOlevskyLVCR conRel(data);
 
-	// Compute the strain
-	conRel.updateStrainRate(grid,mPoints);
-	// Compute the stress
-	conRel.updateStress(grid,mPoints);
+	for (int i = 0; i < mPoints.size(); i++) {
+		// Compute the strain
+		conRel.updateStrainRate(grid,mPoints[i]);
+		// Compute the stress
+		conRel.updateStress(grid,mPoints[i]);
+	}
+
 	// Setup reference values
 	std::vector<double> p1Stress{-677778,-508333,-508333,-677778};
 	std::vector<double> p2Stress{-2.03333e6,-1.525e6,-1.525e6,-2.03333e6};

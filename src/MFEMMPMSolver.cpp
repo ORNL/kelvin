@@ -34,6 +34,7 @@
 #include <set>
 #include <MassMatrix.h>
 #include <BasicMFEMGridMapper.h>
+#include <ConstitutiveRelationshipService.h>
 
 using namespace std;
 using namespace mfem;
@@ -81,22 +82,23 @@ void MFEMMPMSolver::solve(MFEMMPMData & data) {
 		// Compute the velocity update
 		grid.updateNodalVelocities(dt, particles);
 
-		// USE A CONSTITUTIVE EQUATION CLASS INSTEAD! PASS GRID AND PARTICLES
-		// Compute grad(v) at the material points - Do I need this?
-		// Use the velocity gradient to compute the strain rate at material
-		// points
-		// Compute/update the stress at material points using the constitutive
-		// equation
-
 		// Use mapping functions to compute the velocity and acceleration at
 		// the material points
 		mapper.updateParticleAccelerations(grid, particles);
 		mapper.updateParticleVelocities(grid, particles, velUpdate);
 
-		// Compute updates to the material point positions and velocity using
-		// explicit integration. This is just a simple explicit Euler update.
+		// Compute updates to the material point stresses and strains using the
+		// appropriate constitutive relationship. Update the positions and
+		// velocity using explicit integration. This is just a simple
+		// explicit Euler update.
 		for (int i = 0; i < numParticles; i++) {
 			auto & mPoint = particles[i];
+			// Get the constitutive equations
+			auto & conRel = ConstitutiveRelationshipService::get(
+					mPoint.materialId);
+
+			// Compute/update the stress at material points using the
+			// constitutive equation
 			for (int j = 0; j < dim; j++) {
 				mPoint.pos[j] += dt * velUpdate[i * dim + j];
 				mPoint.vel[j] += dt * mPoint.acc[j];

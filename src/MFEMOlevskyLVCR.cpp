@@ -62,7 +62,7 @@ MFEMOlevskyLVCR::~MFEMOlevskyLVCR() {
 }
 
 void MFEMOlevskyLVCR::updateStrainRate(const Kelvin::Grid & grid,
-		std::vector<Kelvin::MaterialPoint> & matPoints) {
+		Kelvin::MaterialPoint & matPoint) {
 
 	// Create the H1 field
 	int dim = _data.meshContainer().dimension();
@@ -80,38 +80,33 @@ void MFEMOlevskyLVCR::updateStrainRate(const Kelvin::Grid & grid,
 		}
 	}
 
-	// Compute the strain rate and strain. Is this correct? I get the
-	// impression that the share gradients are off.
-	int numParticles = matPoints.size();
-	for (int i = 0; i < numParticles; i++) {
-		auto & point = matPoints[i];
-		// Find the element that contains the point
-		mfem::Array<int> elementId(1);
-		mfem::Array<mfem::IntegrationPoint> intPoints(1);
-		auto pointMatrix = meshContainer.convertPointToMatrix(point.pos);
-	    _mesh.FindPoints(pointMatrix,elementId,intPoints);
-	    // Get the element transformation
-		auto * elemTrans = _mesh.GetElementTransformation(elementId[0]);
-		// Set the material point position in reference coordinates
-		elemTrans->SetIntPoint(&intPoints[0]);
-		// Get the gradient of the velocity at the material point
-		DenseMatrix gradVel(dim,dim);
-		velGf.GetVectorGradient(*elemTrans,gradVel);
-		// Compute the strain using infinitesimal strain theory by
-		// symmetrizing the matrix.
-		gradVel.Symmetrize();
-		// Map the matrix into the point
-		for (int j = 0; j < dim; j++) {
-			for (int k = 0; k < dim; k++) {
-				point.strain[j][k] = gradVel(j,k);
-			}
+	// Is this correct? I get the impression that the share gradients are off.
+	// Find the element that contains the point
+	mfem::Array<int> elementId(1);
+	mfem::Array < mfem::IntegrationPoint > intPoints(1);
+	auto pointMatrix = meshContainer.convertPointToMatrix(matPoint.pos);
+	_mesh.FindPoints(pointMatrix, elementId, intPoints);
+	// Get the element transformation
+	auto * elemTrans = _mesh.GetElementTransformation(elementId[0]);
+	// Set the material point position in reference coordinates
+	elemTrans->SetIntPoint(&intPoints[0]);
+	// Get the gradient of the velocity at the material point
+	DenseMatrix gradVel(dim, dim);
+	velGf.GetVectorGradient(*elemTrans, gradVel);
+	// Compute the strain using infinitesimal strain theory by
+	// symmetrizing the matrix.
+	gradVel.Symmetrize();
+	// Map the matrix into the point
+	for (int j = 0; j < dim; j++) {
+		for (int k = 0; k < dim; k++) {
+			matPoint.strain[j][k] = gradVel(j, k);
 		}
 	}
 
 }
 
 void MFEMOlevskyLVCR::updateStress(const Kelvin::Grid & grid,
-		std::vector<Kelvin::MaterialPoint> & matPoints) {
+		Kelvin::MaterialPoint & matPoint) {
 
 	int dim = grid.dimension();
 	double twoShearMod = 2.0*shearModulus;
@@ -123,43 +118,34 @@ void MFEMOlevskyLVCR::updateStress(const Kelvin::Grid & grid,
 		sinteringStress[i] = phi*(2.0*(1.0-porosity)-(1-porosity))/porosity;
 	}
 
-	int numPoints = matPoints.size();
-	for (int i = 0; i < numPoints; i++) {
-		double traceE = 0.0;
-		auto & matPoint = matPoints[i];
-		// Copy the initial strain rate into the deviatoric matrix
-		for (int i = 0; i < dim; i++) {
-			for (int j = 0; j < dim; j++) {
-				deviatoricStrainRate[i][j] = matPoint.strain[i][j];
-			}
-		}
-		// Compute the trace of the strain rate
-		for (int i = 0; i < dim; i++) {
-			traceE += matPoint.strain[i][i];
-		}
-		// Compute the hydrostatic strain rate
-		double hydrostaticStrainRate = traceE/dim;
-		// Compute the deviatoric strain rate
-		for (int i = 0; i < dim; i++) {
-			deviatoricStrainRate[i][i] -= hydrostaticStrainRate;
-		}
-		// Compute the stress matrix
-		for (int i = 0; i < dim; i++) {
-			// "Initialize" the stress matrix with a scaled deviatoric matrix
-			for (int j = 0; j < dim; j++) {
-				matPoint.stress[i][j] = twoShearMod*phi*
-						deviatoricStrainRate[i][j]/density;
-			}
-			// Add in the diagonal components
-			matPoint.stress[i][i] = (twoShearMod*psi*traceE
-					+ sinteringStress[i])/density;
+	double traceE = 0.0;
+	// Copy the initial strain rate into the deviatoric matrix
+	for (int i = 0; i < dim; i++) {
+		for (int j = 0; j < dim; j++) {
+			deviatoricStrainRate[i][j] = matPoint.strain[i][j];
 		}
 	}
-
-	// One loop
-
-	// Setup the sintering stress
-	// Two loops
+	// Compute the trace of the strain rate
+	for (int i = 0; i < dim; i++) {
+		traceE += matPoint.strain[i][i];
+	}
+	// Compute the hydrostatic strain rate
+	double hydrostaticStrainRate = traceE / dim;
+	// Compute the deviatoric strain rate
+	for (int i = 0; i < dim; i++) {
+		deviatoricStrainRate[i][i] -= hydrostaticStrainRate;
+	}
+	// Compute the stress matrix
+	for (int i = 0; i < dim; i++) {
+		// "Initialize" the stress matrix with a scaled deviatoric matrix
+		for (int j = 0; j < dim; j++) {
+			matPoint.stress[i][j] = twoShearMod * phi
+					* deviatoricStrainRate[i][j] / density;
+		}
+		// Add in the diagonal components
+		matPoint.stress[i][i] =
+				(twoShearMod * psi * traceE + sinteringStress[i]) / density;
+	}
 
 }
 

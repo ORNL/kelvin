@@ -2,6 +2,6 @@
 # Number of particles = 2
 # Source mesh: 2Squares.mesh
 # Created on: UTC Thu Aug  2 19:32:51 2018
-# x, y, z
-1.5, 1.5
-2.5, 1.5
+# x, y, materialId
+1.5, 1.5, 1
+2.5, 1.5, 1
