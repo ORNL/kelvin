@@ -6,15 +6,10 @@ Prerequisites
 
 Kelvin requires ORNL's Parsers utility library which you can download as source from https://github.com/jayjaybillings/parsers. Kelvin also requires the Modified Finite Element Method (MFEM) library, which you can download and build from http://mfem.org.
 
-Fire
-===
-
-Fire can be built with all standard options. The "make install" step in Fire's build should be executed with the option -DCMAKE_INSTALL_PREFIX=<your_install_path> configured. See the Fire build instructions for more details ("Installation Step" in Fire's README.md).
-
 Build
 ==
 
-Kelvin uses CMake to compiles and build the source code into a library and executables. The entire project can be configured and build with a few easy steps, starting from the source directory:
+Kelvin uses CMake to compile and build the source code into a library and executables. It can be built with many standard options, which can be viewed by passing the --help flag to CMake during that phase of the build. The "make install" step in Kelvin's will install the artifacts to the directoy specified by the CMake flag ```-DCMAKE_INSTALL_PREFIX=<your_install_path>```. The entire project can be configured and build with a few easy steps, starting from the source directory:
 
 ```bash
 $ mkdir build/
@@ -23,7 +18,7 @@ $ cmake ../ -DPARSERS_DIR=$PARSERS_ROOT_DIR -DMFEM_DIR=$MFEM_ROOT_DIR
 $ make
 ```
 
-Where $PARSERS_ROOT_DIR and $MFEM_ROOT_DIR are the locations of the Parsers and MFEM installation directories. Both directories are the installation directories, not the build or source directories. The following is an example for a user name bob:
+where $PARSERS_ROOT_DIR and $MFEM_ROOT_DIR are the locations of the Parsers and MFEM installation directories. Both directories are the installation directories, not the build or source directories. The following is an example for a user name bob:
 
 ```bash
 $ cmake ../ -DPARSERS_DIR=/home/bob/parsers-install -DMFEM_DIR=/home/bob/mfem-install
