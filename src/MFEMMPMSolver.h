@@ -33,6 +33,7 @@
 #define SRC_MFEMMPMSOLVER_H_
 
 #include <MFEMMPMData.h>
+#include <Grid.h>
 #include <Solver.h>
 
 namespace Kelvin {

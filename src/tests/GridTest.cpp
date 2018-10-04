@@ -346,5 +346,20 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
 		BOOST_REQUIRE(result != nodeSet.end());
 	}
 
+	// Check that no-slip boundary conditions can be applied
+	grid.applyNoSlipBoundaryConditions();
+	for (int i = 0; i < nodes.size(); i++) {
+		auto & node = nodes[i];
+		cout << i << " " << node.vel[0] << " " << node.vel[1] << " "
+				<< node.acc[0] << " " << node.acc[1] << endl;
+	}
+
+	// Check particle movement in force vector id updates. First, move the
+	// particles.
+
+	// Update the acceleration
+
+	// Make sure that the force vector ids changes
+
 	return;
 }

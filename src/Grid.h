@@ -95,14 +95,16 @@ protected:
 	std::unique_ptr<MassMatrix> _massMatrix;
 
 	/**
-	 * This private operation updates the state of the shape matrix.
+	 * This private operation updates the state of the shape matrix and the
+	 * gradient shape matrix.
 	 */
-	void updateShapeMatrix();
+	void updateShapeMatrix(
+			const std::vector<Kelvin::MaterialPoint> & particles);
 
 	/**
-	 * This private operation updates the state of the mass matrix.
+	 * This operation sets the force vector node ids from the nodes set.
 	 */
-	void updateMassMatrix();
+	void setForceVectorNodeIds();
 
 	/**
 	 * The values of the internal forces applied at the grid nodes.
@@ -216,6 +218,10 @@ public:
 	 * directly on the nodes() array. The base class implementation does not
 	 * use the time step since the acceleration is computed directly from the
 	 * equation of motion.
+	 *
+	 * Calling this operation forces an update of the nodal shape and gradient
+	 * matrices, and updates all force vector node ids.
+	 *
 	 * @param timeStep the amount of time that has passed between the present
 	 * and new values (which will be computed)
 	 * @param particles the present particle configuration on the grid
@@ -251,6 +257,12 @@ public:
 	 * @return the set of node ids
 	 */
 	const std::set<int> & massiveNodeSet();
+
+	/**
+	 * This operation applies the no slip boundary condition to the boundary at
+	 * the bottom of the grid.
+	 */
+	virtual void applyNoSlipBoundaryConditions();
 
 };
 

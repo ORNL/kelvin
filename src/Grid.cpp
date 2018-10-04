@@ -31,6 +31,7 @@
  -----------------------------------------------------------------------------*/
 #include <Grid.h>
 #include <memory>
+#include <limits>
 
 using namespace mfem;
 using namespace std;
@@ -50,7 +51,31 @@ const int Grid::dimension() const {
 	return _meshContainer.dimension();
 }
 
+void Grid::setForceVectorNodeIds() {
+
+	// Clear the old node ids
+	_internalForces.clear();
+	_externalForces.clear();
+	// Fill the vectors with initial data
+	int dim = dimension();
+	ForceVector emptyForceWithCorrectDimensionality(dim);
+	int numForces = _nodeSet.size();
+	_internalForces.resize(numForces,emptyForceWithCorrectDimensionality);
+	_externalForces.resize(numForces,emptyForceWithCorrectDimensionality);
+	// Set the force node ids
+	set<int>::iterator it;
+	int index = 0;
+	for (it = _nodeSet.begin(); it != _nodeSet.end(); it++) {
+		_internalForces[index].nodeId = *it;
+		_externalForces[index].nodeId = *it;
+		index++;
+	}
+
+}
+
 void Grid::assemble(const std::vector<Kelvin::MaterialPoint> & particles) {
+
+	// FIXME! This could just be a constructor!
 
 	// Get the nodal coordinates from the mesh
 	auto & mesh = _meshContainer.getMesh();
@@ -67,16 +92,34 @@ void Grid::assemble(const std::vector<Kelvin::MaterialPoint> & particles) {
 		_nodes.push_back(point);
 	}
 
+	// Update the shape matrix
+	updateShapeMatrix(particles);
+
+	// Construct the mass matrix associated with the grid nodes
+	_massMatrix = make_unique<MassMatrix>(particles);
+
+	// Resize the internal and external force vectors
+	setForceVectorNodeIds();
+
+	return;
+}
+
+void Grid::updateShapeMatrix(
+		const std::vector<Kelvin::MaterialPoint> & particles) {
+
 	// The shape matrix is very sparse, so this computation exploits that by only
 	// adding shape values for nodes that exist for the given particle.
+	_nodeSet.clear();
+	_gradientMap.clear();
 	int numParticles = particles.size();
-	_shapeMatrix = make_unique<SparseMatrix>(numParticles,numVerts);
+	// Re-initialize the shape matrix
+	_shapeMatrix = make_unique<SparseMatrix>(numParticles,_nodes.size());
 	for (int i = 0; i < numParticles; i++) {
 		// Get the shape
 		auto nodeIds = _meshContainer.getSurroundingNodeIds(particles[i].pos);
 		auto shape = _meshContainer.getNodalShapes(particles[i].pos);
 		for (int j = 0; j < shape.size(); j++) {
-			_shapeMatrix->Add(i,nodeIds[j],shape[j]);
+			_shapeMatrix->Set(i,nodeIds[j],shape[j]);
 			_nodeSet.insert(nodeIds[j]);
 		}
 		// Get the gradients associated with the particle
@@ -86,33 +129,7 @@ void Grid::assemble(const std::vector<Kelvin::MaterialPoint> & particles) {
 	_shapeMatrix->Finalize();
 	_shapeMatrix->SortColumnIndices();
 	//FIXME! Make sure that the shape matrix and node set are cleared at each timestep !!!!
-
-	// Construct the mass matrix associated with the grid nodes
-	_massMatrix = make_unique<MassMatrix>(particles);
-
-	// Resize the internal and external force vectors
-	ForceVector emptyForceWithCorrectDimensionality(dim);
-	int numForces = _nodeSet.size();
-	_internalForces.resize(numForces,emptyForceWithCorrectDimensionality);
-	_externalForces.resize(numForces,emptyForceWithCorrectDimensionality);
-	// Set the force node ids
-	set<int>::iterator it;
-	int index = 0;
-	for (it = _nodeSet.begin(); it != _nodeSet.end(); it++) {
-		_internalForces[index].nodeId = *it;
-		_externalForces[index].nodeId = *it;
-		index++;
-	}
-
-	return;
-}
-
-void Grid::updateShapeMatrix() {
-
-}
-
-void Grid::updateMassMatrix() {
-
+	//_shapeMatrix->Print();
 }
 
 void Grid::update() {
@@ -137,26 +154,6 @@ void Grid::computeVectorMatrixProduct(const std::vector<double> & vec,
 			resultVec[i] += vec[j]*matrix[j][i];
 		}
 	}
-//
-//	cout << "Vector" << endl;
-//	for (int i = 0; i < dim; i++) {
-//		cout << vec[i] << " ";
-//	}
-//	cout << endl;
-//
-//	cout << "Matrix" << endl;
-//	for (int i = 0; i < dim; i++) {
-//		for (int j = 0; j < dim; j++) {
-//			cout << matrix[i][j] << " ";
-//		}
-//		cout << endl;
-//	}
-//
-//	cout << "Result" << endl;
-//	for (int i = 0; i < dim; i++) {
-//		cout << resultVec[i] << " ";
-//	}
-//	cout << endl;
 
 	return;
 }
@@ -270,11 +267,14 @@ void Grid::updateNodalAccelerations(const double & timeStep,
 		const std::vector<Kelvin::MaterialPoint> & particles) {
 
 	int dim = _meshContainer.dimension();
+	// Update the shape matrix
+	updateShapeMatrix(particles);
 	// Compute the mass matrix (Sulsky steps 8 & 10a)
 	auto & massMat = massMatrix(particles);
 	// Lump the mass matrix (Sulsky step 10b)
 	auto lumpedMassMat = massMat.lump();
 	// Compute the forces (Sulsky step 9)
+	setForceVectorNodeIds();
 	auto & intForces = internalForces(particles);
 	auto & exForces = externalForces(particles);
 	// I'm making an assumption here that the node sets for the internal and
@@ -369,6 +369,30 @@ void Grid::updateNodalVelocities(const double & timeStep,
 
 const std::set<int> & Grid::massiveNodeSet() {
 	return _nodeSet;
+}
+
+void Grid::applyNoSlipBoundaryConditions() {
+	int numNodes = _nodes.size();
+	int dim = dimension();
+	double dz = 0.0;
+
+	// Do a node search for all nodes at z = 0 in 3D or y = 0 in 2D (so
+	// pos[dim-1]), then set the nodal velocities and accelerations equal to
+	// zero to impose the no slip condition.
+	for (int i =  0; i < numNodes; i++) {
+		auto & node = _nodes[i];
+		dz = node.pos[dim-1] - 0.0;
+		if (dz < numeric_limits<double>::epsilon()) {
+			for (int j = 0; j < dim; j++) {
+				node.vel[j] = 0.0;
+				node.acc[j] = 0.0;
+			}
+		}
+//		cout << i << " " << node.vel[0] << " " << node.vel[1] << " "
+//				<< node.acc[0] << " " << node.acc[1] << endl;
+	}
+
+	return;
 }
 
 } /* namespace Kelvin */

@@ -64,7 +64,7 @@ void MFEMMPMSolver::solve(MFEMMPMData & data) {
 	std::vector<double> velUpdate(numParticles*dim);
 
 	// Set basic start time parameters - FIXME! Will read from input
-	double tInit = 0.0, tFinal = 10.0, dt = 1.0e-5; // dtOverstep = tFinal % dt;
+	double tInit = 0.0, tFinal = 10.0, dt = 1.0e-5, t = tInit; // dtOverstep = tFinal % dt;
 	int numTimeSteps = (int) tFinal/dt, printStepFrequency = 5;
 
 	// FIXME! time stepping issues
@@ -74,11 +74,13 @@ void MFEMMPMSolver::solve(MFEMMPMData & data) {
 	// Integrate over time. At the moment this will not integrate correctly to
 	// tFinal. See time stepping issues above - just a placeholder for now.
 	for (int ts = 0; ts < numTimeSteps+1; ts++) {
-
+		t += dt;
 		// Compute the acceleration at the grid nodes
 		grid.updateNodalAccelerations(dt, particles);
 		// Compute the initial velocity from the momenta
 		grid.updateNodalVelocitiesFromMomenta(particles);
+		// Apply boundary conditions
+		grid.applyNoSlipBoundaryConditions();
 		// Compute the velocity update
 		grid.updateNodalVelocities(dt, particles);
 
@@ -104,7 +106,9 @@ void MFEMMPMSolver::solve(MFEMMPMData & data) {
 			for (int j = 0; j < dim; j++) {
 				mPoint.pos[j] += dt * velUpdate[i * dim + j];
 				mPoint.vel[j] += dt * mPoint.acc[j];
+				cout << mPoint.pos[j] << " ";
 			}
+			cout << endl;
 		}
 
 		// Print stepping information

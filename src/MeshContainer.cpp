@@ -189,10 +189,6 @@ std::vector<Gradient> MeshContainer::getNodalGradients(const std::vector<double>
     	mfem::DenseMatrix gradientMatrix(numDof,dim);
     	fElement->CalcDShape(intPoint[0],gradientMatrix);
 
-    	cout << "Gradient MC" << endl;
-    	gradientMatrix.Print();
-    	cout << "-----" << endl;
-
     	// Repack the gradients to return them. We only need numDof entries in
     	// the vector, so shrink it.
     	//
