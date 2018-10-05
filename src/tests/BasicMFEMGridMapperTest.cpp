@@ -110,14 +110,15 @@ BOOST_AUTO_TEST_CASE(checkGridMapper) {
 	cout << "----- Updated Accelerations" << endl;
 	mapper.updateParticleAccelerations(grid,mPoints);
     for (int i = 0; i < mPoints.size(); i++) {
-    	cout << mPoints[i].acc[0] << " " << mPoints[i].acc[1] << endl;
+    	cout << mPoints[i].pos[0] << " " << mPoints[i].pos[1] << " | "
+    			<< mPoints[i].acc[0] << " " << mPoints[i].acc[1] << endl;
     }
     // p1
     BOOST_REQUIRE_CLOSE(3.0,mPoints[0].acc[0],1.0e-15);
     BOOST_REQUIRE_CLOSE(3.0,mPoints[0].acc[1],1.0e-15);
     // p2
-    BOOST_REQUIRE_CLOSE(3.0,mPoints[1].acc[0],0.0);
-    BOOST_REQUIRE_CLOSE(3.0,mPoints[1].acc[1],1.0e-15);
+    BOOST_REQUIRE_CLOSE(-3.0,mPoints[1].acc[0],0.0);
+    BOOST_REQUIRE_CLOSE(-3.0,mPoints[1].acc[1],1.0e-15);
 
     // Map grid node velocities back to particles, but store in a vector for
     // further processing
@@ -134,21 +135,22 @@ BOOST_AUTO_TEST_CASE(checkGridMapper) {
     BOOST_REQUIRE_CLOSE(4.0,vel[0],1.0e-15);
     BOOST_REQUIRE_CLOSE(4.0,vel[1],1.0e-15);
     // p2
-    BOOST_REQUIRE_CLOSE(4.0,vel[2],1.0e-15);
-    BOOST_REQUIRE_CLOSE(4.0,vel[3],1.0e-15);
+    BOOST_REQUIRE_CLOSE(-2.0,vel[2],1.0e-15);
+    BOOST_REQUIRE_CLOSE(-2.0,vel[3],1.0e-15);
 
 	// Map grid node velocities to the particle velocities
 	cout << "----- Updated Velocities" << endl;
 	mapper.updateParticleVelocities(grid,mPoints);
     for (int i = 0; i < mPoints.size(); i++) {
-    	cout << mPoints[i].vel[0] << " " << mPoints[i].vel[1] << endl;
+    	cout << mPoints[i].pos[0] << " " << mPoints[i].pos[1] << " | "
+    			<< mPoints[i].vel[0] << " " << mPoints[i].vel[1] << endl;
     }
     // p1
     BOOST_REQUIRE_CLOSE(4.0,mPoints[0].vel[0],1.0e-15);
     BOOST_REQUIRE_CLOSE(4.0,mPoints[0].vel[1],1.0e-15);
     // p2
-    BOOST_REQUIRE_CLOSE(4.0,mPoints[1].vel[0],1.0e-15);
-    BOOST_REQUIRE_CLOSE(4.0,mPoints[1].vel[1],1.0e-15);
+    BOOST_REQUIRE_CLOSE(-2.0,mPoints[1].vel[0],1.0e-15);
+    BOOST_REQUIRE_CLOSE(-2.0,mPoints[1].vel[1],1.0e-15);
 
 	return;
 }

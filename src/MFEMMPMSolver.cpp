@@ -39,6 +39,7 @@
 #include <sstream>
 #include <string>
 #include <fstream>
+#include <iomanip>
 
 using namespace std;
 using namespace mfem;
@@ -62,6 +63,8 @@ static void writeParticlePositions(MFEMMPMData & data,
 	outputFSName += ".csv";
 	ofstream outputFS(outputFSName);
 	int dim = data.grid().dimension();
+	outputFS << fixed;
+	outputFS.precision(15);
 
 	auto & particles = data.particles();
 	int numParticles = particles.size();
@@ -91,11 +94,11 @@ void MFEMMPMSolver::solve(MFEMMPMData & data) {
 	std::vector<double> velUpdate(numParticles*dim);
 
 	// Set basic start time parameters - FIXME! Will read from input
-	double tInit = 0.0, tFinal = 100.0, dt = 1.0, t = tInit; // dtOverstep = tFinal % dt;
+	double tInit = 0.0, tFinal = 1000.0, dt = 1.0, t = tInit; // dtOverstep = tFinal % dt;
 	int numTimeSteps = (int) tFinal/dt, printStepFrequency = 5;
 
 	// Set the body forces on the particles
-	for (int i = 0; i < dim; i++) {
+	for (int i = 0; i < numParticles; i++) {
 		particles[i].bodyForce[dim-1] = -9.8;
 	}
 
@@ -105,7 +108,7 @@ void MFEMMPMSolver::solve(MFEMMPMData & data) {
 
 	// Integrate over time. At the moment this will not integrate correctly to
 	// tFinal. See time stepping issues above - just a placeholder for now.
-	for (int ts = 0; ts < numTimeSteps+1; ts++) {
+	for (int ts = 0; ts < numTimeSteps + 1; ts++) {
 		t += dt;
 		// Compute the acceleration at the grid nodes
 		grid.updateNodalAccelerations(dt, particles);
@@ -132,8 +135,8 @@ void MFEMMPMSolver::solve(MFEMMPMData & data) {
 					mPoint.materialId);
 			// Compute/update the stress at material points using the
 			// constitutive equation
-			conRel.updateStrainRate(grid,mPoint);
-			conRel.updateStress(grid,mPoint);
+			conRel.updateStrainRate(grid, mPoint);
+			conRel.updateStress(grid, mPoint);
 			// Update the positions and velocities
 			for (int j = 0; j < dim; j++) {
 				mPoint.pos[j] += dt * velUpdate[i * dim + j];
@@ -144,15 +147,13 @@ void MFEMMPMSolver::solve(MFEMMPMData & data) {
 		// Print stepping information
 		if (!(ts % printStepFrequency)) {
 			cout << "dt = " << dt << ", ts = " << ts << ", t = "
-					<< (tInit+dt*ts) << endl;
-			writeParticlePositions(data,ts);
+					<< (tInit + dt * ts) << endl;
+			writeParticlePositions(data, ts);
 		}
 
 	}
 
-	// Loop
-
-
+	return;
 }
 
 

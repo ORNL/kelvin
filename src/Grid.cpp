@@ -85,9 +85,12 @@ void Grid::assemble(const std::vector<Kelvin::MaterialPoint> & particles) {
 	for (int i = 0; i < numVerts; i++) {
 		mcCoords = mesh.GetVertex(i);
 		Point point(dim);
-		// Create the node. Only the position needs to be assigned.
+		// Create the node. Specifically initialize the velocity and
+		// acceleration too.
 		for (int j = 0; j < dim; j++) {
 			point.pos[j] = mcCoords[j];
+			point.vel[j] = 0.0;
+			point.acc[j] = 0.0;
 		}
 		_nodes.push_back(point);
 	}
@@ -235,11 +238,11 @@ const std::vector<ForceVector> & Grid::externalForces(
 			// Must confirm that the particle is near the node, which means
 			// checking the placement in the columns array.
 			if (colI >= 0) {
-			// Compute over all dimensions.
-			for (int l = 0; l < dim; l++) {
-				forceVector.values[l] += rowI[colI] * mPoint.mass
-						* mPoint.bodyForce[l];
-			}
+				// Compute over all dimensions.
+				for (int l = 0; l < dim; l++) {
+					forceVector.values[l] += rowI[colI] * mPoint.mass
+							* mPoint.bodyForce[l];
+				}
 			}
 		}
 	}
@@ -279,13 +282,13 @@ void Grid::updateNodalAccelerations(const double & timeStep,
 	// external forces match. That's reasonable given the implementation of the
 	// base class, but may not be in the case of a subclass.
 
-	// Only proceed if the sizes of these systems match. If the do not, this
+	// Only proceed if the sizes of these systems match. If they do not, this
 	// is a critical error, so it should be checked regularly.
 	bool sizesMatch = (intForces.size() == exForces.size())
 			&& (lumpedMassMat.size() == intForces.size());
 	if (sizesMatch) {
 		// Compute the acceleration and update the grid (Sulsky step 1)
-		int numNodes = lumpedMassMat.size();
+		int numNodes = _nodeSet.size();
 		// a_i = (f^int_i + f^ex_i)/m_i
 		for (int i = 0; i < numNodes; i++) {
 			auto & intForceVec = intForces[i];
@@ -385,6 +388,7 @@ void Grid::applyNoSlipBoundaryConditions() {
 				node.vel[j] = 0.0;
 				node.acc[j] = 0.0;
 			}
+			cout << (dz < numeric_limits<double>::epsilon()) << " " << i << endl;
 		}
 	}
 

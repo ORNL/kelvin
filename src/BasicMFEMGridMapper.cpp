@@ -31,6 +31,7 @@
  -----------------------------------------------------------------------------*/
 #include <BasicMFEMGridMapper.h>
 #include <Grid.h>
+#include <cmath>
 
 using namespace Kelvin;
 using namespace std;
@@ -61,16 +62,38 @@ void BasicMFEMGridMapper::updateParticleAccelerations(const Kelvin::Grid & grid,
 		auto & nodeAcc = nodes[i].acc;
 		for (int j = 0; j < dim; j++) {
 			accGf[i*dim+j] = nodeAcc[j];
+			cout << i << " " << nodeAcc[j] << " ";
 		}
+		cout << endl;
 	}
+
+    // Find the point quickly since the background mesh is known to be a cube.
+    int numNodes = _mesh.GetNV();
+    int nodesPerSide = (dim == 2) ? sqrt(numNodes) - 1 : cbrt(numNodes) - 1;
+    double * node1 = _mesh.GetVertex(0);
+    double * node2 = _mesh.GetVertex(1);
+    double sideLength = node2[0] - node1[0];
+    int id = 0;
 
 	// Map the grid accelerations to the particles
 	mfem::IntegrationPoint intPoint;
 	Vector acc(dim);
 	for (int i = 0; i < particles.size(); i++) {
 		auto & mPoint = particles[i];
+
+		// Find the point - FIXME! Put it on the Point class
+		if (dim == 2) {
+			id = ((int) (mPoint.pos[0] / sideLength))
+					+ nodesPerSide * ((int) (mPoint.pos[1] / sideLength));
+		} else if (dim == 3) {
+			id = ((int) (mPoint.pos[0] / sideLength))
+					+ nodesPerSide * ((int) (mPoint.pos[1] / sideLength))
+					+ nodesPerSide * nodesPerSide
+							* ((int) (mPoint.pos[2] / sideLength));
+		}
+
 		intPoint.Set(mPoint.pos.data(),dim);
-		accGf.GetVectorValue(0,intPoint,acc);
+		accGf.GetVectorValue(id,intPoint,acc);
 		// Write the acceleration data back to the point
 		for (int j = 0; j < dim; j++) {
 			mPoint.acc[j] = acc[j];
@@ -97,13 +120,33 @@ void BasicMFEMGridMapper::updateParticleVelocities(const Kelvin::Grid & grid,
 		}
 	}
 
+    // Find the point quickly since the background mesh is known to be a cube.
+    int numNodes = _mesh.GetNV();
+    int nodesPerSide = (dim == 2) ? sqrt(numNodes) - 1 : cbrt(numNodes) - 1;
+    double * node1 = _mesh.GetVertex(0);
+    double * node2 = _mesh.GetVertex(1);
+    double sideLength = node2[0] - node1[0];
+    int id = 0;
+
 	// Map the grid velocities to the particles
 	mfem::IntegrationPoint intPoint;
 	Vector vel(dim);
 	for (int i = 0; i < particles.size(); i++) {
 		auto & mPoint = particles[i];
+
+		// Find the point - FIXME! Put it on the Point class
+		if (dim == 2) {
+			id = ((int) (mPoint.pos[0] / sideLength))
+					+ nodesPerSide * ((int) (mPoint.pos[1] / sideLength));
+		} else if (dim == 3) {
+			id = ((int) (mPoint.pos[0] / sideLength))
+					+ nodesPerSide * ((int) (mPoint.pos[1] / sideLength))
+					+ nodesPerSide * nodesPerSide
+							* ((int) (mPoint.pos[2] / sideLength));
+		}
+
 		intPoint.Set(mPoint.pos.data(),dim);
-		velGf.GetVectorValue(0,intPoint,vel);
+		velGf.GetVectorValue(id,intPoint,vel);
 		// Write the velocity data back to the point
 		for (int j = 0; j < dim; j++) {
 			mPoint.vel[j] = vel[j];
@@ -132,13 +175,33 @@ void BasicMFEMGridMapper::updateParticleVelocities(const Kelvin::Grid & grid,
 		}
 	}
 
+    // Find the point quickly since the background mesh is known to be a cube.
+    int numNodes = _mesh.GetNV();
+    int nodesPerSide = (dim == 2) ? sqrt(numNodes) - 1 : cbrt(numNodes) - 1;
+    double * node1 = _mesh.GetVertex(0);
+    double * node2 = _mesh.GetVertex(1);
+    double sideLength = node2[0] - node1[0];
+    int id = 0;
+
 	// Map the grid velocities to the storage vector
 	mfem::IntegrationPoint intPoint;
 	Vector vel(dim);
 	for (int i = 0; i < particles.size(); i++) {
 		auto & mPoint = particles[i];
+
+		// Find the point - FIXME! Put it on the Point class
+		if (dim == 2) {
+			id = ((int) (mPoint.pos[0] / sideLength))
+					+ nodesPerSide * ((int) (mPoint.pos[1] / sideLength));
+		} else if (dim == 3) {
+			id = ((int) (mPoint.pos[0] / sideLength))
+					+ nodesPerSide * ((int) (mPoint.pos[1] / sideLength))
+					+ nodesPerSide * nodesPerSide
+							* ((int) (mPoint.pos[2] / sideLength));
+		}
+
 		intPoint.Set(mPoint.pos.data(), dim);
-		velGf.GetVectorValue(0, intPoint, vel);
+		velGf.GetVectorValue(id, intPoint, vel);
 		// Write the velocity data back to the storage vector
 		for (int j = 0; j < dim; j++) {
 			velocities[i*dim+j] = vel[j];
