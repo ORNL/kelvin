@@ -33,6 +33,7 @@
 #include <mfem.hpp>
 #include <MeshContainer.h>
 #include <StringCaster.h>
+#include <cmath>
 
 using namespace mfem;
 using namespace std;
@@ -82,12 +83,35 @@ void MFEMOlevskyLVCR::updateStrainRate(const Kelvin::Grid & grid,
 
 	// Is this correct? I get the impression that the share gradients are off.
 	// Find the element that contains the point
-	mfem::Array<int> elementId(1);
+//	mfem::Array<int> elementId(1);
 	mfem::Array < mfem::IntegrationPoint > intPoints(1);
 	auto pointMatrix = meshContainer.convertPointToMatrix(matPoint.pos);
-	_mesh.FindPoints(pointMatrix, elementId, intPoints);
+//	_mesh.FindPoints(pointMatrix, elementId, intPoints);
+//
+    // Find the point quickly since the background mesh is known to be a cube.
+    int numNodes = _mesh.GetNV();
+    int nodesPerSide = (dim == 2) ? sqrt(numNodes) - 1 : cbrt(numNodes) - 1;
+    double * node1 = _mesh.GetVertex(0);
+    double * node2 = _mesh.GetVertex(1);
+    double sideLength = node2[0] - node1[0];
+    int id = 0;
+    if (dim == 2) {
+    	id = ((int) (matPoint.pos[0]/sideLength))
+    			+ nodesPerSide*((int) (matPoint.pos[1]/sideLength));
+    } else if (dim == 3) {
+    	id = ((int) (matPoint.pos[0]/sideLength))
+    			+ nodesPerSide*((int) (matPoint.pos[1]/sideLength))
+				+ nodesPerSide*nodesPerSide*((int) (matPoint.pos[2]/sideLength));
+    }
+    // Put the point in an mfem vector
+	mfem::Vector pointVec(dim);
+	for (int i = 0; i < dim; i++) {
+		pointVec[i] = matPoint.pos[i];
+	}
+
 	// Get the element transformation
-	auto * elemTrans = _mesh.GetElementTransformation(elementId[0]);
+	auto * elemTrans = _mesh.GetElementTransformation(id);
+	elemTrans->TransformBack(pointVec,intPoints[0]);
 	// Set the material point position in reference coordinates
 	elemTrans->SetIntPoint(&intPoints[0]);
 	// Get the gradient of the velocity at the material point

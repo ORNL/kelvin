@@ -62,6 +62,7 @@ BOOST_AUTO_TEST_CASE(checkMass) {
 		particles[i].pos[0] = 0.5 + ((double) i);
 		particles[i].pos[1] = 0.5 + ((double) i);
 		particles[i].pos[2] = 0.5 + ((double) i);
+		particles[i].mass = 1.0;
 		std::cout << particles[i].pos[0] << " " << particles[i].pos[1]
 				<< " " << particles[i].pos[2] << endl;
 	}
@@ -117,6 +118,8 @@ BOOST_AUTO_TEST_CASE(checkMass) {
 	// Construct the mass matrix associated with the grid nodes
 	double particleMass = 1.0; // FIXME! Needs to be something real and from input.
 
+	cout << "----- Checking all nodes" << endl;
+
 	// Test some of the expected values of the matrix. Not worth it to test all.
 	// The important thing to note here is that expectedValue1 is the expected
 	// mass if one particle is near by, and expectedValued2 is is the expected
@@ -140,6 +143,7 @@ BOOST_AUTO_TEST_CASE(checkMass) {
 	BOOST_REQUIRE_CLOSE(0.0,massMatrix(20,16),percentEPS);
 
 	// Print the values at the massive nodes for debugging.
+	cout << "----- Printing massive nodes only" << endl;
 	for (outerIt = nodeSet.begin(); outerIt != nodeSet.end(); outerIt++) {
 		for(innerIt = nodeSet.begin(); innerIt != nodeSet.end(); innerIt++) {
 			cout << "(" << *outerIt << ", " << *innerIt << ") "
@@ -158,8 +162,8 @@ BOOST_AUTO_TEST_CASE(checkMass) {
 		} else {
 			expectedValue = 4.0*expectedValue2;
 		}
-		BOOST_REQUIRE_CLOSE(expectedValue,lumpedMassMatrix[i],percentEPS);
 		cout << *outerIt << " " << lumpedMassMatrix[i] << endl;
+		BOOST_REQUIRE_CLOSE(expectedValue,lumpedMassMatrix[i],percentEPS);
 		outerIt++;
 	}
 

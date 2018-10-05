@@ -35,6 +35,10 @@
 #include <MassMatrix.h>
 #include <BasicMFEMGridMapper.h>
 #include <ConstitutiveRelationshipService.h>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <fstream>
 
 using namespace std;
 using namespace mfem;
@@ -50,6 +54,29 @@ MFEMMPMSolver::~MFEMMPMSolver() {
 	// TODO Auto-generated destructor stub
 }
 
+static void writeParticlePositions(MFEMMPMData & data,
+		double ts) {
+
+	string outputFSName = "kelvin_output_";
+	outputFSName += to_string(ts);
+	outputFSName += ".csv";
+	ofstream outputFS(outputFSName);
+	int dim = data.grid().dimension();
+
+	auto & particles = data.particles();
+	int numParticles = particles.size();
+	for (int i = 0; i < numParticles; i++) {
+		auto & mPoint = particles[i];
+		for (int j = 0; j < dim; j++) {
+			outputFS << mPoint.pos[j] << ", ";
+		}
+		outputFS << ts << endl;
+	}
+
+	outputFS.close();
+}
+
+
 void MFEMMPMSolver::solve(MFEMMPMData & data) {
 
 	// Assemble the grid
@@ -64,8 +91,13 @@ void MFEMMPMSolver::solve(MFEMMPMData & data) {
 	std::vector<double> velUpdate(numParticles*dim);
 
 	// Set basic start time parameters - FIXME! Will read from input
-	double tInit = 0.0, tFinal = 10.0, dt = 1.0e-5, t = tInit; // dtOverstep = tFinal % dt;
+	double tInit = 0.0, tFinal = 100.0, dt = 1.0, t = tInit; // dtOverstep = tFinal % dt;
 	int numTimeSteps = (int) tFinal/dt, printStepFrequency = 5;
+
+	// Set the body forces on the particles
+	for (int i = 0; i < dim; i++) {
+		particles[i].bodyForce[dim-1] = -9.8;
+	}
 
 	// FIXME! time stepping issues
 	// 1) Handle final time overstepping
@@ -106,15 +138,14 @@ void MFEMMPMSolver::solve(MFEMMPMData & data) {
 			for (int j = 0; j < dim; j++) {
 				mPoint.pos[j] += dt * velUpdate[i * dim + j];
 				mPoint.vel[j] += dt * mPoint.acc[j];
-				cout << mPoint.pos[j] << " ";
 			}
-			cout << endl;
 		}
 
 		// Print stepping information
 		if (!(ts % printStepFrequency)) {
 			cout << "dt = " << dt << ", ts = " << ts << ", t = "
 					<< (tInit+dt*ts) << endl;
+			writeParticlePositions(data,ts);
 		}
 
 	}

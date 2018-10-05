@@ -72,6 +72,7 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
     std::vector<MaterialPoint> mPoints;
     for (int i = 0; i < points.size(); i++) {
     	MaterialPoint point(points[i]);
+    	point.mass = 1.0;
     	mPoints.push_back(point);
     }
 

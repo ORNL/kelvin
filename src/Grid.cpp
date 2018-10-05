@@ -128,8 +128,6 @@ void Grid::updateShapeMatrix(
 	}
 	_shapeMatrix->Finalize();
 	_shapeMatrix->SortColumnIndices();
-	//FIXME! Make sure that the shape matrix and node set are cleared at each timestep !!!!
-	//_shapeMatrix->Print();
 }
 
 void Grid::update() {
@@ -227,7 +225,7 @@ const std::vector<ForceVector> & Grid::externalForces(
 		auto & forceVector = _externalForces[i];
 		forceVector.clear();
 		int forceNodeId = forceVector.nodeId;
-		// Computer the component of the force due to each particle. The shape
+		// Compute the component of the force due to each particle. The shape
 		// matrix contains all the shapes and the nodeset describes which nodes
 		// are massive.
 		for (int j = 0; j < numParticles; j++) {
@@ -388,8 +386,6 @@ void Grid::applyNoSlipBoundaryConditions() {
 				node.acc[j] = 0.0;
 			}
 		}
-//		cout << i << " " << node.vel[0] << " " << node.vel[1] << " "
-//				<< node.acc[0] << " " << node.acc[1] << endl;
 	}
 
 	return;

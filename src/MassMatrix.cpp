@@ -30,6 +30,7 @@
  Author(s): Jay Jay Billings (billingsjj <at> ornl <dot> gov)
  -----------------------------------------------------------------------------*/
 #include <MassMatrix.h>
+#include <utility>
 
 using namespace mfem;
 using namespace std;
@@ -57,9 +58,9 @@ double MassMatrix::operator()(int i, int j) const {
 
 	// Mass element m_ij
 	double m_ij = 0.0;
+	double particleMass = 0.0;
 
 	// Construct the mass matrix associated with the grid nodes
-	double particleMass = 1.0; // FIXME! Needs to be something real and from input.
 
 	// FIXME! Set particle mass on Particle subclass of Point, next to coords.
 	Vector rowI;
@@ -70,6 +71,8 @@ double MassMatrix::operator()(int i, int j) const {
 	// product that follows.
 	int numParticles = particles.size();
 	for (int k = 0; k < numParticles; k++) {
+		auto & matPoint = particles[k];
+		particleMass = matPoint.mass;
 		shapes->GetRow(k, colsI, rowI);
 		int colI = colsI.Find(i);
 		int colJ = colsI.Find(j);
@@ -88,16 +91,16 @@ std::vector<double> MassMatrix::lump() {
 	set<int>::iterator innerIt;
 	std::vector<double> diagonal(nodes.size());
 
-	// Loop over all the non-zero rows
+	// Loop over all the non-zero rows and compute the mass
+	int numPoints = particles.size();
+	double dValue = 0.0;
+	double index = 0;
 	for (outerIt = nodes.begin(); outerIt != nodes.end(); outerIt++) {
-		// Compute the row sum
-		double m_i = 0.0;
-		for(innerIt = nodes.begin(); innerIt != nodes.end(); innerIt++) {
-			m_i +=  (*this)(*outerIt,*innerIt);
+		const auto & constShapes = (*shapes);
+		for (int i = 0; i < numPoints; i++) {
+			diagonal[index] += particles[i].mass * constShapes(i, *outerIt);
 		}
-		// Add it to the list and increment the list counter
-		diagonal[i] = m_i;
-		i++;
+		index++;
 	}
 
 	return diagonal;
