@@ -62,9 +62,7 @@ void BasicMFEMGridMapper::updateParticleAccelerations(const Kelvin::Grid & grid,
 		auto & nodeAcc = nodes[i].acc;
 		for (int j = 0; j < dim; j++) {
 			accGf[i*dim+j] = nodeAcc[j];
-			cout << i << " " << nodeAcc[j] << " ";
 		}
-		cout << endl;
 	}
 
     // Find the point quickly since the background mesh is known to be a cube.

@@ -117,6 +117,7 @@ void MFEMOlevskyLVCR::updateStrainRate(const Kelvin::Grid & grid,
 	// Get the gradient of the velocity at the material point
 	DenseMatrix gradVel(dim, dim);
 	velGf.GetVectorGradient(*elemTrans, gradVel);
+	gradVel.Print();
 	// Compute the strain using infinitesimal strain theory by
 	// symmetrizing the matrix.
 	gradVel.Symmetrize();
@@ -167,7 +168,7 @@ void MFEMOlevskyLVCR::updateStress(const Kelvin::Grid & grid,
 					* deviatoricStrainRate[i][j] / density;
 		}
 		// Add in the diagonal components
-		matPoint.stress[i][i] =
+		matPoint.stress[i][i] +=
 				(twoShearMod * psi * traceE + sinteringStress[i]) / density;
 	}
 

@@ -388,7 +388,6 @@ void Grid::applyNoSlipBoundaryConditions() {
 				node.vel[j] = 0.0;
 				node.acc[j] = 0.0;
 			}
-			cout << (dz < numeric_limits<double>::epsilon()) << " " << i << endl;
 		}
 	}
 

@@ -40,6 +40,7 @@
 #include <string>
 #include <fstream>
 #include <iomanip>
+#include <StringCaster.h>
 
 using namespace std;
 using namespace mfem;
@@ -82,6 +83,10 @@ static void writeParticlePositions(MFEMMPMData & data,
 
 void MFEMMPMSolver::solve(MFEMMPMData & data) {
 
+	// Get the properties
+	auto & propertiesParser = data.properties();
+	auto & properties = propertiesParser.getPropertyBlock("solver");
+
 	// Assemble the grid
 	auto & particles = data.particles();
 	auto & grid = data.grid();
@@ -94,8 +99,16 @@ void MFEMMPMSolver::solve(MFEMMPMData & data) {
 	std::vector<double> velUpdate(numParticles*dim);
 
 	// Set basic start time parameters - FIXME! Will read from input
-	double tInit = 0.0, tFinal = 1000.0, dt = 1.0, t = tInit; // dtOverstep = tFinal % dt;
-	int numTimeSteps = (int) tFinal/dt, printStepFrequency = 5;
+	double tInit = fire::StringCaster<double>::cast(
+			properties.at("startTime"));
+	double tFinal = fire::StringCaster<double>::cast(
+			properties.at("finalTime"));
+	double dt = fire::StringCaster<double>::cast(
+			properties.at("initialTimeStep"));
+	double t = tInit; // dtOverstep = tFinal % dt;
+	int numTimeSteps = (int) (tFinal/dt) + 1;
+	int printStepFrequency =  fire::StringCaster<int>::cast(
+			properties.at("outputStepFrequency"));
 
 	// Set the body forces on the particles
 	for (int i = 0; i < numParticles; i++) {

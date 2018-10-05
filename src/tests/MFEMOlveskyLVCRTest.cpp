@@ -208,16 +208,17 @@ BOOST_AUTO_TEST_CASE(checkStress) {
 	}
 
 	// Setup reference values
-	std::vector<double> p1Stress{-677778,-508333,-508333,-677778};
-	std::vector<double> p2Stress{-2.03333e6,-1.525e6,-1.525e6,-2.03333e6};
+	std::vector<double> p1Stress{-169444,-508333,-508333,-1.18611e6};
+	std::vector<double> p2Stress{-2.54167e6,-1.525e6,-1.525e6,-1.525e6};
 //  I'm guessing that these will change really soon... but for now:
 //	----- Stress
-//	-677778 -508333
-//	-508333 -677778
+//	-169444 -508333
+//	-508333 -1.18611e+06
 //	-----
-//	-2.03333e+06 -1.525e+06
-//	-1.525e+06 -2.03333e+06
+//	-2.54167e+06 -1.525e+06
+//	-1.525e+06 -1.525e+06
 //	-----
+
 
 	cout << "----- Stress" << endl;
 	for (int i = 0; i < mPoints.size(); i++) {
