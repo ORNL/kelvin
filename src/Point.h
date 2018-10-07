@@ -73,6 +73,13 @@ public:
 	std::vector<double> acc;
 
 	/**
+	 * The volume associated with the point, which may be zero or non-zero
+	 * depending on how pointy the point really is. Pointy, that's a real
+	 * technical term there. Pointy.
+	 */
+	double volume;
+
+	/**
 	 * Constructor
 	 */
 	Point(int dim = 3);

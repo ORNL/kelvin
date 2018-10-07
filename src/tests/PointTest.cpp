@@ -48,6 +48,8 @@ BOOST_AUTO_TEST_CASE(checkConstruction) {
 	BOOST_REQUIRE_EQUAL(3,point.dimension());
 	Point twoDPoint(2);
 	BOOST_REQUIRE_EQUAL(2,twoDPoint.dimension());
+	BOOST_REQUIRE_CLOSE(0.0,point.volume,0.0);
+	BOOST_REQUIRE_CLOSE(0.0,twoDPoint.volume,0.0);
 
 	// Check component dimensionality
 	BOOST_REQUIRE_EQUAL(3,point.pos.size());
@@ -63,6 +65,7 @@ BOOST_AUTO_TEST_CASE(checkConstruction) {
 		twoDPoint.vel[i] = (double) i;
 		twoDPoint.acc[i] = (double) i;
 	}
+	twoDPoint.volume = 99.0;
 
 	// Check copy construction
 	Point point2(twoDPoint);
@@ -75,6 +78,7 @@ BOOST_AUTO_TEST_CASE(checkConstruction) {
 		BOOST_REQUIRE_CLOSE(twoDPoint.vel[i],point2.vel[i],1.0e-15);
 		BOOST_REQUIRE_CLOSE(twoDPoint.acc[i],point2.acc[i],1.0e-15);
 	}
+	BOOST_REQUIRE_CLOSE(twoDPoint.volume,point2.volume,1.0e-15);
 
 	return;
 }
