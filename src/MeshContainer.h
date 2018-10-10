@@ -184,6 +184,17 @@ public:
 	std::vector<int> getSurroundingNodeIds(const std::vector<double> & point);
 
 	/**
+	 * The same as getSurroundingNodeIds(), but with the surrounding element id
+	 * already known.
+	 * @param point a vector containing the coordinates of the point to locate.
+	 * Only the first N dimensions are considered for an N dimensional mesh.
+	 * @return a vector of the node ids for the nodes surrounding the
+	 * point. If the point is not found in the mesh, the vector will be empty.
+	 */
+	std::vector<int> getSurroundingNodeIds(const std::vector<double> & point,
+			const int & elemId);
+
+	/**
 	 * This operation returns the values of the nodal shape functions for the
 	 * element that contains the point. The number and ordering of the shapes
 	 * should match those of getSurroundingNodeIds(). Note that this operation
@@ -197,6 +208,17 @@ public:
 	std::vector<double> getNodalShapes(const std::vector<double> & point);
 
 	/**
+	 * The same as getNodalShapes(point), but with the element id known in
+	 * advance.
+	 * @param point a vector containing the coordinates of the point to locate.
+	 * @return the nodal shapes due to each node in the element that contains
+	 * the point. If the point is not found in the mesh, the vector will be
+	 * empty.
+	 */
+	std::vector<double> getNodalShapes(const std::vector<double> & point,
+			const int & elemId);
+
+	/**
 	 * This operation returns the gradients of the nodal shape functions for
 	 * the element that contains the point. The number and ordering of the
 	 * shapes should match those of getSurroundingNodeIds(), although the
@@ -207,6 +229,34 @@ public:
 	 * vector will be empty.
 	 */
 	std::vector<Gradient> getNodalGradients(const std::vector<double> & point);
+
+	/**
+	 * The same as getNodalGradients(point), but with the element id known in
+	 * advance.
+	 * @param point a vector containing the coordinates
+	 * @param elemId the id of the element that contains the point
+	 * @return the gradients due to each nodal shape function in the element
+	 * that contains the point. If the point is not found in the mesh, the
+	 * vector will be empty.
+	 */
+	std::vector<Gradient> getNodalGradients(const std::vector<double> & point,
+			const int & elemId);
+
+	/**
+	 * This operation finds the containing element id for the point for any
+	 * supported mesh type.
+	 * @param the point for which the element id should be determined
+	 * @return the id of the element or -1 if the point could not be found
+	 */
+	int getElementId(const std::vector<double> & point);
+
+	/**
+	 * This operation finds the containing element id for the point assuming
+	 * that the background mesh is hexahedral (or quadrilateral in 2D).
+	 * @param point the point for which the element id should be determined.
+	 * 	 * @return the id of the element or -1 if the point could not be found
+	 */
+	int getElementIdFromHexMesh(const std::vector<double> & point);
 
 	/**
 	 * This operation returns the quadrature points in the mesh.

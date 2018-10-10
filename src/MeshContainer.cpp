@@ -33,6 +33,7 @@
 #include <mfem.hpp>
 #include <MeshContainer.h>
 #include <cmath>
+#include <Point.h>
 
 using namespace fire;
 using namespace mfem;
@@ -109,35 +110,12 @@ mfem::DenseMatrix MeshContainer::convertPointToMatrix(const std::vector<double> 
 }
 
 std::vector<int> MeshContainer::getSurroundingNodeIds(
-		const std::vector<double> & point) {
+		const std::vector<double> & point, const int & elemId) {
 	std::vector<int> ids;
-
-	// Find the element that contains the point
-//	mfem::Array<int> elementId(1);
-//	mfem::Array<mfem::IntegrationPoint> intPoint(1);
-//	auto pointMatrix = convertPointToMatrix(point);
-//    mesh.FindPoints(pointMatrix,elementId,intPoint);
-
-    // Find the point quickly since the background mesh is known to be a cube.
-    int numNodes = mesh.GetNV();
-    int nodesPerSide = (dim == 2) ? sqrt(numNodes) - 1 : cbrt(numNodes) - 1;
-    double * node1 = mesh.GetVertex(0);
-    double * node2 = mesh.GetVertex(1);
-    double sideLength = node2[0] - node1[0];
-    int id = 0;
-    if (dim == 2) {
-    	id = ((int) (point[0]/sideLength))
-    			+ nodesPerSide*((int) (point[1]/sideLength));
-    } else if (dim == 3) {
-    	id = ((int) (point[0]/sideLength))
-    			+ nodesPerSide*((int) (point[1]/sideLength))
-				+ nodesPerSide*nodesPerSide*((int) (point[2]/sideLength));
-    }
-
-    // Only proceed if an element containing the point was found
-    if (id > -1) {
+    // Only proceed if the element has a valid id
+    if (elemId > -1) {
     	// Get the element
-        auto * element = mesh.GetElement(id);
+        auto * element = mesh.GetElement(elemId);
     	// Get the vertex ids
         auto numVertices = element->GetNVertices();
         auto * vertexIds = element->GetVertices();
@@ -150,41 +128,34 @@ std::vector<int> MeshContainer::getSurroundingNodeIds(
 	return ids;
 }
 
+std::vector<int> MeshContainer::getSurroundingNodeIds(
+		const std::vector<double> & point) {
+	int id = getElementId(point);
+	return getSurroundingNodeIds(point,id);
+}
+
 std::vector<double> MeshContainer::getNodalShapes(const std::vector<double> & point) {
 	std::vector<double> shapes;
+	int elementId = getElementId(point);
+	return getNodalShapes(point,elementId);
+}
 
-	// Find the element that contains the point
-//	mfem::Array<int> elementId(1);
-	mfem::Array<mfem::IntegrationPoint> intPoint(1);
-	auto pointMatrix = convertPointToMatrix(point);
-//    mesh.FindPoints(pointMatrix,elementId,intPoint);
+std::vector<double> MeshContainer::getNodalShapes(const std::vector<double> & point,
+		const int & elemId) {
+
+	std::vector<double> shapes;
+	mfem::IntegrationPoint intPoint;
 	mfem::Vector pointVec(point.size());
 	for (int i = 0; i < dim; i++) {
 		pointVec[i] = point[i];
 	}
 
-    // Find the point quickly since the background mesh is known to be a cube.
-    int numNodes = mesh.GetNV();
-    int nodesPerSide = (dim == 2) ? sqrt(numNodes) - 1 : cbrt(numNodes) - 1;
-    double * node1 = mesh.GetVertex(0);
-    double * node2 = mesh.GetVertex(1);
-    double sideLength = node2[0] - node1[0];
-    int id = 0;
-    if (dim == 2) {
-    	id = ((int) (point[0]/sideLength))
-    			+ nodesPerSide*((int) (point[1]/sideLength));
-    } else if (dim == 3) {
-    	id = ((int) (point[0]/sideLength))
-    			+ nodesPerSide*((int) (point[1]/sideLength))
-				+ nodesPerSide*nodesPerSide*((int) (point[2]/sideLength));
-    }
-
-	// Only proceed if the element was found.
-    if (id > -1) {
+	// Only proceed if the element id is legit
+    if (elemId > -1) {
 
     	// Get the element transform, type and the finite element itself.
-    	auto * elemTransform = mesh.GetElementTransformation(id);
-    	elemTransform->TransformBack(pointVec,intPoint[0]);
+    	auto * elemTransform = mesh.GetElementTransformation(elemId);
+    	elemTransform->TransformBack(pointVec,intPoint);
     	auto type = elemTransform->GetGeometryType();
     	auto * feCollection = space.FEColl();
     	auto * fElement= feCollection->FiniteElementForGeometry(type);
@@ -192,7 +163,7 @@ std::vector<double> MeshContainer::getNodalShapes(const std::vector<double> & po
     	// Compute the shape
     	int numShapes = fElement->GetDof();
     	mfem::Vector shapeVec(numShapes);
-    	fElement->CalcShape(intPoint[0],shapeVec);
+    	fElement->CalcShape(intPoint,shapeVec);
 
     	// Repack the shapes to return them
     	shapes.resize(numShapes);
@@ -204,42 +175,22 @@ std::vector<double> MeshContainer::getNodalShapes(const std::vector<double> & po
 	return shapes;
 }
 
-std::vector<Gradient> MeshContainer::getNodalGradients(const std::vector<double> & point) {
+std::vector<Gradient> MeshContainer::getNodalGradients(const std::vector<double> & point,
+		const int & elemId) {
+
+	mfem::IntegrationPoint intPoint;
 	std::vector<Gradient> gradients;
-
-	// Find the element that contains the point
-//	mfem::Array<int> elementId(1);
-	mfem::Array<mfem::IntegrationPoint> intPoint(1);
-	auto pointMatrix = convertPointToMatrix(point);
-//    mesh.FindPoints(pointMatrix,elementId,intPoint);
-
 	mfem::Vector pointVec(point.size());
 	for (int i = 0; i < dim; i++) {
 		pointVec[i] = point[i];
 	}
 
-    // Find the point quickly since the background mesh is known to be a cube.
-    int numNodes = mesh.GetNV();
-    int nodesPerSide = (dim == 2) ? sqrt(numNodes) - 1 : cbrt(numNodes) - 1;
-    double * node1 = mesh.GetVertex(0);
-    double * node2 = mesh.GetVertex(1);
-    double sideLength = node2[0] - node1[0];
-    int id = 0;
-    if (dim == 2) {
-    	id = ((int) (point[0]/sideLength))
-    			+ nodesPerSide*((int) (point[1]/sideLength));
-    } else if (dim == 3) {
-    	id = ((int) (point[0]/sideLength))
-    			+ nodesPerSide*((int) (point[1]/sideLength))
-				+ nodesPerSide*nodesPerSide*((int) (point[2]/sideLength));
-    }
-
-	// Only proceed if the element was found.
-    if (id > -1) {
+	// Only proceed if the element is real, otherwise return an empty list
+    if (elemId > -1) {
 
     	// Get the element transform, type and the finite element itself.
-    	auto * elemTransform = mesh.GetElementTransformation(id);
-    	elemTransform->TransformBack(pointVec,intPoint[0]);
+    	auto * elemTransform = mesh.GetElementTransformation(elemId);
+    	elemTransform->TransformBack(pointVec,intPoint);
     	auto type = elemTransform->GetGeometryType();
     	auto * feCollection = space.FEColl();
     	auto * fElement= feCollection->FiniteElementForGeometry(type);
@@ -247,7 +198,7 @@ std::vector<Gradient> MeshContainer::getNodalGradients(const std::vector<double>
     	// Compute the gradient
     	int numDof = fElement->GetDof();
     	mfem::DenseMatrix gradientMatrix(numDof,dim);
-    	fElement->CalcDShape(intPoint[0],gradientMatrix);
+    	fElement->CalcDShape(intPoint,gradientMatrix);
 
     	// Repack the gradients to return them. We only need numDof entries in
     	// the vector, so shrink it.
@@ -257,7 +208,7 @@ std::vector<Gradient> MeshContainer::getNodalGradients(const std::vector<double>
     	gradients.resize(numDof);
     	// Get the vertex ids
     	// Get the element
-        auto * element = mesh.GetElement(id);
+        auto * element = mesh.GetElement(elemId);
         auto * vertexIds = element->GetVertices();
         // Assuming numVerts = numDof
     	for (int i = 0; i < numDof; i++) {
@@ -270,12 +221,54 @@ std::vector<Gradient> MeshContainer::getNodalGradients(const std::vector<double>
     	}
     }
 
-	return gradients;
-	return gradients;
+    return gradients;
+}
+
+std::vector<Gradient> MeshContainer::getNodalGradients(const std::vector<double> & point) {
+	int elementId = getElementId(point);
+	return getNodalGradients(point,elementId);
+}
+
+int MeshContainer::getElementId(const std::vector<double> & point) {
+
+	// Find the element that contains the point
+	mfem::Array<int> elementId(1);
+	mfem::Array<mfem::IntegrationPoint> intPoint(1);
+	auto pointMatrix = convertPointToMatrix(point);
+    mesh.FindPoints(pointMatrix,elementId,intPoint);
+
+	return elementId[0];
+}
+
+int MeshContainer::getElementIdFromHexMesh(const std::vector<double> & point) {
+
+	int id = -1;
+
+	// Compute the mesh parameters
+	// FIXME! Put this in an assumeHexMesh() operation and calculate them once. sqrt and cbrt are expensive!
+	int numNodes = mesh.GetNV();
+	int nodesPerSide = (dim == 2) ? sqrt(numNodes) - 1 : cbrt(numNodes) - 1;
+	double * node1 = mesh.GetVertex(0);
+	double * node2 = mesh.GetVertex(1);
+	double sideLength = node2[0] - node1[0];
+	// Find the point quickly using the floor algorithm since the background
+	// mesh is assumed to be hexahedral.
+	if (dim == 2) {
+		id = ((int) (point[0] / sideLength))
+				+ nodesPerSide * ((int) (point[1] / sideLength));
+	} else if (dim == 3) {
+		id = ((int) (point[0] / sideLength))
+				+ nodesPerSide * ((int) (point[1] / sideLength))
+				+ nodesPerSide * nodesPerSide * ((int) (point[2] / sideLength));
+	}
+
+	return id;
 }
 
 std::vector<Point> MeshContainer::getQuadraturePoints() {
 	std::vector<Point> points;
+
+	// Assigning the volume as part of this call is probably the quickest way to do it. Can conveniently check order and everything right here.
 
 	// Get the number of elements and pull the quadrature points for each.
 	int numElements = space.GetNE();
@@ -285,7 +278,7 @@ std::vector<Point> MeshContainer::getQuadraturePoints() {
 		// Get the coordinate transformation for local->global
 		auto * transform = space.GetElementTransformation(i);
 		Vector vPoint;
-		// Get the quadrature rue
+		// Get the quadrature rule
 		auto & intRule = IntRules.Get(element->GetGeomType(),_order);
 		// Loop over all the quadrature points in the element, transform them,
 		// and put them into the list.

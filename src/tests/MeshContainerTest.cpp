@@ -442,3 +442,40 @@ BOOST_AUTO_TEST_CASE(checkGradients) {
 
 	return;
 }
+
+BOOST_AUTO_TEST_CASE(checkGettingElementIds) {
+
+	// Test points
+	vector<double> pt1 = {1.1,0.1};
+	vector<double> pt2 = {0.98,0.34};
+
+
+	// Create the space factory
+	H1FESpaceFactory spaceFactory;
+
+	// Load the input file
+	INIPropertyParser propertyParser;
+	propertyParser.setSource(inputFile);
+    propertyParser.parse();
+
+	// Load the mesh
+    MeshContainer mc(propertyParser.getPropertyBlock("mesh"),spaceFactory);
+
+    // Check the element id based on the reference mesh
+    int id1 = mc.getElementId(pt1);
+    int id2 = mc.getElementId(pt2);
+    // Based on the ordering of the reference mesh...
+    BOOST_REQUIRE_EQUAL(1,id1);
+    BOOST_REQUIRE_EQUAL(0,id2);
+
+    // Now check the hex version
+    id1 = id2 = -1;
+    id1 = mc.getElementIdFromHexMesh(pt1);
+    id2 = mc.getElementIdFromHexMesh(pt2);
+
+    return;
+}
+
+BOOST_AUTO_TEST_CASE(checkMFEMMeshGradients) {
+	BOOST_FAIL("Not yet implemented.");
+}
