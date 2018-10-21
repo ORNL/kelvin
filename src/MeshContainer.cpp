@@ -250,7 +250,7 @@ int MeshContainer::getElementIdFromHexMesh(const std::vector<double> & point) {
 	int nodesPerSide = (dim == 2) ? sqrt(numNodes) - 1 : cbrt(numNodes) - 1;
 	double * node1 = mesh.GetVertex(0);
 	double * node2 = mesh.GetVertex(1);
-	double sideLength = node2[0] - node1[0];
+	double sideLength = abs(node2[0] - node1[0]);
 	// Find the point quickly using the floor algorithm since the background
 	// mesh is assumed to be hexahedral.
 	if (dim == 2) {

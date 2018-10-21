@@ -68,7 +68,7 @@ vector<Kelvin::Point> getPoints(MeshContainer & meshContainer) {
  * @param sideLengths the side lengths of the boxes by dimension
  * @return the mesh
  */
-inline Mesh * createQuadMesh(const double * numBoxes,
+inline Mesh * createQuadMesh(const int * numBoxes,
 		const double * sideLengths) {
 	return new Mesh(numBoxes[0], numBoxes[1],
 			Element::Type::QUADRILATERAL, 1, sideLengths[0],
@@ -81,7 +81,7 @@ inline Mesh * createQuadMesh(const double * numBoxes,
  * @param sideLengths the side lengths of the boxes by dimension
  * @return the mesh
  */
-inline Mesh * createHexMesh(const double * numBoxes,
+inline Mesh * createHexMesh(const int * numBoxes,
 		const double * sideLengths) {
 	return new Mesh(numBoxes[0], numBoxes[1], numBoxes[2],
 			Element::Type::HEXAHEDRON, 1, sideLengths[0],
@@ -119,8 +119,62 @@ void checkBoundingBox(const int & dim, Vector & min, Vector & max) {
 		}
 	}
 
+	// Print the original bounding box coordinates
+	cout << "Original Bound Box Coordinates: (";
+	cout << "[" << min(0) << ", " << max(0) << "]";
+	for (int i = 1; i < dim; i++) {
+		cout << ", [" << min(i) << ", " << max(i) << "]";
+	}
+	cout << ")" << endl;
+
 	// FIXME! - This will square the bounding box, but it will have unequal
 	// padding on one side.
+
+	return;
+}
+
+/**
+ * This operation prints diagnostic information about the reference mesh
+ * and how the particles were shifted.
+ * @param origMeshCenter The center of the original mesh
+ * @param refMeshCenter The center of the new reference mesh
+ * @param refMeshSideLengths The length of the sides of the new reference mesh
+ * @param numBoxes The number of elements/boxes/quads/hexes per side
+ * @param baseShifts The shift applied to particles to move them from the
+ * original center to the new center (origMeshCenter - refMeshCenter)
+ */
+void printMeshDiagnostics(double * origMeshCenter, double * refMeshCenter,
+		double * refMeshSideLengths, int * numBoxes, double * baseShifts,
+		int dim) {
+
+	// Centers
+	cout << "Original mesh center: (" << origMeshCenter[0];
+	for (int i = 1; i < dim; i++) {
+		cout << ", " << origMeshCenter[i];
+	}
+	cout << ")" << endl;
+	cout << "New reference mesh center: (" << refMeshCenter[0];
+	for (int i = 1; i < dim; i++) {
+		cout << ", " << refMeshCenter[i];
+	}
+	cout << ")" << endl;
+	cout << "Center shifted by: (" << baseShifts[0];
+	for (int i = 1; i < dim; i++) {
+		cout << ", " << baseShifts[i];
+	}
+	cout << ")" << endl;
+
+	// Sides
+	cout << "Length per side: (" << refMeshSideLengths[0];
+	for (int i = 1; i < dim; i++) {
+		cout << ", " << refMeshSideLengths[i];
+	}
+	cout << ")" << endl;
+	cout << "Quads/hexes per side: (" << numBoxes[0];
+	for (int i = 1; i < dim; i++) {
+		cout << ", " << numBoxes[i];
+	}
+	cout << ")" << endl;
 
 	return;
 }
@@ -146,6 +200,9 @@ void createReferenceMesh(MeshContainer & meshContainer,
 		vector<Kelvin::Point> & points, const char * filename,
 		double coarsenFactor = 1.0, double zShift = 1.0) {
 
+	// Scale factor for the reference mesh
+	double refMeshScale = 2.0;
+
 	// Try to create a hexahedral reference mesh.
 	auto & mesh = meshContainer.getMesh();
 
@@ -167,7 +224,8 @@ void createReferenceMesh(MeshContainer & meshContainer,
 	mesh.GetBoundingBox(min, max);
 	// Check the bounding box and do things like make it square/cubical, etc.
 	checkBoundingBox(dim, min, max);
-	double refMeshSideLengths[dim], refMeshCenter[dim], numBoxes[dim];
+	double refMeshSideLengths[dim], refMeshCenter[dim], origMeshCenter[dim];
+	int numBoxes[dim];
 	// Compute the side lengths of the source bounding box. Store these
 	// coordinates as the new center of the reference mesh. Double the original
 	// side lengths so that the new bounding box is twice as large as that of
@@ -176,9 +234,15 @@ void createReferenceMesh(MeshContainer & meshContainer,
 	//
 	// This works by just shifting the center from the original to (lx,ly,lz).
 	for (int i = 0; i < dim; i++) {
-		refMeshCenter[i] = max(i) - min(i);
-		refMeshSideLengths[i] = 2.0 * refMeshCenter[i];
+		// Side length = (x+dx) - x. Scaled by the scaling factor
+		refMeshSideLengths[i] = 2.0*(max(i) - min(i));
+		// The original center is half the side length shifted by x:
+		// [(x+dx) - x]/2 + x
+		origMeshCenter[i] = ((max(i) - min(i))/2.0) + min(i);
+		// Compute the number of quads/hexes per side
 		numBoxes[i] = refMeshSideLengths[i] / lElemSide;
+		// The new reference mesh center is at 1/2 the side lengths
+		refMeshCenter[i] = (max(i) - min(i));
 	}
 
 	// Create the new reference mesh. Using a pointer as a reference. Sometimes
@@ -202,20 +266,31 @@ void createReferenceMesh(MeshContainer & meshContainer,
 	// around the origin or another point and adjust by halving the center
 	// point. This may not work for all meshes, but if covers meshes centered
 	// at the origin and (lx/2,ly/2,lz/2).
+//	for (int i = 0; i < dim; i++) {
+//		if (min(i) >= 0.0) refMeshCenter[i] /= 2.0;
+//	}
+
+	// The new reference mesh is centered on (lx/2,ly/2,lz/2). Compute how the
+	// particles should shift to that new point.
+	double baseShifts[dim];
 	for (int i = 0; i < dim; i++) {
-		if (min(i) >= 0.0) refMeshCenter[i] /= 2.0;
+		baseShifts[i] = origMeshCenter[i] - refMeshCenter[i];
 	}
 
 	// For a source mesh with a bounding box centered on
 	// the origin, this shift will move the center to the new center of the
 	// reference mesh.
 	int numPoints = points.size();
-	double dimShifts[3] = {1.0,1.0,zShift};
+	double scaleShifts[3] = {1.0,1.0,zShift};
 	for (int i = 0; i < numPoints; i++) {
 		for (int j = 0; j < dim; j++) {
-			points[i].pos[j] += dimShifts[j]*refMeshCenter[j];
+			points[i].pos[j] -= scaleShifts[j]*baseShifts[j];
 		}
 	}
+
+	// Print some diagnostic information
+	printMeshDiagnostics(origMeshCenter,refMeshCenter,refMeshSideLengths,
+			numBoxes,baseShifts,dim);
 
 	return;
 }

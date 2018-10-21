@@ -93,7 +93,7 @@ void MFEMOlevskyLVCR::updateStrainRate(const Kelvin::Grid & grid,
     int nodesPerSide = (dim == 2) ? sqrt(numNodes) - 1 : cbrt(numNodes) - 1;
     double * node1 = _mesh.GetVertex(0);
     double * node2 = _mesh.GetVertex(1);
-    double sideLength = node2[0] - node1[0];
+    double sideLength = abs(node2[0] - node1[0]);
     int id = 0;
     if (dim == 2) {
     	id = ((int) (matPoint.pos[0]/sideLength))
