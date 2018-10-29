@@ -98,6 +98,23 @@ private:
 	 */
 	std::vector<DirichletBoundaryCondition> dbConditions;
 
+	/**
+	 * The length of a hexahedral element, assuming the mesh is a hex mesh.
+	 */
+	double hexSideLength = 0.0;
+
+	/**
+	 * The number of hexahedral elements per side, assuming the mesh is a hex
+	 * mesh.
+	 */
+	int nodesPerSide = 0;
+
+	/**
+	 * This operation computes parameters that are used if the underlying mesh
+	 * is hexahedral or quadrilateral.
+	 */
+	void setupHexMeshParams();
+
 public:
 
 	/**

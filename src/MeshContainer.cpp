@@ -54,6 +54,7 @@ MeshContainer::MeshContainer(
 			<< " with " << mesh.GetNE() << " elements and " << mesh.GetNV()
 			<< " vertices." << endl;
 
+	setupHexMeshParams();
 }
 
 MeshContainer::MeshContainer(const char * meshFile, const int & order,
@@ -63,10 +64,21 @@ MeshContainer::MeshContainer(const char * meshFile, const int & order,
 		feCollection(spaceFactory.getCollection(_order,dim)),
 		space(spaceFactory.getFESpace(mesh,feCollection)) {
 
+	setupHexMeshParams();
 }
 
 Mesh & MeshContainer::getMesh() {
 	return mesh;
+}
+
+void MeshContainer::setupHexMeshParams() {
+	// Compute the mesh parameters
+	// FIXME! Put this in an assumeHexMesh() operation and calculate them once. sqrt and cbrt are expensive!
+	int numNodes = mesh.GetNV();
+	nodesPerSide = (dim == 2) ? sqrt(numNodes) - 1 : cbrt(numNodes) - 1;
+	double * node1 = mesh.GetVertex(0);
+	double * node2 = mesh.GetVertex(1);
+	hexSideLength = abs(node2[0] - node1[0]);
 }
 
 FiniteElementSpace & MeshContainer::getSpace() {
@@ -244,22 +256,15 @@ int MeshContainer::getElementIdFromHexMesh(const std::vector<double> & point) {
 
 	int id = -1;
 
-	// Compute the mesh parameters
-	// FIXME! Put this in an assumeHexMesh() operation and calculate them once. sqrt and cbrt are expensive!
-	int numNodes = mesh.GetNV();
-	int nodesPerSide = (dim == 2) ? sqrt(numNodes) - 1 : cbrt(numNodes) - 1;
-	double * node1 = mesh.GetVertex(0);
-	double * node2 = mesh.GetVertex(1);
-	double sideLength = abs(node2[0] - node1[0]);
 	// Find the point quickly using the floor algorithm since the background
 	// mesh is assumed to be hexahedral.
 	if (dim == 2) {
-		id = ((int) (point[0] / sideLength))
-				+ nodesPerSide * ((int) (point[1] / sideLength));
+		id = ((int) (point[0] / hexSideLength))
+				+ nodesPerSide * ((int) (point[1] / hexSideLength));
 	} else if (dim == 3) {
-		id = ((int) (point[0] / sideLength))
-				+ nodesPerSide * ((int) (point[1] / sideLength))
-				+ nodesPerSide * nodesPerSide * ((int) (point[2] / sideLength));
+		id = ((int) (point[0] / hexSideLength))
+				+ nodesPerSide * ((int) (point[1] / hexSideLength))
+				+ nodesPerSide * nodesPerSide * ((int) (point[2] / hexSideLength));
 	}
 
 	return id;

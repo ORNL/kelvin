@@ -118,15 +118,17 @@ void Grid::updateShapeMatrix(
 	// Re-initialize the shape matrix
 	_shapeMatrix = make_unique<SparseMatrix>(numParticles,_nodes.size());
 	for (int i = 0; i < numParticles; i++) {
+		auto & matPoint = particles[i];
 		// Get the shape
-		auto nodeIds = _meshContainer.getSurroundingNodeIds(particles[i].pos);
-		auto shape = _meshContainer.getNodalShapes(particles[i].pos);
+		auto id = getElementId(matPoint);
+		auto nodeIds = _meshContainer.getSurroundingNodeIds(matPoint.pos,id);
+		auto shape = _meshContainer.getNodalShapes(matPoint.pos,id);
 		for (int j = 0; j < shape.size(); j++) {
 			_shapeMatrix->Set(i,nodeIds[j],shape[j]);
 			_nodeSet.insert(nodeIds[j]);
 		}
 		// Get the gradients associated with the particle
-		auto gradients = _meshContainer.getNodalGradients(particles[i].pos);
+		auto gradients = _meshContainer.getNodalGradients(matPoint.pos,id);
 		_gradientMap[i] = gradients;
 	}
 	_shapeMatrix->Finalize();
@@ -392,6 +394,10 @@ void Grid::applyNoSlipBoundaryConditions() {
 	}
 
 	return;
+}
+
+int Grid::getElementId(const Kelvin::MaterialPoint & point) const {
+	return _meshContainer.getElementIdFromHexMesh(point.pos);
 }
 
 } /* namespace Kelvin */

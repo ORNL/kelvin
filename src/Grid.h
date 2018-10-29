@@ -44,9 +44,9 @@
 namespace Kelvin {
 
 /**
-* This is the background Eulerian grid. It computes and stores the raw mesh
-* (through the meshContainer), velocity, acceleration, mass, stress,
-* strain, gradients of these quantities, etc.
+* This is the background Eulerian grid of hexahedral elements. It computes and
+* stores the raw mesh (through the meshContainer), velocity, acceleration,
+* mass, stress, strain, gradients of these quantities, etc.
 *
 * Nodes are stored as Points, which have position, velocity, and
 * acceleration. Accessing these quantities should be done by pulling and
@@ -263,6 +263,12 @@ public:
 	 * the bottom of the grid.
 	 */
 	virtual void applyNoSlipBoundaryConditions();
+
+	/**
+	 * This operation identifies and returns the element id of the point
+	 * or -1 if the element ID cannot be found.
+	 */
+	int getElementId(const Kelvin::MaterialPoint & point) const;
 
 };
 

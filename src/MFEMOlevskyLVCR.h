@@ -34,6 +34,7 @@
 
 #include <ConstitutiveRelationship.h>
 #include <MFEMData.h>
+#include <mfem.hpp>
 
 namespace Kelvin {
 
@@ -44,6 +45,11 @@ class MFEMOlevskyLVCR : public ConstitutiveRelationship {
 	 * from the mesh container.
 	 */
 	MFEMData & _data;
+
+	/**
+	 * Spatial dimension
+	 */
+	int dim;
 
 	/**
 	 * The ratio of the volume of pores to the total volume.
@@ -69,6 +75,22 @@ class MFEMOlevskyLVCR : public ConstitutiveRelationship {
 	 * The material density
 	 */
 	double density;
+
+	/**
+	 * Finite element collection used to compute the velocity for the strain
+	 * rate.
+	 */
+	mfem::H1_FECollection velCol;
+
+	/**
+	 * Finite element space used to compute the velocity for the strain rate.
+	 */
+	mfem::FiniteElementSpace velSpace;
+
+	/**
+	 * Finite element grid function that compute the velocity.
+	 */
+	mfem::GridFunction velGf;
 
 public:
 

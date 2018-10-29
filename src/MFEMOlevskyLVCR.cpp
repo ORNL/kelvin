@@ -40,8 +40,12 @@ using namespace std;
 
 namespace Kelvin {
 
-MFEMOlevskyLVCR::MFEMOlevskyLVCR(MFEMData & data) : _data(data), porosity(0.0),
-		shearModulus(0.0), phi(0.0), psi(0.0), density(1.0) {
+MFEMOlevskyLVCR::MFEMOlevskyLVCR(MFEMData & data) : _data(data),
+		dim(data.meshContainer().dimension()), porosity(0.0),
+		shearModulus(0.0), phi(0.0), psi(0.0), density(1.0),
+		velCol(1,dim), velSpace(&(data.meshContainer().getMesh()),
+				&velCol,dim,Ordering::byVDIM),velGf(&velSpace)
+		{
 
 	// Get the properties
 	auto & propertiesParser = data.properties();
@@ -66,13 +70,10 @@ void MFEMOlevskyLVCR::updateStrainRate(const Kelvin::Grid & grid,
 		Kelvin::MaterialPoint & matPoint) {
 
 	// Create the H1 field
-	int dim = _data.meshContainer().dimension();
 	auto & meshContainer = _data.meshContainer();
 	auto & _mesh = meshContainer.getMesh();
-	H1_FECollection velCol(1,dim);
-	FiniteElementSpace velSpace(&_mesh,&velCol,dim,Ordering::byVDIM);
+
 	// Create and fill the grid function
-	GridFunction velGf(&velSpace);
 	auto & nodes = grid.nodes();
 	for (int i = 0; i < nodes.size(); i++) {
 		auto & nodeVel = nodes[i].vel;
@@ -81,28 +82,12 @@ void MFEMOlevskyLVCR::updateStrainRate(const Kelvin::Grid & grid,
 		}
 	}
 
-	// Is this correct? I get the impression that the share gradients are off.
+	// Is this correct? I get the impression that the gradients are off.
 	// Find the element that contains the point
-//	mfem::Array<int> elementId(1);
-	mfem::Array < mfem::IntegrationPoint > intPoints(1);
-	auto pointMatrix = meshContainer.convertPointToMatrix(matPoint.pos);
-//	_mesh.FindPoints(pointMatrix, elementId, intPoints);
-//
+
     // Find the point quickly since the background mesh is known to be a cube.
-    int numNodes = _mesh.GetNV();
-    int nodesPerSide = (dim == 2) ? sqrt(numNodes) - 1 : cbrt(numNodes) - 1;
-    double * node1 = _mesh.GetVertex(0);
-    double * node2 = _mesh.GetVertex(1);
-    double sideLength = abs(node2[0] - node1[0]);
     int id = 0;
-    if (dim == 2) {
-    	id = ((int) (matPoint.pos[0]/sideLength))
-    			+ nodesPerSide*((int) (matPoint.pos[1]/sideLength));
-    } else if (dim == 3) {
-    	id = ((int) (matPoint.pos[0]/sideLength))
-    			+ nodesPerSide*((int) (matPoint.pos[1]/sideLength))
-				+ nodesPerSide*nodesPerSide*((int) (matPoint.pos[2]/sideLength));
-    }
+    id = grid.getElementId(matPoint);
     // Put the point in an mfem vector
 	mfem::Vector pointVec(dim);
 	for (int i = 0; i < dim; i++) {
@@ -110,6 +95,7 @@ void MFEMOlevskyLVCR::updateStrainRate(const Kelvin::Grid & grid,
 	}
 
 	// Get the element transformation
+	mfem::Array < mfem::IntegrationPoint > intPoints(1);
 	auto * elemTrans = _mesh.GetElementTransformation(id);
 	elemTrans->TransformBack(pointVec,intPoints[0]);
 	// Set the material point position in reference coordinates

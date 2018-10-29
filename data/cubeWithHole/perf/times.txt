@@ -1,0 +1,5 @@
+20181026 31197 37.7 initial
+20181026 6373 29.9 grid index computation
+20181026 31296 12.8 release build with debug info
+20181027 885 4.94 finite element space creation in CR
+20181029 7912 1.068 grid index computation in neighbor ids

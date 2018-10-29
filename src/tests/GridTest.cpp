@@ -362,5 +362,11 @@ BOOST_AUTO_TEST_CASE(checkGrid) {
 
 	// Make sure that the force vector ids changes
 
+	// Check element id computation
+	for (int i = 0; i < mPoints.size(); i++) {
+		BOOST_REQUIRE_EQUAL(mc.getElementIdFromHexMesh(mPoints[i].pos),
+				grid.getElementId(mPoints[i]));
+	}
+
 	return;
 }
