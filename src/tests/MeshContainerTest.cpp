@@ -449,7 +449,6 @@ BOOST_AUTO_TEST_CASE(checkGettingElementIds) {
 	vector<double> pt1 = {1.1,0.1};
 	vector<double> pt2 = {0.98,0.34};
 
-
 	// Create the space factory
 	H1FESpaceFactory spaceFactory;
 
@@ -477,5 +476,73 @@ BOOST_AUTO_TEST_CASE(checkGettingElementIds) {
 }
 
 BOOST_AUTO_TEST_CASE(checkMFEMMeshGradients) {
-	BOOST_FAIL("Not yet implemented.");
+
+	// Load the input file
+	INIPropertyParser propertyParser;
+	propertyParser.setSource(inputFile);
+    propertyParser.parse();
+
+    // Setup the mesh and spaces
+	H1FESpaceFactory spaceFactory;
+    MeshContainer mc(propertyParser.getPropertyBlock("mesh"),spaceFactory);
+    auto & mesh = mc.getMesh();
+    int dim = mc.dimension();
+	mfem::H1_FECollection velCol(1,dim);
+	mfem::FiniteElementSpace velSpace(&mesh,&velCol,dim,Ordering::byVDIM);
+	mfem::GridFunction velGf(&velSpace);
+
+	// Set velocities in the grid function. Start with v_i = (0,0).
+	for (int i = 0; i < 6; i++) {
+		velGf[i*dim] = 0.0;
+		velGf[i*dim+1] = 0.0;
+	}
+
+	// Get the element transformation
+	int id = 0;
+	mfem::Vector pointVec(dim);
+	pointVec[0] = 0.5;
+	pointVec[1] = 0.5;
+	mfem::Array < mfem::IntegrationPoint > intPoints(1);
+	auto * elemTrans = mesh.GetElementTransformation(id);
+	elemTrans->TransformBack(pointVec,intPoints[0]);
+	// Set the material point position in reference coordinates
+	elemTrans->SetIntPoint(&intPoints[0]);
+	// Get the gradient of the velocity at the material point
+	DenseMatrix gradVel(dim, dim);
+	velGf.GetVectorGradient(*elemTrans, gradVel);
+
+	// Check that the gradient is zero
+	BOOST_REQUIRE_CLOSE(0.0,gradVel(0,0),0.0);
+	BOOST_REQUIRE_CLOSE(0.0,gradVel(0,1),0.0);
+	BOOST_REQUIRE_CLOSE(0.0,gradVel(1,0),0.0);
+	BOOST_REQUIRE_CLOSE(0.0,gradVel(1,1),0.0);
+
+	// Update velGf and compute again. This method makes a smooth gradient that
+	// is constant (and easy for humans to compute by hand!) in x and y. It is
+	// 1 for all x gradients and 3 for all y gradients making a matrix with two
+	// rows of [1,3].
+	for (int i = 0; i < 6; i++) {
+		velGf[i*dim] = (double) i;
+		velGf[i*dim+1] = (double) i;
+	}
+	velGf.GetVectorGradient(*elemTrans, gradVel);
+
+	// Check the new matrix
+	BOOST_REQUIRE_CLOSE(1.0,gradVel(0,0),1.0e-15);
+	BOOST_REQUIRE_CLOSE(3.0,gradVel(0,1),1.0e-15);
+	BOOST_REQUIRE_CLOSE(1.0,gradVel(1,0),1.0e-15);
+	BOOST_REQUIRE_CLOSE(3.0,gradVel(1,1),1.0e-15);
+
+	// Symmetrize the matrix and check it. The symmetric version of this matrix
+	// is gV_sym = 1/2*(gV + (gV)^T) which is the matrix with rows [1,2] and
+	// [2,3].
+	gradVel.Symmetrize();
+
+	// Check the symmetric matrix
+	BOOST_REQUIRE_CLOSE(1.0,gradVel(0,0),1.0e-15);
+	BOOST_REQUIRE_CLOSE(2.0,gradVel(0,1),1.0e-15);
+	BOOST_REQUIRE_CLOSE(2.0,gradVel(1,0),1.0e-15);
+	BOOST_REQUIRE_CLOSE(3.0,gradVel(1,1),1.0e-15);
+
+	return;
 }

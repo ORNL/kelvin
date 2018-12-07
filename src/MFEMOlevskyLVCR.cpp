@@ -82,9 +82,6 @@ void MFEMOlevskyLVCR::updateStrainRate(const Kelvin::Grid & grid,
 		}
 	}
 
-	// Is this correct? I get the impression that the gradients are off.
-	// Find the element that contains the point
-
     // Find the point quickly since the background mesh is known to be a cube.
     int id = 0;
     id = grid.getElementId(matPoint);

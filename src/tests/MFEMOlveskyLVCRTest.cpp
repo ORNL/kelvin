@@ -90,8 +90,8 @@ BOOST_AUTO_TEST_CASE(checkStrain) {
     	mPoints[i].mass = 1.0;
     	mPoints[i].bodyForce[0] = 1.0;
     	mPoints[i].bodyForce[1] = 1.0;
-    	mPoints[i].vel[0] = 1.0;
-    	mPoints[i].vel[1] = 1.0;
+    	mPoints[i].vel[0] = 0.0;
+    	mPoints[i].vel[1] = 0.0;
     }
 
     // Assemble it to create the arrays of nodes, shapes, masses, etc.
