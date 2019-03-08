@@ -36,9 +36,34 @@
 #include <MFEMThermalSolver.h>
 #include <MFEMMPMSolver.h>
 #include <MFEMMPMData.h>
+#include <memory>
+#include <MFEMOlevskyLVCR.h>
+#include <HydrostaticCR.h>
+#include <ConstitutiveRelationshipService.h>
 
 using namespace std;
 using namespace Kelvin;
+
+/**
+ * This function registers user-defined constitutive relationships with the framework.
+ * @param data the MPM data structure provided the by MFEMManager
+ */
+void configureConstitutiveRelationships(MFEMMPMData & data) {
+	// Create the Olevsky sintering constitutive relationships
+	unique_ptr<ConstitutiveRelationship> olevskyLVCR =
+			make_unique<MFEMOlevskyLVCR>(data);
+	int olveskyID = 1;
+	// Create the hydrostatic constitutive relationships
+	unique_ptr<ConstitutiveRelationship> hydrostaticCR =
+			make_unique<HydrostaticCR>();
+	int hsID = 2;
+
+	// Add them to the service
+	ConstitutiveRelationshipService::add(olveskyID,std::move(olevskyLVCR));
+	ConstitutiveRelationshipService::add(hsID,std::move(hydrostaticCR));
+
+	return;
+}
 
 /**
  * Main program
@@ -55,6 +80,9 @@ int main(int argc, char * argv[]) {
 //	MFEMManager<MFEMThermalSolver,MFEMMPMData> manager;
 	MFEMManager<MFEMMPMSolver,MFEMMPMData> manager;
 	manager.setup(inputFile,argc,argv);
+
+	// Configure the full set of constitutive relationships
+	configureConstitutiveRelationships(manager.data);
 
 	// Do the thermal solve
 	manager.solve();

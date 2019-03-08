@@ -23,6 +23,7 @@ The stress is computed in the updateStress() function of a constitutive relation
 
 Testing the Constitutive Relationship
 ===
+
 Kelvin uses the testing framework provided with BOOST for unit testing. While it is highly recommend to develop a unit test for a new constitutive equation, covering that task in depth is beyond the scope of this article. The most efficient way to develop a unit test for a constitutive equation is to follow the model in the src/tests/HydrostaticCRTest.cpp class.
 
 Registering with the Constitutive Relationship Service

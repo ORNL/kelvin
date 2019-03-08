@@ -1,5 +1,5 @@
 /**----------------------------------------------------------------------------
- Copyright  2018-, UT-Battelle, LLC
+ Copyright (c) 2019-, UT-Battelle, LLC
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,10 @@
 #include <MeshContainer.h>
 #include <H1FESpaceFactory.h>
 #include <INIPropertyParser.h>
-#include <MFEMOlevskyLVCR.h>
+#include <HydrostaticCR.h>
+#include <MFEMData.h>
+#include <string>
+#include <iostream>
 
 using namespace std;
 using namespace mfem;
@@ -48,6 +51,8 @@ using namespace fire;
 
 // Test file names
 static std::string inputFile = "2SquaresInput-smallerMesh.ini";
+
+namespace Kelvin {
 
 /**
  * This operation checks that the strain rate can be computed correctly from
@@ -107,15 +112,15 @@ BOOST_AUTO_TEST_CASE(checkStrain) {
 	grid.updateNodalVelocities(1.0,mPoints);
 
 	// Create the constitutive equation
-	MFEMOlevskyLVCR conRel(data);
+	HydrostaticCR conRel;
 
 	// Compute the strain
 	for (int i = 0; i < mPoints.size(); i++) {
 		conRel.updateStrainRate(grid,mPoints[i]);
 	}
 	// Setup reference values
-	std::vector<double> p1Strain{0.0,-1.0,-1.0,-2.0};
-	std::vector<double> p2Strain{-4.0,-3.0,-3.0,-2.0};
+	std::vector<double> p1Strain{1.0,0.0,0.0,1.0};
+	std::vector<double> p2Strain{1.0,0.0,0.0,1.0};
 	cout << "----- Strains" << endl;
 	for (int i = 0; i < mPoints.size(); i++) {
 		for (int j = 0; j < dim; j++) {
@@ -198,7 +203,7 @@ BOOST_AUTO_TEST_CASE(checkStress) {
 	grid.updateNodalVelocities(1.0,mPoints);
 
 	// Create the constitutive equation
-	MFEMOlevskyLVCR conRel(data);
+	HydrostaticCR conRel;
 
 	for (int i = 0; i < mPoints.size(); i++) {
 		// Compute the strain
@@ -208,17 +213,8 @@ BOOST_AUTO_TEST_CASE(checkStress) {
 	}
 
 	// Setup reference values
-	std::vector<double> p1Stress{-169444,-508333,-508333,-1.18611e6};
-	std::vector<double> p2Stress{-2.54167e6,-1.525e6,-1.525e6,-1.525e6};
-//  I'm guessing that these will change really soon... but for now:
-//	----- Stress
-//	-169444 -508333
-//	-508333 -1.18611e+06
-//	-----
-//	-2.54167e+06 -1.525e+06
-//	-1.525e+06 -1.525e+06
-//	-----
-
+	std::vector<double> p1Stress{1.0,0.0,0.0,1.0};
+	std::vector<double> p2Stress{1.0,0.0,0.0,1.0};
 
 	cout << "----- Stress" << endl;
 	for (int i = 0; i < mPoints.size(); i++) {
@@ -244,3 +240,5 @@ BOOST_AUTO_TEST_CASE(checkStress) {
 
 	return;
 }
+
+} /* namespace Kelvin */
