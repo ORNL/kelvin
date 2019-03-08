@@ -34,6 +34,7 @@
 #include <MeshContainer.h>
 #include <StringCaster.h>
 #include <cmath>
+#include <iostream>
 
 using namespace mfem;
 using namespace std;
@@ -57,7 +58,7 @@ MFEMOlevskyLVCR::MFEMOlevskyLVCR(MFEMData & data) : _data(data),
 	density = fire::StringCaster<double>::cast(properties.at("density"));
 	// Compute phi and psi for the stress updates
 	phi = (1.0-porosity)*(1.0-porosity);
-	psi = (2.0/3.0)*phi*(1-porosity)/porosity;
+	psi = (2.0/3.0)*phi*(1.0-porosity)/porosity;
 
 	return;
 }
@@ -122,7 +123,7 @@ void MFEMOlevskyLVCR::updateStress(const Kelvin::Grid & grid,
 
 	// Compute the sintering stress, which is constant for now
 	for (int i = 0; i < dim; i++) {
-		sinteringStress[i] = phi*(2.0*(1.0-porosity)-(1-porosity))/porosity;
+		sinteringStress[i] = phi*(2.0*(1.0-porosity)-(1.0-porosity))/porosity;
 	}
 
 	double traceE = 0.0;
