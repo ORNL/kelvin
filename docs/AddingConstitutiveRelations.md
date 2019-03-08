@@ -11,6 +11,16 @@ Implementing ConstitutiveRelationship
 
 The ConstitutiveRelationship interface is defined in ConstitutiveRelationship.h. This class can be implemented by creating a subclass of an existing implementation, or starting from scratch. For a new constitutive relationship - called AwesomeRelationship for simplicity - create separate AwesomeRelationship.h and Awesome.cpp relationships in the source directory, as well as AwesomeRelationshipTest.cpp in the test directory. The src/HydrostaticCR* files are good examples of how to do this.
 
+Strain Rate
+===
+
+The strain rate is computed in the updateStrainRate() function of a constitutive relationship. This function takes as its arguments references to the grid and material points. Strain rates are stored directly on the material points and grid values can be used as needed in the computation.
+
+Stress
+===
+
+The stress is computed in the updateStress() function of a constitutive relationship. Like updateStrainRate(), this function takes as its arguments references to the grid and material points. Also like strain rates, stresses are stored directly on the material points and grid values can be used as needed in the computation.
+
 Registering with the Constitutive Relationship Service
 ==
 
