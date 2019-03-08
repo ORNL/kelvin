@@ -21,6 +21,10 @@ Stress
 
 The stress is computed in the updateStress() function of a constitutive relationship. Like updateStrainRate(), this function takes as its arguments references to the grid and material points. Also like strain rates, stresses are stored directly on the material points and grid values can be used as needed in the computation.
 
+Testing the Constitutive Relationship
+===
+Kelvin uses the testing framework provided with BOOST for unit testing. While it is highly recommend to develop a unit test for a new constitutive equation, covering that task in depth is beyond the scope of this article. The most efficient way to develop a unit test for a constitutive equation is to follow the model in the src/tests/HydrostaticCRTest.cpp class.
+
 Registering with the Constitutive Relationship Service
 ==
 
@@ -46,3 +50,16 @@ Modifying this line by changing the trailing "1" to a trailing "2" changes the m
 ```
 2.56728, 1.8767, 1.19445, 2
 ```
+
+Using the new Constitutive Relationship
+==
+
+Using new constitutive relationships generally requires a full rebuild of Kelvin in order to update the build system's cache so that it can detect the new files. From the build directory, clean the existing installation using
+```bash
+make clean
+rm -rf CMakeCache.txt
+```
+
+In some cases where the build system is not cooperating, completely deleting all the content in the build directory with ```rm -rf *`` may be required.
+
+Once the old installation is cleaned, repeat the build instructions in the README.md file to rebuild Kelvin.
